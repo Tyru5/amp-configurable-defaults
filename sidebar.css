@@ -1,0 +1,49 @@
+/* Only the desktop app shell, never marketing pages or mobile sidebar sheets. */
+@media (min-width: 768px) {
+  html[data-amp-sidebar-right] .app-frame-stack-rail,
+  html[data-amp-sidebar-right] .app-content-frame[data-slot="sidebar-wrapper"] {
+    flex-direction: row-reverse !important;
+  }
+
+  html[data-amp-sidebar-right][data-amp-sidebar-right-width] .app-content-frame[data-slot="sidebar-wrapper"] {
+    --sidebar-width: var(--amp-sidebar-right-width) !important;
+  }
+
+  html[data-amp-sidebar-right] .app-content-frame [data-slot="sidebar-container"] {
+    left: auto !important;
+    right: 0 !important;
+    inset-inline-start: auto !important;
+    inset-inline-end: 0 !important;
+    border-left: 1px solid var(--input-border, #80808040) !important;
+    border-right: 0 !important;
+  }
+
+  html[data-amp-sidebar-right] .app-content-frame [data-slot="sidebar-container"][data-collapsible="offcanvas"] {
+    right: calc(-1 * var(--sidebar-width)) !important;
+    inset-inline-end: calc(-1 * var(--sidebar-width)) !important;
+  }
+
+  html[data-amp-sidebar-right] .app-content-frame > .resize-handle {
+    left: auto !important;
+    right: var(--sidebar-width) !important;
+    transform: translateX(4px) !important;
+  }
+
+  html[data-amp-sidebar-right] .app-content-frame:not(.app-sidebar-closed) > .sidebar-trigger-wrapper {
+    left: auto !important;
+    right: calc(var(--sidebar-width) - 2.5rem) !important;
+    padding-right: 0 !important;
+  }
+
+  html[data-amp-sidebar-right-resizing],
+  html[data-amp-sidebar-right-resizing] * {
+    cursor: ew-resize !important;
+    user-select: none !important;
+  }
+
+  html[data-amp-sidebar-right-resizing] .app-content-frame [data-slot="sidebar-gap"],
+  html[data-amp-sidebar-right-resizing] .app-content-frame [data-slot="sidebar-container"] {
+    width: var(--sidebar-width) !important;
+    transition: none !important;
+  }
+}

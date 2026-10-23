@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amp sidebar compatibility fixture</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px system-ui, sans-serif; color: #20231f; background: #fafaf8; }
+  .test-controls { height: 64px; padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #ddd; }
+  .test-controls span { margin-right: auto; color: #666; font-size: 13px; }
+  button { font: inherit; padding: 7px 12px; border: 1px solid #ccc; border-radius: 6px; color: inherit; background: white; cursor: pointer; }
+  button:hover { background: #eaece6; }
+  button:focus-visible, textarea:focus-visible { outline: 2px solid #426dba; outline-offset: 2px; }
+  .app-frame-stack { display: flex; height: calc(100dvh - 64px); }
+  .app-primary-navigation { width: 56px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-top: 16px; background: #eeefe9; }
+  .app-primary-navigation strong { font-size: 22px; color: #ba4829; }
+  .app-frame { display: flex; min-width: 0; flex: 1; }
+  .app-content-frame { display: flex; position: relative; flex: 1; min-width: 0; overflow: hidden; --input-border: #ddd; }
+  [data-slot="sidebar"] { flex-shrink: 0; }
+  [data-slot="sidebar-gap"] { width: var(--sidebar-width); height: 100%; }
+  [data-slot="sidebar-container"] { position: absolute; inset-block: 0; left: 0; width: var(--sidebar-width); background: #f4f5f0; border-right: 1px solid #ddd; }
+  [data-slot="sidebar-inner"] { height: 100%; display: flex; flex-direction: column; }
+  .sidebar-toolbar { height: 52px; padding: 14px 16px 14px 46px; border-bottom: 1px solid #ddd; font-weight: 600; }
+  .sidebar-body { padding: 18px 10px; }
+  .sidebar-body p { margin: 0 10px 20px; color: #6b6d67; font-size: 13px; }
+  .sidebar-body button { width: 100%; text-align: left; background: transparent; border: 0; margin-bottom: 6px; }
+  .sidebar-body button:first-of-type { background: #e5e8df; }
+  .account { padding: 18px; margin-top: auto; border-top: 1px solid #ddd; color: #62665c; }
+  [data-slot="sidebar-inset"] { flex: 1; min-width: 0; display: flex; flex-direction: column; background: white; }
+  .title-bar { height: 52px; padding: 14px 18px; border-bottom: 1px solid #eee; font-weight: 600; }
+  article { width: min(700px, 100%); padding: 42px 40px; margin: auto; line-height: 1.7; }
+  article h1 { font-size: 27px; font-weight: 600; line-height: 1.3; }
+  article small { color: #6d7568; }
+  textarea { font: inherit; width: 100%; margin-top: 32px; padding: 16px; border: 1px solid #ccc; border-radius: 12px; resize: vertical; }
+  .sidebar-trigger-wrapper { position: absolute; top: 8px; left: 6px; z-index: 30; }
+  .sidebar-trigger-wrapper button { padding: 4px 8px; }
+  .resize-handle { position: absolute; inset-block: 0; width: 5px; left: calc(var(--sidebar-width) - 1px); transform: translateX(-4px); cursor: ew-resize; z-index: 30; }
+  .resize-handle:hover { background: #7c8b6c; }
+  [data-state="collapsed"] [data-slot="sidebar-gap"] { width: 0; }
+  [data-collapsible="offcanvas"][data-slot="sidebar-container"] { left: calc(-1 * var(--sidebar-width)); }
+  .app-sidebar-closed .title-bar { padding-left: 52px; }
+  @media (max-width: 767px) {
+    .app-primary-navigation, [data-slot="sidebar"], .resize-handle { display: none; }
+    .test-controls { height: auto; flex-wrap: wrap; }
+    .test-controls span { width: 100%; }
+    .sidebar-trigger-wrapper { display: none; }
+    article { padding: 20px; }
+  }
+</style>
+<link rel="stylesheet" href="../sidebar.css">
+<div class="test-controls">
+  <span>Local compatibility fixture · Not live Amp · 1280 × 800</span>
+  <button id="replace">Replace app shell</button>
+  <button id="switch">Switch sidebar side</button>
+</div>
+<div id="mount"></div>
+<template id="shell">
+  <div class="app-frame-stack app-frame-stack-rail">
+    <nav class="app-primary-navigation" aria-label="App navigation"><strong>A</strong><span>Code</span><span>Feed</span></nav>
+    <div class="app-frame">
+      <div class="app-content-frame" data-slot="sidebar-wrapper" style="--sidebar-width: 300px">
+        <div class="sidebar-trigger-wrapper"><button aria-label="Toggle sidebar" aria-expanded="true">☰</button></div>
+        <div data-slot="sidebar" data-state="expanded" data-side="left">
+          <div data-slot="sidebar-gap"></div>
+          <aside class="app-navigation-sidebar" data-slot="sidebar-container" aria-label="Threads">
+            <div data-slot="sidebar-inner">
+              <div class="sidebar-toolbar">Threads</div>
+              <div class="sidebar-body"><p>WORKSPACE</p><button>Camera identification initiative</button><button>Platform investigation</button><button>Release notes</button><p>Archived</p></div>
+              <div class="account">Your workspace</div>
+            </div>
+          </aside>
+        </div>
+        <div class="resize-handle" role="separator" aria-label="Resize sidebar"></div>
+        <main data-slot="sidebar-inset">
+          <div class="title-bar">Camera identification initiative</div>
+          <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. Use the test control above to exercise the same toggle handler as the Chrome toolbar button.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
+        </main>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  const listeners = [];
+  let clickAction;
+  window.chrome = {
+    storage: {
+      local: {
+        async get() { return JSON.parse(localStorage.getItem('extension-settings') || '{}'); },
+        async set(values) {
+          const before = await this.get();
+          localStorage.setItem('extension-settings', JSON.stringify({ ...before, ...values }));
+          const changes = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, { oldValue: before[key], newValue: value }]));
+          listeners.forEach(fn => fn(changes, 'local'));
+        }
+      },
+      onChanged: { addListener(fn) { listeners.push(fn); } }
+    },
+    action: {
+      onClicked: { addListener(fn) { clickAction = fn; } },
+      async setBadgeText({ text }) { document.querySelector('#switch').textContent = `Switch sidebar side · ${text}`; },
+      async setBadgeBackgroundColor() {},
+      async setTitle({ title }) { document.querySelector('#switch').title = title; }
+    }
+  };
+  addEventListener('storage', event => {
+    if (event.key !== 'extension-settings') return;
+    const before = JSON.parse(event.oldValue || '{}');
+    const after = JSON.parse(event.newValue || '{}');
+    const changes = Object.fromEntries(['right', 'rightWidth'].filter(key => before[key] !== after[key]).map(key => [key, { newValue: after[key] }]));
+    listeners.forEach(fn => fn(changes, 'local'));
+  });
+  function mount() {
+    document.querySelector('#mount').replaceChildren(document.querySelector('#shell').content.cloneNode(true));
+    document.querySelector('[aria-label="Toggle sidebar"]').onclick = event => {
+      const state = document.querySelector('[data-slot="sidebar"]');
+      const collapsed = state.dataset.state !== 'collapsed';
+      state.dataset.state = collapsed ? 'collapsed' : 'expanded';
+      document.querySelector('[data-slot="sidebar-container"]').dataset.collapsible = collapsed ? 'offcanvas' : '';
+      document.querySelector('.app-content-frame').classList.toggle('app-sidebar-closed', collapsed);
+      document.querySelector('.resize-handle').hidden = collapsed;
+      event.currentTarget.setAttribute('aria-expanded', !collapsed);
+    };
+  }
+  mount();
+  document.querySelector('#replace').onclick = mount;
+  document.querySelector('#switch').onclick = () => clickAction();
+</script>
+<script src="../background.js"></script>
+<script src="../content.js"></script>
+</html>
