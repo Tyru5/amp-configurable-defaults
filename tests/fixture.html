@@ -32,6 +32,11 @@
   article h1 { font-size: 27px; font-weight: 600; line-height: 1.3; }
   article small { color: #6d7568; }
   textarea { font: inherit; width: 100%; margin-top: 32px; padding: 16px; border: 1px solid #ccc; border-radius: 12px; resize: vertical; }
+  #view-group { display: flex; flex: 1; min-height: 0; }
+  #view-group > [data-pane] { min-width: 0; overflow: auto; }
+  [data-pane-resizer] { width: 4px; flex-shrink: 0; background: #ddd; cursor: ew-resize; touch-action: none; }
+  #view-pane { background: #f4f5f0; }
+  #view-pane > * { margin: 20px; }
   .sidebar-trigger-wrapper { position: absolute; top: 8px; left: 6px; z-index: 30; }
   .sidebar-trigger-wrapper button { padding: 4px 8px; }
   .resize-handle { position: absolute; inset-block: 0; width: 5px; left: calc(var(--sidebar-width) - 1px); transform: translateX(-4px); cursor: ew-resize; z-index: 30; }
@@ -50,6 +55,7 @@
 <link rel="stylesheet" href="../sidebar.css">
 <div class="test-controls">
   <span>Local compatibility fixture · Not live Amp · 1280 × 800</span>
+  <label>Views <select id="view"><option value="">Closed</option><option>Files</option><option>Changes</option><option>Portal</option><option>Terminal</option><option>Desktop</option></select></label>
   <button id="replace">Replace app shell</button>
   <button id="switch">Switch sidebar side</button>
 </div>
@@ -73,7 +79,13 @@
         <div class="resize-handle" role="separator" aria-label="Resize sidebar"></div>
         <main data-slot="sidebar-inset">
           <div class="title-bar">Camera identification initiative</div>
-          <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. Use the test control above to exercise the same toggle handler as the Chrome toolbar button.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
+          <div id="view-group" class="thread-file-tab-pane-group" data-pane-group data-direction="horizontal" style="flex-direction: row">
+            <div id="agent-pane" data-pane style="flex: 68 1 0px">
+              <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. Use the test control above to exercise the same toggle handler as the Chrome toolbar button.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
+            </div>
+            <div data-pane-resizer data-slot="resizable-handle" role="separator" aria-label="Resize views" tabindex="0" hidden></div>
+            <section id="view-pane" data-pane style="flex: 32 1 0px" hidden><h2 id="view-title">Files</h2><p>Local fixture view content, not a live executor.</p></section>
+          </div>
         </main>
       </div>
     </div>
@@ -111,6 +123,28 @@
   });
   function mount() {
     document.querySelector('#mount').replaceChildren(document.querySelector('#shell').content.cloneNode(true));
+    const group = document.querySelector('.thread-file-tab-pane-group');
+    const handle = group.querySelector('[data-pane-resizer]');
+    let drag;
+    const setSize = size => {
+      const clamped = Math.max(20, Math.min(80, size));
+      document.querySelector('#agent-pane').style.flexGrow = clamped;
+      document.querySelector('#view-pane').style.flexGrow = 100 - clamped;
+    };
+    // Amp's native pane library uses physical cursor deltas and DOM pane order.
+    handle.onmousedown = event => {
+      event.preventDefault();
+      drag = { x: event.clientX, size: parseFloat(document.querySelector('#agent-pane').style.flexGrow) };
+    };
+    document.body.onmousemove = event => {
+      if (drag) setSize(drag.size + (event.clientX - drag.x) / group.clientWidth * 100);
+    };
+    window.onmouseup = () => { drag = null; };
+    handle.onkeydown = event => {
+      if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      setSize(parseFloat(document.querySelector('#agent-pane').style.flexGrow) + (event.key === 'ArrowRight' ? 10 : -10));
+    };
     document.querySelector('[aria-label="Toggle sidebar"]').onclick = event => {
       const state = document.querySelector('[data-slot="sidebar"]');
       const collapsed = state.dataset.state !== 'collapsed';
@@ -120,7 +154,14 @@
       document.querySelector('.resize-handle').hidden = collapsed;
       event.currentTarget.setAttribute('aria-expanded', !collapsed);
     };
+    document.querySelector('#view').onchange();
   }
+  document.querySelector('#view').onchange = event => {
+    const name = document.querySelector('#view').value;
+    document.querySelector('#view-pane').hidden = !name;
+    document.querySelector('[data-pane-resizer]').hidden = !name;
+    document.querySelector('#view-title').textContent = name;
+  };
   mount();
   document.querySelector('#replace').onclick = mount;
   document.querySelector('#switch').onclick = () => clickAction();

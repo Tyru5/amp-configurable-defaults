@@ -5,6 +5,12 @@
     flex-direction: row-reverse !important;
   }
 
+  /* Tabbed Views and the alternate secondary pane sit opposite navigation. */
+  html[data-amp-sidebar-right] .multi-pane-pane-group[data-direction="horizontal"],
+  html[data-amp-sidebar-right] .thread-file-tab-pane-group[data-direction="horizontal"] {
+    flex-direction: row-reverse !important;
+  }
+
   html[data-amp-sidebar-right][data-amp-sidebar-right-width] .app-content-frame[data-slot="sidebar-wrapper"] {
     --sidebar-width: var(--amp-sidebar-right-width) !important;
   }

@@ -22,6 +22,9 @@ The Chrome Web Store release is in preparation, not published or approved.
 Click the pinned icon to switch sides. Drag the divider to resize the right
 sidebar, or double-click it to restore Amp's width. Left mode restores Amp's
 native layout and resize behavior. Right-mode width is saved separately.
+In right mode, auxiliary views such as Files, Changes, Terminal, Desktop, and
+Portal open to the left of the conversation. Their dividers still resize in
+the direction you drag. Left mode restores their native placement on the right.
 Below 768px, Amp's mobile layout is unchanged.
 Disable or remove the extension, then refresh open Amp tabs to restore the
 original page layout.

@@ -17,6 +17,7 @@ const bounds = `(() => {
   const box = selector => { const { x, width, right } = document.querySelector(selector).getBoundingClientRect(); return { x, width, right }; };
   return { sidebar: box('[data-slot="sidebar-container"]'), main: box('main'), frame: box('.app-content-frame'), rail: box('.app-primary-navigation') };
 })()`;
+const viewsOnLeft = `document.querySelector('#view-pane').getBoundingClientRect().right <= document.querySelector('#agent-pane').getBoundingClientRect().left`;
 
 try {
   browser('open', url);
@@ -26,10 +27,33 @@ try {
   check(`(${bounds}).sidebar.x === 924 && (${bounds}).sidebar.width === 300`, 'right mode preserves native width and leaves the rail at the far right');
   check(`(${bounds}).main.x === 0 && (${bounds}).main.right === 924`, 'conversation fills remaining space without overlap');
   browser('fill', '#message', 'Keep this unsent draft');
+  for (const name of ['Files', 'Changes', 'Portal', 'Terminal', 'Desktop']) {
+    browser('select', '#view', name);
+    check(viewsOnLeft, `${name} opens to the left of the conversation`);
+  }
+  for (const layout of ['thread-file-tab-pane-group', 'multi-pane-pane-group']) {
+    browser('eval', `document.querySelector('#view-group').className = '${layout}'`);
+    check(viewsOnLeft, `${layout} places views on the left`);
+    const handleX = evaluate(`Math.round(document.querySelector('[data-pane-resizer]').getBoundingClientRect().x + 2)`);
+    const viewWidth = evaluate(`document.querySelector('#view-pane').getBoundingClientRect().width`);
+    browser('mouse', 'move', String(handleX), '400');
+    browser('mouse', 'down', 'left');
+    browser('mouse', 'move', String(handleX + 60), '400');
+    browser('mouse', 'up', 'left');
+    check(`Math.abs(document.querySelector('#view-pane').getBoundingClientRect().width - ${viewWidth + 60}) < 1`, 'dragging the view divider right grows the left view by 60px');
+    const resizedWidth = evaluate(`document.querySelector('#view-pane').getBoundingClientRect().width`);
+    browser('focus', '[data-pane-resizer]');
+    browser('press', 'ArrowLeft');
+    check(`document.querySelector('#view-pane').getBoundingClientRect().width < ${resizedWidth}`, 'keyboard left moves the view divider left');
+  }
+  browser('eval', `document.querySelector('#view-group').className = 'thread-file-tab-pane-group'`);
+  check(`document.querySelector('#message').value === 'Keep this unsent draft' && getComputedStyle(document.querySelector('#view-pane')).direction === 'ltr'`, 'views retain text direction and the unsent draft');
   browser('click', '#switch');
   check(`(${bounds}).sidebar.x === 56 && (${bounds}).main.x === 356`, 'toolbar handler restores left layout');
+  check(`document.querySelector('#agent-pane').getBoundingClientRect().right <= document.querySelector('#view-pane').getBoundingClientRect().left`, 'left-sidebar mode restores views on the right');
   check(`document.querySelector('#message').value === 'Keep this unsent draft'`, 'switching preserves the composer draft');
   browser('click', '#switch');
+  browser('select', '#view', '');
   browser('click', '[aria-label="Toggle sidebar"]');
   check(`(${bounds}).main.width === 1224 && (${bounds}).sidebar.x >= 1224`, 'collapsed sidebar is offscreen and frees its space');
   browser('click', '[aria-label="Toggle sidebar"]');
@@ -63,10 +87,15 @@ try {
   browser('wait', '--fn', "!document.documentElement.hasAttribute('data-amp-sidebar-right')");
   check(`(${bounds}).sidebar.x === 56`, 'left preference survives reload');
   browser('click', '#switch');
+  browser('select', '#view', 'Files');
   browser('set', 'viewport', '767', '800', '2');
   check(`getComputedStyle(document.querySelector('.app-content-frame')).flexDirection === 'row'`, 'mobile breakpoint retains native direction');
+  check(`getComputedStyle(document.querySelector('.thread-file-tab-pane-group')).flexDirection === 'row'`, 'mobile views retain their native layout');
   browser('set', 'viewport', '768', '800', '2');
   check(`getComputedStyle(document.querySelector('.app-content-frame')).flexDirection === 'row-reverse'`, 'desktop breakpoint applies at exactly 768px');
+  check(viewsOnLeft, 'desktop view placement applies at exactly 768px');
+  browser('eval', `const group = document.querySelector('.thread-file-tab-pane-group'); group.dataset.direction = 'vertical'; group.style.flexDirection = 'column'`);
+  check(`getComputedStyle(document.querySelector('.thread-file-tab-pane-group')).flexDirection === 'column'`, 'vertical view splits are not reversed');
   console.log('All browser checks passed.');
 } finally {
   browser('close');
