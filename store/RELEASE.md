@@ -8,16 +8,22 @@
 - Public privacy policy, support URL, listing copy, and permission explanations.
 - Reproducible upload ZIP with `manifest.json` at its root and SHA-256 checksum.
 - Syntax, toolbar behavior, packaging, and local browser fixture checks.
+- Signed-in Helium checks with two real subagents, both sides, Files, resizing,
+  master disable/re-enable, and the extracted release ZIP.
+- Privacy-redacted live 1280 × 800 screenshots. See `screenshots/README.md`
+  for coverage, suggested uploads, and supplemental images that are fixtures.
 
 ## Before uploading
 
-- [ ] Test version 1.0.0 on a real, signed-in Amp page in current Chrome.
-      Check left/right switching, draft preservation, resize, collapse/reopen,
-      navigation between threads, and a second tab. Check any Amp layout modes
-      you use. Fixture tests do not prove live Amp compatibility.
-- [ ] Capture at least one real Amp screenshot at 1280 × 800 or 640 × 400 image
-      pixels with the extension active. The developer previews are not store
-      screenshots. Do not include private thread contents or credentials.
+- [x] Test the extracted release on real, signed-in Amp in Helium.
+- [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep
+      fixture previews separately identified. No private content is published.
+- [ ] Repeat the final smoke test in current Google Chrome. Helium and fixture
+      checks do not prove every Chrome/Amp layout combination. In particular,
+      live Changes and Portal remain unchecked; Changes was disabled by Amp in
+      the available release threads. Both are covered by fixture checks.
+- [ ] Confirm permission to use the modified Amp name/wordmark artwork in the
+      extension and store listing. Independent attribution is not permission.
 - [ ] Confirm the publisher's Chrome Web Store developer account, registration,
       required identity/contact verification, and 2-step verification are ready.
 - [ ] Read and accept the developer agreement and privacy certifications yourself.
@@ -27,6 +33,8 @@
 ```sh
 node --check background.js
 node --check content.js
+node --check subagents.js
+node --check options.js
 node --test tests/background.test.mjs
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
@@ -36,7 +44,8 @@ python3 scripts/package.py
 2. Add a new item and upload `dist/amp-sidebar-right-1.0.0.zip` directly.
    Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, promo tile, and
-   real signed-in screenshot. Check how every image renders in the listing.
+   the suggested real screenshots in `store/screenshots/README.md`. Never upload
+   the `fixture-*.png` images as live app screenshots. Check the listing preview.
 4. Set privacy practices and link the public privacy policy. Verify all URLs.
 5. Choose the countries and visibility you want. Resolve any dashboard warnings.
 6. Submit for review only after the live compatibility and screenshot checks

@@ -20,14 +20,27 @@
   [data-slot="sidebar-gap"] { width: var(--sidebar-width); height: 100%; }
   [data-slot="sidebar-container"] { position: absolute; inset-block: 0; left: 0; width: var(--sidebar-width); background: #f4f5f0; border-right: 1px solid #ddd; }
   [data-slot="sidebar-inner"] { height: 100%; display: flex; flex-direction: column; }
-  .sidebar-toolbar { height: 52px; padding: 14px 16px 14px 46px; border-bottom: 1px solid #ddd; font-weight: 600; }
+  .sidebar-toolbar { display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px 0 46px; border-bottom: 1px solid #ddd; font-weight: 600; }
   .sidebar-body { padding: 18px 10px; }
   .sidebar-body p { margin: 0 10px 20px; color: #6b6d67; font-size: 13px; }
   .sidebar-body button { width: 100%; text-align: left; background: transparent; border: 0; margin-bottom: 6px; }
   .sidebar-body button:first-of-type { background: #e5e8df; }
+  .sidebar-body ul { list-style: none; padding: 0; margin: 0; }
+  .sidebar-body li { position: relative; }
+  .sidebar-body a { display: flex; gap: 6px; padding: 8px; color: inherit; text-decoration: none; border-radius: 6px; }
+  .sidebar-body a:hover, .sidebar-body a:focus-visible { background: #e5e8df; }
+  .sidebar-body [data-thread-row-nesting-depth] { width: 12px; flex-shrink: 0; }
   .account { padding: 18px; margin-top: auto; border-top: 1px solid #ddd; color: #62665c; }
   [data-slot="sidebar-inset"] { flex: 1; min-width: 0; display: flex; flex-direction: column; background: white; }
-  .title-bar { height: 52px; padding: 14px 18px; border-bottom: 1px solid #eee; font-weight: 600; }
+  .thread-layout-panes { height: 100%; min-height: 0; }
+  .thread-workspace { height: 100%; display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+  .title-bar { display: flex; align-items: center; flex-shrink: 0; height: 52px; padding: 0 18px; border-bottom: 1px solid #eee; font-weight: 600; }
+  .title-bar > span { margin-right: auto; }
+  [data-thread-transcript-scroll] { padding: 12px; }
+  [data-transcript-subagent], [data-transcript-automation-event] { margin: 12px; padding: 10px; border: 1px solid #ddd; }
+  [data-transcript-expandable-row] { cursor: pointer; }
+  [data-transcript-expandable-row] > div { display: flex; gap: 8px; }
+  [data-transcript-subagent-prompt], [data-transcript-subagent-response], [data-transcript-subagent-error] { white-space: pre-wrap; margin-top: 10px; }
   article { width: min(700px, 100%); padding: 42px 40px; margin: auto; line-height: 1.7; }
   article h1 { font-size: 27px; font-weight: 600; line-height: 1.3; }
   article small { color: #6d7568; }
@@ -71,21 +84,31 @@
           <aside class="app-navigation-sidebar" data-slot="sidebar-container" aria-label="Threads">
             <div data-slot="sidebar-inner">
               <div class="sidebar-toolbar">Threads</div>
-              <div class="sidebar-body"><p>WORKSPACE</p><button>Camera identification initiative</button><button>Platform investigation</button><button>Release notes</button><p>Archived</p></div>
+              <div class="sidebar-body"><p>WORKSPACE</p>
+                <ul>
+                  <li data-slot="sidebar-menu-item" id="thread-parent"><a data-sidebar-thread-id="parent" href="#parent">Release preparation</a></li>
+                  <li data-slot="sidebar-menu-item" id="thread-child"><a data-sidebar-thread-id="child" href="#child"><span data-thread-row-nesting-depth="1" aria-hidden="true"></span>Package extension</a></li>
+                  <li data-slot="sidebar-menu-item" id="thread-grandchild"><a data-sidebar-thread-id="grandchild" href="#grandchild"><span data-thread-row-nesting-depth="2" aria-hidden="true"></span>Verify package</a></li>
+                  <li data-slot="sidebar-menu-item" id="thread-other"><a data-sidebar-thread-id="other" href="#other">Platform investigation</a></li>
+                </ul><p>Archived</p>
+              </div>
               <div class="account">Your workspace</div>
             </div>
           </aside>
         </div>
         <div class="resize-handle" role="separator" aria-label="Resize sidebar"></div>
         <main data-slot="sidebar-inset">
-          <div class="title-bar">Camera identification initiative</div>
+          <div class="thread-layout-panes"><div class="thread-workspace">
+          <div class="thread-title-bar-container"><div class="title-bar app-title-bar"><span>Camera identification initiative</span></div></div>
           <div id="view-group" class="thread-file-tab-pane-group" data-pane-group data-direction="horizontal" style="flex-direction: row">
             <div id="agent-pane" data-pane style="flex: 68 1 0px">
               <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. Use the test control above to exercise the same toggle handler as the Chrome toolbar button.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
+              <div class="thread-chat-scroll-region"><div data-thread-transcript-scroll data-thread-id="fixture-a"><div data-thread-transcript-content id="fixture-transcript"></div></div></div>
             </div>
             <div data-pane-resizer data-slot="resizable-handle" role="separator" aria-label="Resize views" tabindex="0" hidden></div>
             <section id="view-pane" data-pane style="flex: 32 1 0px" hidden><h2 id="view-title">Files</h2><p>Local fixture view content, not a live executor.</p></section>
           </div>
+          </div></div>
         </main>
       </div>
     </div>
@@ -118,7 +141,7 @@
     if (event.key !== 'extension-settings') return;
     const before = JSON.parse(event.oldValue || '{}');
     const after = JSON.parse(event.newValue || '{}');
-    const changes = Object.fromEntries(['right', 'rightWidth'].filter(key => before[key] !== after[key]).map(key => [key, { newValue: after[key] }]));
+    const changes = Object.fromEntries(['right', 'rightWidth', 'enabled'].filter(key => before[key] !== after[key]).map(key => [key, { newValue: after[key] }]));
     listeners.forEach(fn => fn(changes, 'local'));
   });
   function mount() {
@@ -165,7 +188,107 @@
   mount();
   document.querySelector('#replace').onclick = mount;
   document.querySelector('#switch').onclick = () => clickAction();
+
+  // Representative native markers verified against real Task runs in Helium.
+  const agents = new Map();
+  window.fixtureAgents = {
+    add(id, title, task, status = 'running', output = '') {
+      const model = { id, title, task, status, output };
+      agents.set(id, model);
+      this.render(model);
+    },
+    update(id, status, output) {
+      Object.assign(agents.get(id), { status, output });
+      this.render(agents.get(id));
+    },
+    render(model) {
+      const row = document.createElement('div');
+      row.id = `fixture-agent-${model.id}`;
+      row.dataset.transcriptMessageLookupId = model.id;
+      const card = document.createElement('div');
+      card.dataset.transcriptSubagent = '';
+      const wrapper = document.createElement('div');
+      const header = document.createElement('div');
+      header.dataset.transcriptExpandableRow = '';
+      header.tabIndex = -1;
+      const labels = document.createElement('div');
+      const phase = document.createElement('span');
+      phase.textContent = model.status === 'delegated' ? 'Delegated to subagent' : model.status === 'running' ? 'Subagent working' : 'Subagent finished';
+      const name = document.createElement('span');
+      name.textContent = model.title;
+      labels.append(phase, name);
+      if (model.status === 'running') {
+        const working = document.createElement('span');
+        working.dataset.transcriptSubagentWorking = '';
+        working.setAttribute('aria-hidden', 'true');
+        labels.prepend(working);
+      }
+      if (model.status === 'cancelled') {
+        const cancelled = document.createElement('span');
+        cancelled.dataset.transcriptToolStatus = 'cancelled';
+        labels.append(cancelled);
+      }
+      const chevron = document.createElement('span');
+      chevron.className = 'expandable-row-chevron';
+      header.append(labels, chevron);
+      header.onclick = () => {
+        if (chevron.classList.toggle('rotate-90')) {
+          const detail = document.createElement('div');
+          if (model.status === 'running' || model.status === 'delegated') {
+            detail.dataset.transcriptSubagentPrompt = '';
+            detail.textContent = model.task;
+          } else if (model.status === 'failed') {
+            detail.dataset.transcriptSubagentError = '';
+            detail.textContent = model.output;
+          } else if (model.status !== 'cancelled') {
+            detail.dataset.transcriptSubagentResponse = '';
+            detail.textContent = model.output;
+          }
+          wrapper.append(detail);
+        } else wrapper.lastElementChild.remove();
+      };
+      wrapper.append(header);
+      card.append(wrapper);
+      row.append(card);
+      const previous = document.getElementById(row.id);
+      if (previous) previous.replaceWith(row);
+      else document.querySelector('#fixture-transcript').append(row);
+    },
+    complete(id, output, failed = false) {
+      const model = agents.get(id);
+      const event = document.createElement('div');
+      event.dataset.transcriptAutomationEvent = 'subagent';
+      const header = document.createElement('div');
+      header.dataset.transcriptExpandableRow = '';
+      const phase = document.createElement('span');
+      phase.dataset.transcriptAutomationEventLabel = '';
+      phase.textContent = failed ? 'Subagent failed:' : 'Subagent finished:';
+      const link = document.createElement('a');
+      link.dataset.transcriptAutomationEventSource = '';
+      link.href = `#tool:${id}`;
+      link.textContent = model.title;
+      const chevron = document.createElement('span');
+      chevron.className = 'expandable-row-chevron';
+      header.append(phase, link, chevron);
+      header.onclick = () => {
+        if (chevron.classList.toggle('rotate-90')) {
+          const result = document.createElement('div');
+          result.dataset.transcriptAutomationEventMarkdown = '';
+          result.textContent = output;
+          event.append(result);
+        } else event.lastElementChild.remove();
+      };
+      event.append(header);
+      document.querySelector('#fixture-transcript').append(event);
+    },
+    navigate(id) {
+      document.querySelector('[data-thread-transcript-scroll]').dataset.threadId = id;
+      document.querySelector('#fixture-transcript').replaceChildren();
+      agents.clear();
+    }
+  };
 </script>
 <script src="../background.js"></script>
 <script src="../content.js"></script>
+<script src="../subagents.js"></script>
 </html>

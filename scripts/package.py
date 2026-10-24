@@ -23,6 +23,7 @@ def build(output_dir=None):
     files.add(manifest["background"]["service_worker"])
     files.update(manifest["icons"].values())
     files.update(manifest["action"]["default_icon"].values())
+    files.update({manifest["options_ui"]["page"], "options.js"})
     for script in manifest["content_scripts"]:
         files.update(script["js"])
         files.update(script["css"])

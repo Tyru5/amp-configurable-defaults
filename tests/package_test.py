@@ -19,7 +19,8 @@ class PackageTest(unittest.TestCase):
                 self.assertIsNone(bundle.testzip())
                 self.assertEqual(bundle.read("manifest.json"), (ROOT / "manifest.json").read_bytes())
                 self.assertEqual(set(bundle.namelist()), {
-                    "manifest.json", "background.js", "content.js", "sidebar.css", "LICENSE",
+                    "manifest.json", "background.js", "content.js", "subagents.js", "sidebar.css", "LICENSE",
+                    "options.html", "options.js",
                     "icons/icon-16.png", "icons/icon-32.png",
                     "icons/icon-48.png", "icons/icon-128.png",
                 })

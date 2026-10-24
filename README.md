@@ -5,7 +5,7 @@ The desktop sidebar starts on the right. Click the extension's toolbar button
 to switch between right and left. The R/L badge shows the saved side. The
 choice applies to all open Amp tabs and survives browser restarts.
 
-Independent project, not affiliated with or endorsed by Amp. MIT licensed.
+Independent project, not affiliated with or endorsed by Amp. The code is MIT licensed.
 The Chrome Web Store release is in preparation, not published or approved.
 
 ## Install locally
@@ -25,6 +25,27 @@ native layout and resize behavior. Right-mode width is saved separately.
 In right mode, auxiliary views such as Files, Changes, Terminal, Desktop, and
 Portal open to the left of the conversation. Their dividers still resize in
 the direction you drag. Left mode restores their native placement on the right.
+Child thread rows are indented by 20px per level in right mode, up to 64px,
+using Amp's existing parent-child hierarchy without reordering threads.
+To turn all extension behavior off or back on, click the **right-sidebar arrow icon**
+in Amp's sidebar header. It stays available while behavior is off. You can also
+right-click the extension's toolbar icon, choose **Options**, and toggle
+**Enable extension behavior**. Both controls stay synchronized across open Amp
+tabs and preserve your saved side and width.
+When the current conversation has subagent activity, a **Subagents** button
+appears in its header. Open it for an agent list with the selected task and
+output below, on the opposite side from navigation. Files and Changes remain
+open alongside it. Narrow desktop layouts use a drawer rather than squeeze
+the conversation. Close the panel, press Escape inside it, or choose **View
+original** to return to native inline activity.
+
+The panel reads only subagent content already rendered by Amp, and keeps its
+view in memory for the current thread. It does not save or transmit prompts
+or results. Unloaded history is not fetched; unavailable content is identified
+as such. Background tasks remain labeled **Delegated** until Amp exposes a
+completion. Results with duplicate task descriptions appear separately rather
+than risk attaching them to the wrong agent.
+
 Below 768px, Amp's mobile layout is unchanged.
 Disable or remove the extension, then refresh open Amp tabs to restore the
 original page layout.
@@ -38,9 +59,12 @@ not screenshots of a signed-in Amp session and not Web Store listing images.
 | --- | --- |
 | ![Right sidebar in local fixture](docs/previews/right.png) | ![Left sidebar in local fixture](docs/previews/left.png) |
 
+See the [feature screenshot catalog](store/screenshots/README.md) for
+privacy-redacted live Helium captures and separately labeled fixture coverage.
+
 ## Scope and privacy
 
-Only permission: `storage`, for the side and right-sidebar width on this device.
+Only permission: `storage`, for the enabled state, side, and right-sidebar width on this device.
 The content script runs only on `https://ampcode.com/*`. No network requests,
 analytics, dependencies, or changes to thread data. This is an independent
 extension, not an official Amp extension.
@@ -58,6 +82,8 @@ No npm dependencies or bundler are required. Use Node.js 22+ and Python 3.12+.
 ```sh
 node --check background.js
 node --check content.js
+node --check subagents.js
+node --check options.js
 node --test tests/background.test.mjs
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
@@ -91,14 +117,17 @@ Selectors were checked against Amp's publicly served app assets on 2026-10-23.
 Amp's layout is not a public API, so a future site update may require adjusting
 `sidebar.css` or the divider selector in `content.js`.
 
-Browser verification uses a local fixture based on the current app markup, not
-a signed-in Amp session. It covers switching sides, storage changes, resizing,
-collapse/reopen, dynamic shell replacement, and the mobile breakpoint. A live,
-signed-in Amp compatibility check is still required after installation.
+Automated browser verification uses a local fixture based on the current app
+markup. It covers switching sides, storage changes, resizing, collapse/reopen,
+dynamic shell replacement, the mobile breakpoint, and subagent selection,
+streaming text, completion, duplicate descriptions, and inline restoration.
 
-Chrome also accepted the unpacked extension with no manifest or runtime errors,
-and the content script activated on the real ampcode.com sign-in page. This
-checks extension loading and host matching, not the signed-in app layout.
+The unpacked extension was also tested in a signed-in Helium session on
+2026-10-24, including two real background subagents, their completed outputs,
+both panel sides, Files coexistence, the narrow drawer, and the master switch.
+Helium reported no extension manifest or runtime errors. Changes coexistence
+is covered by the fixture suite; the live check does not cover every Amp view
+or unloaded thread history. Recheck compatibility after Amp layout updates.
 
 ## Chrome Web Store release
 
@@ -106,8 +135,14 @@ checks extension loading and host matching, not the signed-in app layout.
 - [Listing copy, privacy declarations, and reviewer instructions](store/listing.md)
 - [Privacy policy](PRIVACY.md)
 - [440 × 280 promotional tile](store/promo-small.png)
+- [Feature screenshots and suggested upload order](store/screenshots/README.md)
 
-Before submission, verify the extension in a signed-in Amp session and capture
-at least one real 1280 × 800 or 640 × 400 listing screenshot. Finish the publisher
+Live, privacy-redacted 1280 × 800 captures are included. Finish the publisher
 account requirements and privacy certifications in the Web Store dashboard.
-Do not substitute the development fixture previews for a real app screenshot.
+Do not substitute the supplemental fixture images for real app screenshots.
+
+The icon adapts [Amp's public wordmark](https://ampcode.com/app-icon.png?v=4)
+with a lime right-sidebar and arrow. `store/icon-master.png` is the raster master
+for the four runtime icons and promotional tile. The Amp name and wordmark
+remain their owner's property. Confirm permission to use the modified mark
+before store submission; the code's MIT license grants no trademark rights.

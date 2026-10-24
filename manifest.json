@@ -21,11 +21,15 @@
   "background": {
     "service_worker": "background.js"
   },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
   "content_scripts": [
     {
       "matches": ["https://ampcode.com/*"],
       "css": ["sidebar.css"],
-      "js": ["content.js"],
+      "js": ["content.js", "subagents.js"],
       "run_at": "document_start"
     }
   ]

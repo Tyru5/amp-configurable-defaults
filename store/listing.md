@@ -25,12 +25,16 @@ Features:
 - Drag the right-sidebar divider to resize it.
 - Double-click the divider to restore Amp's original width.
 - Keep using Amp's existing sidebar collapse and expand controls.
+- Indent child threads using Amp's existing hierarchy in right-sidebar mode.
+- Keep Files, Changes, Terminal, Desktop, and Portal opposite navigation.
+- Turn all extension behavior off or on from the sidebar header or Options.
+- Read subagent tasks and results in an optional panel opposite navigation.
 - Leave mobile layouts below 768px unchanged.
 
 After installing, pin the extension and refresh any open Amp tabs. The toolbar
-badge shows R for right or L for left.
+badge shows R for right, L for left, or OFF when extension behavior is disabled.
 
-Privacy: only your sidebar-side and width preferences are stored locally.
+Privacy: only your enabled state, sidebar-side, and width preferences are stored locally.
 No analytics, tracking, advertising, data collection, or network requests.
 Source code is public under the MIT license.
 
@@ -43,19 +47,21 @@ Independent project. Not affiliated with or endorsed by Amp.
 ## Privacy practices fields
 
 Single purpose:
-Allow users to position Amp's desktop navigation sidebar on the right or left,
-with a locally saved width for the right-side layout.
+Customize Amp's desktop reading layout: position navigation on either side,
+resize the right sidebar, and optionally read subagent activity opposite it.
 
 Storage permission justification:
-The storage permission saves the selected side and right-sidebar width in
-chrome.storage.local. These two preferences apply to open Amp tabs and survive
-browser restarts. No page contents or personal data are stored.
+The storage permission saves the enabled state, selected side, and right-sidebar width in
+chrome.storage.local. These three preferences apply to open Amp tabs and survive
+browser restarts. No page contents or personal data are persisted.
 
 Host access justification:
 The content script runs only on https://ampcode.com/* to change the app's
-sidebar layout and handle its resize divider. It needs automatic access on
-page load to restore the user's layout. It does not run on other sites or
-access Amp APIs, messages, credentials, or browsing history.
+sidebar layout, handle its resize divider, and display rendered subagent
+activity in an optional reading panel. It needs automatic access on page load
+to restore the user's layout. Subagent prompts and results remain in memory
+for the current thread; they are not saved or transmitted. It does not run on
+other sites or access Amp APIs, ordinary messages, credentials, or browsing history.
 
 Remote code:
 No, I am not using remote code. All JavaScript and CSS are bundled in the ZIP.
@@ -69,18 +75,23 @@ review and certify Google's data-use declarations before submission.
 
 - Extension icon: `icons/icon-128.png`, transparent 128 × 128 PNG.
 - Small promotional tile: `store/promo-small.png`, opaque 440 × 280 PNG.
-  This is a symbolic layout illustration, not an app screenshot.
-- Required screenshot: capture the extension on a real, signed-in Amp page
-  at 1280 × 800 or 640 × 400 image pixels. Use test content and remove any
-  personal information before sharing. Do not upload fixture previews from
-  `docs/previews/` as screenshots of live Amp.
+  This is modified logo artwork, not an app screenshot. Confirm rights to use
+  the Amp mark before submitting either branding asset.
+- Live screenshots: `store/screenshots/`, 1280 × 800 PNGs from signed-in Helium.
+  Conversation content, task/output content, thread titles, and account details
+  are hidden for privacy. See `screenshots/README.md` for the suggested five.
+- `fixture-*.png` and `docs/previews/` are labeled compatibility demonstrations,
+  not real Amp screenshots. Do not use them as live app store screenshots.
 
 ## Reviewer notes
 
 This extension has no account or payment flow. The target Amp app requires
-an Amp account. The Chrome toolbar button toggles the layout; there is no
-extension popup or in-page switch. Use Amp's own sidebar toggle to collapse
-or reopen it. Drag the divider, or double-click it to reset width.
+an Amp account. The Chrome toolbar button switches sidebar sides. The
+right-sidebar arrow icon in Amp's sidebar header enables/disables all extension
+behavior. Use Amp's own sidebar toggle to collapse or reopen navigation. Drag
+the divider, or double-click it to reset width. On a thread with subagent
+activity, click Subagents in the conversation header to open its reading
+panel; close it or choose View original to restore inline activity.
 
 If the dashboard requests access instructions, provide the normal Amp sign-in
 steps. Do not put personal credentials in this public repository. Resolve any

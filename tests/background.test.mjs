@@ -31,7 +31,10 @@ async function extension(initial = {}) {
   };
   runInNewContext(source, { chrome });
   await new Promise(resolve => setImmediate(resolve));
-  return { state, action, click: () => clicked(), externalSet: values => chrome.storage.local.set(values) };
+  return { state, action, click: () => clicked(), externalSet: async values => {
+    await chrome.storage.local.set(values);
+    await new Promise(resolve => setImmediate(resolve));
+  } };
 }
 
 test('toolbar defaults right and alternates persisted preference and accessible title', async () => {
@@ -53,4 +56,17 @@ test('toolbar restores saved left mode and reflects changes from another context
   await app.externalSet({ right: true });
   assert.equal(app.action.badge, 'R');
   assert.equal(app.state.rightWidth, 380);
+});
+
+test('master switch disables toolbar behavior without losing saved preferences', async () => {
+  const app = await extension({ enabled: false, right: false, rightWidth: 380 });
+  assert.equal(app.action.badge, 'OFF');
+  assert.match(app.action.title, /disabled/);
+  await app.click();
+  assert.equal(app.state.right, false);
+  assert.equal(app.state.rightWidth, 380);
+  await app.externalSet({ enabled: true });
+  assert.equal(app.action.badge, 'L');
+  await app.click();
+  assert.equal(app.state.right, true);
 });

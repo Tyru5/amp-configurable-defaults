@@ -1,21 +1,25 @@
-async function updateAction(right) {
-  await chrome.action.setBadgeText({ text: right ? "R" : "L" });
+async function updateAction() {
+  const { right = true, enabled = true } = await chrome.storage.local.get(["right", "enabled"]);
+  await chrome.action.setBadgeText({ text: enabled ? (right ? "R" : "L") : "OFF" });
   await chrome.action.setBadgeBackgroundColor({ color: "#303936" });
   await chrome.action.setTitle({
-    title: `Amp sidebar: ${right ? "right" : "left"}. Click to move ${right ? "left" : "right"}.`,
+    title: enabled
+      ? `Amp sidebar: ${right ? "right" : "left"}. Click to move ${right ? "left" : "right"}.`
+      : "Amp sidebar: disabled. Open extension Options to enable.",
   });
 }
 
 chrome.action.onClicked.addListener(async () => {
-  const { right = true } = await chrome.storage.local.get("right");
+  const { right = true, enabled = true } = await chrome.storage.local.get(["right", "enabled"]);
+  if (!enabled) return;
   await chrome.storage.local.set({ right: !right });
-  await updateAction(!right);
+  await updateAction();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.right) {
-    updateAction(changes.right.newValue !== false);
+  if (area === "local" && (changes.right || changes.enabled)) {
+    updateAction();
   }
 });
 
-chrome.storage.local.get("right").then(({ right = true }) => updateAction(right));
+updateAction();
