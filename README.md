@@ -10,9 +10,9 @@ The Chrome Web Store release is in preparation, not published or approved.
 
 The [landing page](docs/index.html) explains the features and local installation.
 Serve the repository with a static server and open `/docs/` to preview it.
-The page has no build step, external fonts, or third-party scripts. It can also
-be hosted directly from the `docs/` folder, for example with GitHub Pages.
-Hosting is not enabled by this change.
+The page has no build step, external fonts, or third-party scripts.
+See [GitHub Pages deployment](#github-pages-deployment) to publish the existing
+site directly from `docs/`. Hosting is not enabled by these files alone.
 
 ## Install locally
 
@@ -92,6 +92,32 @@ than risk attaching them to the wrong agent.
 Below 768px, navigation stays native and subagents use inline summaries only.
 Disable or remove the extension, then refresh open Amp tabs to restore the
 original page layout.
+
+## GitHub Pages deployment
+
+Publish the existing `docs/` site without a build step or custom workflow.
+`docs/.nojekyll` disables Jekyll processing. Styles, scripts, images, and fonts
+use relative paths, so they work under the repository's URL prefix.
+
+After the landing-page branch and Pages preparation are merged and pushed to
+`main`:
+
+1. Open the repository's **Settings → Pages**.
+2. Choose **Deploy from a branch**, then **main** and **/docs**. Click **Save**.
+3. Wait for the Pages deployment in **Actions** to succeed.
+4. Check <https://tyru5.github.io/amp-sidebar-right/>, including the layout
+   switch, installation link, FAQ, and images.
+
+Later pushes to `main` publish updates automatically. No PR previews are
+configured. GitHub publishes `docs/`, not the extension source or `tests/`.
+
+Preview and verify the publishing directory locally:
+
+```sh
+python3 -m http.server 8766 --bind 127.0.0.1 --directory docs
+# In another terminal:
+node tests/landing.mjs http://localhost:8766/
+```
 
 ## Development preview
 
