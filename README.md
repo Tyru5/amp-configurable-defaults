@@ -107,6 +107,26 @@ Use Amp in Chrome for this extension.
 
 No npm dependencies or bundler are required. Use Node.js 22+ and Python 3.12+.
 
+### Amp orbs
+
+`.agents/setup` prepares Node.js 22+, Python 3.12+, and agent-browser with
+Chrome for the browser fixture checks. It reuses installed tools and cached
+Chrome downloads on repeated runs. No secrets or backing services are needed.
+`.agents/resume` has no work to do because the extension needs no authentication
+or service reconnection. Amp snapshots the installed tools for future orbs once
+these scripts are on the project's default branch.
+
+Run the checks below after setup. For browser checks in an orb, start the fixture
+server as a supervised service rather than a foreground process:
+
+```sh
+amp orb service start fixture --command 'python3 -m http.server 8765 --bind 0.0.0.0' --port 8765 --portal
+node tests/browser.mjs
+amp orb service stop fixture
+```
+
+### Checks
+
 ```sh
 node --check background.js
 node --check content.js

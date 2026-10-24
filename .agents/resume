@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# This extension has no services or authentication to repair on wake.
+# Toolchains and Chrome are restored with the snapshot; installs belong in setup.
+exit 0

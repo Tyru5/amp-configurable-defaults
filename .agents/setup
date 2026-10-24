@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd -- "$repo_root"
+export PATH="$HOME/.local/bin:$PATH"
+
+SECONDS=0
+echo 'Preparing Node.js 22+ and Python 3.12+ (no project dependencies)'
+if ! command -v node >/dev/null || ! node -e 'process.exit(Number(process.versions.node.split(".")[0]) < 22 ? 1 : 0)'; then
+  npm install --global --prefix "$HOME/.local" node@22
+fi
+if ! command -v python3 >/dev/null || ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 12))'; then
+  # uv and ~/.local/bin on PATH are supplied by the orb base image.
+  uv python install 3.12 --default
+fi
+hash -r
+node --version
+python3 --version
+python3 -c 'import sys; assert sys.version_info >= (3, 12)'
+echo "Toolchains ready in ${SECONDS}s"
+
+SECONDS=0
+echo 'Preparing agent-browser and its cached Chrome runtime'
+if ! command -v agent-browser >/dev/null; then
+  npm install --global --prefix "$HOME/.local" agent-browser@0.38.1
+fi
+agent-browser install
+# Check that the browser can actually launch, without a server or login.
+session="orb-setup-$$"
+trap 'agent-browser --session "$session" close >/dev/null 2>&1 || true' EXIT
+agent-browser --session "$session" open about:blank
+agent-browser --session "$session" close
+trap - EXIT
+echo "Browser ready in ${SECONDS}s"
