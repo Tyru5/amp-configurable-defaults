@@ -75,8 +75,8 @@ review and certify Google's data-use declarations before submission.
 
 - Extension icon: `icons/icon-128.png`, transparent 128 × 128 PNG.
 - Small promotional tile: `store/promo-small.png`, opaque 440 × 280 PNG.
-  This is modified logo artwork, not an app screenshot. Confirm rights to use
-  the Amp mark before submitting either branding asset.
+  Both use original window/sidebar/arrow artwork, without an Amp logo or
+  wordmark. The promotional tile is artwork, not an app screenshot.
 - Live screenshots: `store/screenshots/`, 1280 × 800 PNGs from signed-in Helium.
   Conversation content, task/output content, thread titles, and account details
   are hidden for privacy. See `screenshots/README.md` for the suggested five.

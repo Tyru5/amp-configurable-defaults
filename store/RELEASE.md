@@ -22,8 +22,8 @@
       checks do not prove every Chrome/Amp layout combination. In particular,
       live Changes and Portal remain unchecked; Changes was disabled by Amp in
       the available release threads. Both are covered by fixture checks.
-- [ ] Confirm permission to use the modified Amp name/wordmark artwork in the
-      extension and store listing. Independent attribution is not permission.
+- [x] Use original sidebar-and-arrow artwork for the extension icon and promo
+      tile, without an Amp logo or wordmark.
 - [ ] Confirm the publisher's Chrome Web Store developer account, registration,
       required identity/contact verification, and 2-step verification are ready.
 - [ ] Read and accept the developer agreement and privacy certifications yourself.

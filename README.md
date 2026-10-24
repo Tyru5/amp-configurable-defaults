@@ -141,8 +141,7 @@ Live, privacy-redacted 1280 × 800 captures are included. Finish the publisher
 account requirements and privacy certifications in the Web Store dashboard.
 Do not substitute the supplemental fixture images for real app screenshots.
 
-The icon adapts [Amp's public wordmark](https://ampcode.com/app-icon.png?v=4)
-with a lime right-sidebar and arrow. `store/icon-master.png` is the raster master
-for the four runtime icons and promotional tile. The Amp name and wordmark
-remain their owner's property. Confirm permission to use the modified mark
-before store submission; the code's MIT license grants no trademark rights.
+The original icon shows a navy window frame, turquoise right sidebar, and coral
+right-pointing arrow. It uses no Amp logo or wordmark. `store/icon-master.png`
+is the raster master for the four runtime icons and promotional tile.
+The Amp name identifies the compatible service and remains its owner's property.
