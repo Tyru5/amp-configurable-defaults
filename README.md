@@ -8,9 +8,16 @@ choice applies to all open Amp tabs and survives browser restarts.
 Independent project, not affiliated with or endorsed by Amp. The code is MIT licensed.
 The Chrome Web Store release is in preparation, not published or approved.
 
+The [landing page](docs/index.html) explains the features and local installation.
+Serve the repository with a static server and open `/docs/` to preview it.
+The page has no build step, external fonts, or third-party scripts. It can also
+be hosted directly from the `docs/` folder, for example with GitHub Pages.
+Hosting is not enabled by this change.
+
 ## Install locally
 
-1. Download the versioned ZIP from a repository release, or build it below.
+1. [Download the source ZIP](https://github.com/Tyru5/amp-sidebar-right/archive/refs/heads/main.zip),
+   clone this repository, or build a packaged ZIP below.
    **Extract the ZIP** to a permanent folder. Do not select the ZIP in Chrome.
 2. Open `chrome://extensions` in Chrome.
 3. Turn on **Developer mode**.
@@ -155,10 +162,14 @@ In another terminal in this repository:
 
 ```sh
 node tests/browser.mjs
+node tests/landing.mjs
 ```
 
 The fixture's on-page toggle calls the actual service worker handler through
 a mock Chrome API. It is not a control added to the live Amp page.
+The landing-page checks cover its illustrative layout switch, keyboard access,
+FAQ, installation link, asset loading, and responsive overflow. Its demo does
+not change the extension's settings or access an Amp account.
 
 ## Compatibility and verification
 
