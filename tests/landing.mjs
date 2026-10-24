@@ -30,9 +30,11 @@ try {
   browser('click', 'button[data-side="left"]');
   check(`document.querySelector('button[data-side="left"]').getAttribute('aria-pressed') === 'true' && document.querySelector('button[data-side="right"]').getAttribute('aria-pressed') === 'false'`, 'demo selection exposes its pressed state');
   check(`(${bounds}).nav.right <= (${bounds}).chat.left && (${bounds}).agents.left >= (${bounds}).chat.right`, 'left demo places navigation left and subagents right');
+  check(`document.querySelector('.demo-thread.child').getBoundingClientRect().left > document.querySelector('.demo-thread.current').getBoundingClientRect().left`, 'left preview retains child hierarchy in v1.2');
   browser('focus', 'button[data-side="right"]');
   browser('press', 'Enter');
   check(`(${bounds}).nav.left >= (${bounds}).chat.right && (${bounds}).agents.right <= (${bounds}).chat.left`, 'keyboard switches the demo back to right navigation');
+  check(`document.querySelector('.demo-thread.child').getBoundingClientRect().left > document.querySelector('.demo-thread.current').getBoundingClientRect().left`, 'right preview retains child hierarchy in v1.2');
   check(`document.querySelector('[role="status"]').textContent === 'Right sidebar selected in preview.'`, 'selected layout is announced');
   check(`getComputedStyle(document.activeElement).outlineStyle !== 'none' && parseFloat(getComputedStyle(document.activeElement).outlineWidth) > 0`, 'keyboard focus has a visible indicator');
   browser('focus', 'details:nth-child(2) summary');

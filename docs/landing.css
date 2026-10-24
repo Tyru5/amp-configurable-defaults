@@ -59,14 +59,12 @@ h1 { font-size: clamp(60px, 6.8vw, 94px); line-height: 1.06; letter-spacing: -.0
 .pane-title { height: 43px; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-inline: 17px; border-bottom: 1px solid #384136; font-size: 11px; font-weight: 700; }
 .pane-title > span:not(.demo-wordmark) { color: #a9bca2; }
 .agent { padding: 13px 12px 13px 17px; font-size: 10px; line-height: 1.5; }
-.agent.selected { background: #2b362c; }
 .status-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #b8c89a; margin-right: 6px; }
 .agent small { display: block; font-size: 9px; color: #afbdab; padding: 4px 0 0 11px; }
-.agent-result { border-top: 1px solid #384136; padding: 18px 17px; line-height: 1.8; }
-.agent-result strong { font-size: 11px; }
-.mini-label { display: block; margin: 15px 0 4px; font-size: 9px; font-weight: 700; color: #a3b39b; }
-.agent-result p { color: #c2cbbd; font-size: 10px; line-height: 1.7; margin-bottom: 0; }
-.result-file { color: #b9c99c; font-size: 9px; display: block; margin-top: 12px; }
+.agent-guide { border-top: 1px solid #384136; padding: 18px 17px; line-height: 1.8; }
+.agent-guide strong { font-size: 11px; }
+.agent-guide p { color: #c2cbbd; font-size: 10px; line-height: 1.7; margin: 12px 0; }
+.agent-guide > span { color: #b9c99c; font-size: 9px; }
 .demo-conversation { order: 1; min-width: 0; display: flex; flex-direction: column; background: #1e2620; }
 .conversation-top { padding: 15px 20px; border-bottom: 1px solid #354031; font-size: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; white-space: nowrap; }
 .conversation-top span { font-size: 8px; color: #c2d0b7; border: 1px solid #46503e; border-radius: 5px; padding: 4px 6px; }
@@ -78,6 +76,7 @@ h1 { font-size: clamp(60px, 6.8vw, 94px); line-height: 1.06; letter-spacing: -.0
 .amp-mark { font-family: Georgia, serif; font-style: italic; font-size: 25px; color: #c2cfaa; line-height: 1; }
 .sample-code { font: 10px/1.9 ui-monospace, monospace; padding: 12px; background: #151d18; border-radius: 7px; color: #b5c5a7; }
 .sample-code span { color: #e3e9d6; }
+.inline-summary { margin-top: 10px; padding: 7px 9px; border: 1px solid #46503e; border-radius: 5px; color: #c2d0b7; font-size: 9px; }
 .demo-composer { margin: auto 20px 17px; border: 1px solid #4d5845; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; color: #acbba3; font-size: 10px; align-items: center; }
 .demo-composer svg { width: 23px; height: 23px; background: #b5c69f; color: #23351f; border-radius: 50%; padding: 4px; }
 .demo-navigation { order: 2; border-left: 1px solid #384136; background: #18201a; display: flex; flex-direction: column; min-width: 0; }
@@ -93,7 +92,6 @@ h1 { font-size: clamp(60px, 6.8vw, 94px); line-height: 1.06; letter-spacing: -.0
 .profile-dot { border-radius: 50%; background: #34442c; color: #d0dfbe; padding: 4px 7px; }
 .workspace[data-side="left"] .demo-navigation { order: 0; border-left: 0; border-right: 1px solid #384136; }
 .workspace[data-side="left"] .demo-agents { order: 2; border-right: 0; border-left: 1px solid #384136; }
-.workspace[data-side="left"] .demo-thread.child { margin-left: 8px; }
 .demo-caption { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 10px; padding-block: 15px 0; line-height: 1.6; }
 #demo-status { font-weight: 650; text-align: right; }
 .opening-footer { display: flex; justify-content: center; gap: 40px; font-size: 11px; color: var(--muted); padding-block: 36px; }
@@ -161,7 +159,7 @@ details a { font-size: 12px; }
   .conversation-content { padding: 20px 16px; }
   .sample-response { margin-top: 18px; }
   .sample-code { font-size: 9px; }
-  .agent-result { padding: 14px 12px; }
+  .agent-guide { padding: 14px 12px; }
   .site-footer { flex-wrap: wrap; }
 }
 @media (max-width: 700px) {
@@ -188,6 +186,7 @@ details a { font-size: 12px; }
   .sample-response p { font-size: 8px; }
   .sample-response p:last-child { display: none; }
   .sample-code { padding: 8px 6px; font-size: 7px; }
+  .inline-summary { font-size: 7px; padding: 5px; margin-top: 7px; }
   .amp-mark { font-size: 20px; }
   .demo-composer { padding: 9px; margin: auto 10px 12px; font-size: 7px; border-radius: 8px; }
   .demo-composer svg { width: 17px; height: 17px; }
@@ -196,8 +195,7 @@ details a { font-size: 12px; }
   .new-thread { padding: 13px 9px; gap: 5px; font-size: 8px; }
   .thread-label { margin: 6px 10px; font-size: 7px; }
   .demo-thread { font-size: 7px; margin-inline: 4px; padding: 8px 6px; }
-  .demo-thread.child { margin-left: 12px; }
-  .workspace[data-side="left"] .demo-thread.child { margin-left: 4px; }
+  .demo-thread.child { margin-left: 4px; }
   .demo-footer { padding: 10px 8px; font-size: 7px; }
   .profile-dot { display: none; }
   .browser-bar { padding: 10px 12px; font-size: 8px; }

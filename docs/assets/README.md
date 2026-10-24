@@ -1,11 +1,25 @@
 # Landing page assets
 
 - `icon.png` is copied unchanged from `icons/icon-128.png`.
-- `right-sidebar.png` and `right-subagents.png` are copied unchanged from
-  `store/screenshots/`. They are live, signed-in Helium captures from October
-  24, 2026 at 1280 × 800, with private conversation and task/output text masked
-  before capture. See `store/screenshots/README.md` for provenance and scope.
-  They demonstrate layout, not complete end-to-end coverage of all Amp tools.
+- `right-sidebar.png` is copied unchanged from `store/screenshots/`. It is an
+  earlier v1.1 live, signed-in Helium capture from October 24, 2026 at
+  1280 × 800, with private content masked before capture. Its caption notes
+  that v1.2 changes the header arrow to switch placement instead of all features.
+  See `store/screenshots/README.md` for provenance and scope.
+- `subagent-sheets.png` shows the v1.2 runtime on `tests/fixture.html`, not live
+  Amp. At a 1280 × 800 viewport, clear fixture localStorage, reload, and add
+  two finished agents with `fixtureAgents.add(id, title, task, 'finished', output)`.
+  Open Subagents, focus Output, and press Enter to pin the sheet, then blur focus.
+  Capture-only CSS matches the dark palette of the live image above it: background
+  `#111111`, foreground `#dedede`, muted foreground `#999999`, accent `#252525`,
+  input borders `#303030`, and conversation background `#0f1815`. Apply these
+  variables to the runtime and corresponding colors to the fixture shell,
+  buttons, links, and dividers. Hide the fixture's test-controls bar and use a
+  full-height shell; replace the bar with the bottom-left green fixture label.
+  These presentation overrides do not alter the extension's styles or behavior.
+  Scroll to the top, capture at 2×, then resize to 1280 × 800 with ImageMagick.
+  The capture itself and the landing caption explicitly label the dark-themed
+  fixture and synthetic sample content, not a live Amp session.
 - `manrope.ttf` is the variable Manrope font from Google Fonts:
   <https://github.com/google/fonts/blob/main/ofl/manrope/Manrope%5Bwght%5D.ttf>.
   Its SIL Open Font License is included in `manrope-OFL.txt`. It is served
