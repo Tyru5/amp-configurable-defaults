@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "amp better defaults",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Move Amp's desktop navigation sidebar to the right. Click the toolbar icon to switch sides.",
   "homepage_url": "https://github.com/Tyru5/amp-sidebar-right",
   "icons": {

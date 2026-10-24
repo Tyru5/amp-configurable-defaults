@@ -31,20 +31,20 @@ function options() {
   };
 }
 
-test('Options defaults footer visible, saves opt-in, and restores it independently of master', async () => {
+test('Options defaults footer visible, saves opt-in, and restores it independently of side', async () => {
   const app = options();
   app.resolveRead({});
   await tick();
-  const { enabled, hideSidebarFooter: footer, status } = app.controls;
-  assert.equal(enabled.checked, true);
+  const { right, hideSidebarFooter: footer, status } = app.controls;
+  assert.equal(right.checked, true);
   assert.equal(footer.checked, false);
   assert.equal(footer.disabled, false);
   footer.checked = true;
   await footer.change();
   assert.deepEqual(app.writes, [{ hideSidebarFooter: true }]);
   assert.equal(status.textContent, 'Saved.');
-  app.external('enabled', false);
-  assert.equal(enabled.checked, false);
+  app.external('right', false);
+  assert.equal(right.checked, false);
   assert.equal(footer.checked, true);
   assert.equal(footer.disabled, false);
   footer.checked = false;
@@ -54,16 +54,16 @@ test('Options defaults footer visible, saves opt-in, and restores it independent
 
 test('pending initial read merges storage changes per preference, including removal', async () => {
   const app = options();
-  app.external('enabled', false);
+  app.external('right', false);
   app.external('hideSidebarFooter', true, 'sync');
-  app.resolveRead({ enabled: true, hideSidebarFooter: true });
+  app.resolveRead({ right: true, hideSidebarFooter: true });
   await tick();
-  assert.equal(app.controls.enabled.checked, false);
+  assert.equal(app.controls.right.checked, false);
   assert.equal(app.controls.hideSidebarFooter.checked, true);
   app.external('hideSidebarFooter', undefined);
   assert.equal(app.controls.hideSidebarFooter.checked, false);
-  app.external('enabled', undefined);
-  assert.equal(app.controls.enabled.checked, true);
+  app.external('right', undefined);
+  assert.equal(app.controls.right.checked, true);
 });
 
 test('failed saves restore the prior checkbox unless another tab changed that preference', async () => {
@@ -98,12 +98,12 @@ test('failed reads keep all controls disabled and announce recovery', async () =
   assert.match(app.controls.status.textContent, /Reopen this page/);
 });
 
-test('every feature defaults on, saves independently while master is off, and synchronizes removals', async () => {
+test('every feature saves with right placement off, ignoring the legacy master setting', async () => {
   const app = options();
   app.external('moveViews', false);
-  app.resolveRead({ enabled: false, rightWidth: 380 });
+  app.resolveRead({ enabled: false, right: false, rightWidth: 380 });
   await tick();
-  for (const key of features) {
+  for (const key of features.filter(key => key !== 'right')) {
     const control = app.controls[key];
     assert.equal(control.checked, key !== 'moveViews', key);
     assert.equal(control.disabled, false, key);
@@ -114,6 +114,7 @@ test('every feature defaults on, saves independently while master is off, and sy
     assert.equal(control.checked, true, key);
     app.external(key, false);
     assert.equal(control.checked, false, key);
-    assert.equal(app.controls.enabled.checked, false);
+    assert.equal(app.controls.right.checked, false);
   }
+  assert.equal(app.controls.enabled.change, undefined, 'legacy master is not an Options control');
 });

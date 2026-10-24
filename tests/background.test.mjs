@@ -58,15 +58,15 @@ test('toolbar restores saved left mode and reflects changes from another context
   assert.equal(app.state.rightWidth, 380);
 });
 
-test('master switch disables toolbar behavior without losing saved preferences', async () => {
+test('legacy master state cannot disable sidebar placement or change other preferences', async () => {
   const app = await extension({ enabled: false, right: false, rightWidth: 380 });
-  assert.equal(app.action.badge, 'OFF');
-  assert.match(app.action.title, /disabled/);
-  await app.click();
-  assert.equal(app.state.right, false);
-  assert.equal(app.state.rightWidth, 380);
-  await app.externalSet({ enabled: true });
   assert.equal(app.action.badge, 'L');
+  assert.match(app.action.title, /left.*Click to move right/);
   await app.click();
   assert.equal(app.state.right, true);
+  assert.equal(app.state.rightWidth, 380);
+  assert.equal(app.state.enabled, false);
+  assert.equal(app.action.badge, 'R');
+  await app.click();
+  assert.equal(app.state.right, false);
 });

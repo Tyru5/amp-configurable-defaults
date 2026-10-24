@@ -5,32 +5,35 @@
 <title>amp better defaults settings</title>
 <style>
   :root { color-scheme: light dark; }
-  body { margin: 24px; max-width: 36rem; font: 14px/1.5 system-ui, sans-serif; color: CanvasText; background: Canvas; }
+  body { margin: 0; min-height: 100dvh; box-sizing: border-box; padding: 24px; display: flex; font: 14px/1.5 system-ui, sans-serif; color: CanvasText; background: Canvas; }
+  main { width: 100%; max-width: 36rem; min-width: 0; margin: auto; }
   h1 { font-size: 20px; margin: 0 0 20px; }
   label { display: flex; align-items: center; gap: 10px; padding-block: 8px; cursor: pointer; font-weight: 600; }
-  input { width: 18px; height: 18px; margin: 0; }
+  input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; }
   input:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
   p { margin: 8px 0; }
   #status { min-height: 1.5em; }
 </style>
+<body>
+<main>
 <h1>amp better defaults</h1>
-<label><input id="enabled" type="checkbox" checked disabled aria-describedby="description">Enable extension behavior</label>
-<p id="description">Turn this off to restore Amp’s native layout and resizing without clearing your choices below. The header switch remains available if selected.</p>
 <label><input id="right" type="checkbox" checked disabled aria-describedby="side-description">Move sidebar to the right</label>
-<p id="side-description">Uncheck for Amp’s native left sidebar. The toolbar icon also switches this setting. Amp’s collapse and expand controls keep working on either side.</p>
+<p id="side-description">Uncheck for Amp’s native left sidebar. The toolbar icon and sidebar header switch also change this setting. Other features stay active on either side.</p>
 <label><input id="resizeSidebar" type="checkbox" checked disabled aria-describedby="resize-description">Resize and remember right-sidebar width</label>
 <p id="resize-description">Drag the right divider, or double-click to reset width. When off, right mode uses Amp’s width with no resize handle. Your saved width is kept. Left-side resizing stays native.</p>
 <label><input id="moveViews" type="checkbox" checked disabled aria-describedby="views-description">Keep auxiliary views opposite the sidebar</label>
 <p id="views-description">Move Files, Changes, Terminal, Desktop, and Portal left when navigation is on the right, with matching divider direction. When off, keep Amp’s native view placement.</p>
-<label><input id="indentThreads" type="checkbox" checked disabled aria-describedby="indent-description">Indent child threads in the right sidebar</label>
-<p id="indent-description">Indent by hierarchy depth without reordering threads. When off, keep native spacing. Left and mobile spacing stay native.</p>
-<label><input id="showHeaderToggle" type="checkbox" checked disabled aria-describedby="header-description">Show extension switch in sidebar header</label>
-<p id="header-description">Show the master on/off switch, even while extension behavior is off. Options remains accessible when this switch is hidden.</p>
+<label><input id="indentThreads" type="checkbox" checked disabled aria-describedby="indent-description">Indent child threads</label>
+<p id="indent-description">Indent by hierarchy depth on either side without reordering threads. When off, keep native spacing. Mobile spacing stays native.</p>
+<label><input id="showHeaderToggle" type="checkbox" checked disabled aria-describedby="header-description">Show placement switch in sidebar header</label>
+<p id="header-description">Switch between left and right without changing other features. Options and the toolbar icon remain accessible when this switch is hidden.</p>
 <label><input id="subagentPanel" type="checkbox" checked disabled aria-describedby="subagent-description">Enable subagent reading panel</label>
-<p id="subagent-description">Offer a Subagents button for rendered activity on desktop. When off, remove the panel and restore native inline activity. Works with either sidebar side.</p>
+<p id="subagent-description">Offer an optional desktop agent list with Task and Output reading sheets. Compact inline summaries remain available when off, on either side, and on mobile.</p>
 <label><input id="hideSidebarFooter" type="checkbox" disabled aria-describedby="footer-description">Hide sidebar footer</label>
-<p id="footer-description">Hide the bottom navigation, pinned shortcuts, and account row on desktop. Visible by default. Uncheck here to restore it, or turn off extension behavior. Mobile is unchanged.</p>
+<p id="footer-description">Hide the bottom navigation, pinned shortcuts, and account row on either side. Visible by default. Uncheck here to restore it. Mobile is unchanged.</p>
 <p>Your preferences are remembered on this device. Changes apply immediately to open Amp tabs. You can always reopen this page from the extension toolbar icon’s right-click menu → Options.</p>
 <p id="status" role="status">Loading settings…</p>
+</main>
 <script src="options.js"></script>
+</body>
 </html>

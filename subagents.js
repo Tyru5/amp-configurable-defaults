@@ -32,12 +32,13 @@
 
   function close() {
     if (!state) return;
+    closeReader();
     state.open = false;
     state.host.removeAttribute("data-amp-subagents-open");
     state.panel.hidden = true;
     state.toggle.setAttribute("aria-expanded", "false");
     for (const header of state.expanded) {
-      if (header.isConnected && header.querySelector(".expandable-row-chevron.rotate-90")) header.click();
+      if (header.isConnected && !header.closest("[data-amp-subagent-revealed]") && header.querySelector(".expandable-row-chevron.rotate-90")) header.click();
     }
     state.expanded.clear();
   }
@@ -49,17 +50,66 @@
     state.host.removeAttribute("data-amp-subagents-overlay");
     state.toggle.remove();
     state.panel.remove();
-    for (const item of state.items.values()) {
-      for (const source of [item.source, item.event]) source?.removeAttribute("data-amp-subagent-inline");
-      item.reference?.remove();
+    state.reader.remove();
+    for (const [source, reference] of state.inline) {
+      source.removeAttribute("data-amp-subagent-inline");
+      source.removeAttribute("data-amp-subagent-revealed");
+      reference.remove();
     }
     state = undefined;
   }
 
   function select(key) {
+    if (state.selected !== key) {
+      state.reader.querySelector("[data-amp-subagents-reading]").scrollTop = 0;
+    }
     state.selected = key;
     state.open = true;
     schedule();
+  }
+
+  function closeReader(restoreFocus = false) {
+    if (!state) return;
+    const control = state.sections[state.section];
+    clearTimeout(state.previewTimer);
+    clearTimeout(state.dismissTimer);
+    state.section = null;
+    state.pinned = false;
+    state.reader.hidden = true;
+    for (const control of Object.values(state.sections)) control.setAttribute("aria-expanded", "false");
+    if (restoreFocus) {
+      state.restoringFocus = true;
+      control?.focus();
+      state.restoringFocus = false;
+    }
+  }
+
+  function readSection(section, pinned = false) {
+    clearTimeout(state.previewTimer);
+    clearTimeout(state.dismissTimer);
+    if (state.section !== section) state.reader.querySelector("[data-amp-subagents-reading]").scrollTop = 0;
+    state.section = section;
+    state.pinned = pinned || state.pinned;
+    state.reader.hidden = false;
+    state.task.hidden = section !== "task";
+    state.output.hidden = section !== "output";
+    write(state.readerLabel, section === "task" ? "Task" : "Output");
+    write(state.pin, state.pinned ? "Pinned" : "Pin open");
+    state.pin.setAttribute("aria-pressed", String(state.pinned));
+    for (const [key, control] of Object.entries(state.sections)) {
+      control.setAttribute("aria-expanded", String(key === section));
+    }
+    schedule();
+  }
+
+  function deferReaderClose() {
+    clearTimeout(state.previewTimer);
+    clearTimeout(state.dismissTimer);
+    state.dismissTimer = setTimeout(() => {
+      if (!state || state.pinned || state.panel.matches(":hover") || state.reader.matches(":hover") ||
+          Object.values(state.sections).includes(document.activeElement) || state.reader.contains(document.activeElement)) return;
+      closeReader();
+    }, 180);
   }
 
   function create(host, transcript) {
@@ -86,18 +136,68 @@
     const status = document.createElement("p");
     const notice = document.createElement("p");
     notice.dataset.ampSubagentsNotice = "";
-    const taskLabel = document.createElement("h4");
-    taskLabel.textContent = "Task";
+    const sections = {};
+    const sectionNav = document.createElement("div");
+    sectionNav.dataset.ampSubagentsSections = "";
+    const reader = document.createElement("section");
+    reader.id = `${panel.id}-reader`;
+    reader.dataset.ampSubagentsUi = "reader";
+    reader.setAttribute("aria-label", "Subagent reader");
+    reader.hidden = true;
+    const readerHeader = document.createElement("header");
+    const readerLabel = document.createElement("h4");
+    readerLabel.tabIndex = -1;
+    const readerTitle = document.createElement("h3");
+    const pin = button("Pin open", () => {
+      state.pinned = !state.pinned;
+      write(pin, state.pinned ? "Pinned" : "Pin open");
+      pin.setAttribute("aria-pressed", String(state.pinned));
+    });
+    pin.setAttribute("aria-pressed", "false");
+    const dismissReader = button("Close", () => closeReader(true));
+    dismissReader.setAttribute("aria-label", "Close reader");
+    readerHeader.append(readerLabel, pin, dismissReader);
+    for (const key of ["task", "output"]) {
+      const control = button(key === "task" ? "Task" : "Output", () => {
+        readSection(key, true);
+        readerLabel.focus();
+      });
+      control.dataset.ampSubagentsSection = key;
+      control.setAttribute("aria-controls", reader.id);
+      control.setAttribute("aria-expanded", "false");
+      control.addEventListener("pointerenter", event => {
+        if (event.pointerType !== "mouse" || state.pinned) return;
+        clearTimeout(state.dismissTimer);
+        clearTimeout(state.previewTimer);
+        state.previewTimer = setTimeout(() => readSection(key), 200);
+      });
+      control.addEventListener("focus", () => {
+        clearTimeout(state.dismissTimer);
+        if (!state.restoringFocus && !state.pinned) readSection(key);
+      });
+      control.addEventListener("keydown", event => {
+        if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+          event.preventDefault();
+          readSection(key, true);
+          readerLabel.focus();
+        }
+      });
+      control.addEventListener("pointerleave", () => clearTimeout(state.previewTimer));
+      sections[key] = control;
+      sectionNav.append(control);
+    }
+    const hint = document.createElement("p");
+    hint.textContent = "Hover to preview. Click to keep open.";
     const task = document.createElement("div");
     task.dataset.ampSubagentsTask = "";
-    const outputLabel = document.createElement("h4");
-    outputLabel.textContent = "Output";
     const output = document.createElement("div");
     output.dataset.ampSubagentsOutput = "";
     const original = button("View original ↗", () => {
       const item = state.items.get(state.selected);
       const source = item.event?.isConnected ? item.event : item.source;
       close();
+      source?.setAttribute("data-amp-subagent-revealed", "");
+      state.inline.get(source)?.setAttribute("aria-expanded", "true");
       source?.scrollIntoView({ block: "center" });
       const header = source?.querySelector("[data-transcript-expandable-row]");
       if (header) {
@@ -105,14 +205,29 @@
         header.focus({ preventScroll: true });
       }
     });
-    detail.append(title, status, notice, taskLabel, task, outputLabel, output, original);
+    detail.append(title, status, sectionNav, hint, original);
     panel.append(heading, list, detail);
-    panel.addEventListener("keydown", event => {
+    const readerBody = document.createElement("div");
+    readerBody.dataset.ampSubagentsReading = "";
+    readerBody.append(readerTitle, notice, task, output);
+    reader.append(readerHeader, readerBody);
+    const escape = event => {
       if (event.key !== "Escape" || event.defaultPrevented) return;
       event.stopPropagation();
-      close();
-      state.toggle.focus();
-    });
+      if (state.section) {
+        closeReader(true);
+      } else {
+        close();
+        state.toggle.focus();
+      }
+    };
+    for (const surface of [panel, reader]) {
+      surface.addEventListener("keydown", escape);
+      surface.addEventListener("pointerenter", () => clearTimeout(state.dismissTimer));
+      surface.addEventListener("pointerleave", deferReaderClose);
+      surface.addEventListener("focusin", () => clearTimeout(state.dismissTimer));
+      surface.addEventListener("focusout", deferReaderClose);
+    }
     const toggle = button("Subagents", () => {
       if (state.open) close();
       else { state.open = true; schedule(); }
@@ -122,9 +237,9 @@
     toggle.setAttribute("aria-expanded", "false");
     const sizing = new ResizeObserver(() => host.toggleAttribute("data-amp-subagents-overlay", host.clientWidth < 800));
     sizing.observe(host);
-    host.append(panel);
     return { host, thread: transcript.dataset.threadId, panel, toggle, list, title, status,
-      notice, task, output, original, sizing, items: new Map(), selected: null, open: false, expanded: new Set() };
+      reader, readerTitle, readerLabel, pin, sections, section: null, pinned: false,
+      notice, task, output, original, sizing, items: new Map(), inline: new Map(), selected: null, open: false, expanded: new Set() };
   }
 
   function item(key, title) {
@@ -153,7 +268,7 @@
     const transcript = document.querySelector(".thread-layout-panes [data-thread-transcript-scroll][data-thread-id]");
     const host = transcript?.closest(".thread-layout-panes");
     const toolbar = host?.querySelector(".thread-title-bar-container .app-title-bar");
-    if (!enabled || !desktop.matches || !host || !toolbar) { teardown(); return; }
+    if (!host || !toolbar) { teardown(); return; }
     if (state && (state.host !== host || state.thread !== transcript.dataset.threadId)) teardown();
     const sources = [...transcript.querySelectorAll(agentSelector)];
     const events = [...transcript.querySelectorAll(eventSelector)];
@@ -168,7 +283,15 @@
     }
     if (!sources.length && !events.length) { teardown(); return; }
     if (!state) state = create(host, transcript);
-    if (!state.toggle.isConnected) toolbar.append(state.toggle);
+    if (enabled && desktop.matches) {
+      if (!state.toggle.isConnected) toolbar.append(state.toggle);
+      if (!state.panel.isConnected) host.append(state.panel, state.reader);
+    } else {
+      if (state.open) close();
+      state.toggle.remove();
+      state.panel.remove();
+      state.reader.remove();
+    }
     for (const entry of state.items.values()) { entry.source = null; entry.event = null; }
 
     for (const [index, source] of sources.entries()) {
@@ -185,8 +308,8 @@
       const prompt = source.querySelector("[data-transcript-subagent-prompt]");
       const response = source.querySelector("[data-transcript-subagent-response]");
       const error = source.querySelector("[data-transcript-subagent-error]");
-      if (state.open && prompt) entry.task = text(prompt);
-      if (state.open && (response || error)) {
+      if (prompt) entry.task = text(prompt);
+      if (response || error) {
         entry.sourceOutput = text(error || response);
         entry.output = entry.sourceOutput;
       }
@@ -215,7 +338,6 @@
       if (entry.key !== key && state.items.has(key)) {
         const previous = state.items.get(key);
         previous.button.remove();
-        previous.reference?.remove();
         state.items.delete(key);
         if (state.selected === key) state.selected = entry.key;
       }
@@ -223,7 +345,7 @@
       if (entry.invocation) entry.backgroundTitle = title;
       entry.status = /failed/i.test(event.querySelector("[data-transcript-automation-event-label]")?.textContent || "") ? "Failed" : "Finished";
       const output = event.querySelector("[data-transcript-automation-event-markdown], [data-transcript-automation-event-text]");
-      if (state.open && output) entry.output = text(output);
+      if (output) entry.output = text(output);
     }
 
     if (!state.items.has(state.selected)) state.selected = state.items.keys().next().value;
@@ -231,27 +353,51 @@
     state.toggle.setAttribute("aria-expanded", String(state.open));
     state.panel.hidden = !state.open;
     host.toggleAttribute("data-amp-subagents-open", state.open);
+    const activeSources = new Set();
     for (const entry of state.items.values()) {
       write(entry.name, entry.title);
       write(entry.summary, entry.status);
+      const active = entry.status === "Running" || entry.status === "Delegated";
+      entry.summary.toggleAttribute("data-amp-subagent-active", active);
       entry.button.setAttribute("aria-pressed", String(entry.key === state.selected));
-      for (const source of [entry.source, entry.event]) source?.setAttribute("data-amp-subagent-inline", "");
-      const source = entry.source || entry.event;
-      if (entry.reference && entry.reference.previousElementSibling !== source) { entry.reference.remove(); entry.reference = null; }
-      if (source && !entry.reference) {
-        entry.reference = button("", () => { select(entry.key); state.title.focus(); });
-        entry.reference.dataset.ampSubagentsUi = "reference";
-        source.after(entry.reference);
+      for (const source of [entry.source, entry.event]) {
+        if (!source) continue;
+        activeSources.add(source);
+        let reference = state.inline.get(source);
+        if (!reference) {
+          reference = button("", () => {
+            const revealed = source.toggleAttribute("data-amp-subagent-revealed");
+            reference.setAttribute("aria-expanded", String(revealed));
+            if (revealed) expand(source);
+          });
+          reference.dataset.ampSubagentsUi = "reference";
+          reference.setAttribute("aria-expanded", "false");
+          state.inline.set(source, reference);
+        }
+        if (reference.nextElementSibling !== source) source.before(reference);
+        source.setAttribute("data-amp-subagent-inline", "");
+        const kind = source === entry.event && !entry.title.startsWith("Result:") ? "Result: " : "";
+        write(reference, `Subagent · ${kind}${entry.title} · ${entry.status}`);
+        reference.toggleAttribute("data-amp-subagent-active", active);
       }
-      if (entry.reference) write(entry.reference, `Subagent · ${entry.title} · ${entry.status} ↗`);
+    }
+    for (const [source, reference] of state.inline) {
+      if (!activeSources.has(source)) {
+        reference.remove();
+        source.removeAttribute("data-amp-subagent-inline");
+        source.removeAttribute("data-amp-subagent-revealed");
+        state.inline.delete(source);
+      }
     }
     if (!state.open) return;
     const selected = state.items.get(state.selected);
     expand(selected.source);
     expand(selected.event);
     write(state.title, selected.title);
+    write(state.readerTitle, selected.title);
     write(state.status, selected.status);
-    write(state.task, selected.task || selected.title);
+    state.status.toggleAttribute("data-amp-subagent-active", selected.status === "Running" || selected.status === "Delegated");
+    write(state.task, selected.task || "Task details are not currently rendered by Amp. Open the original activity to load them.");
     write(state.output, selected.output || "Output will appear here when Amp makes it available.");
     const connected = !!(selected.source || selected.event);
     write(state.notice, connected ? "" : "Showing the last visible content. Scroll the conversation to load this agent again.");
@@ -276,16 +422,14 @@
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
     attributeFilter: ["data-thread-id", "data-transcript-tool-status", "data-transcript-subagent-working"] });
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "local" || !(changes.enabled || changes.subagentPanel)) return;
-    for (const key of ["enabled", "subagentPanel"]) {
-      if (changes[key]) settings[key] = changes[key].newValue;
-    }
-    enabled = settings.enabled !== false && settings.subagentPanel !== false;
+    if (area !== "local" || !changes.subagentPanel) return;
+    settings.subagentPanel = changes.subagentPanel.newValue;
+    enabled = settings.subagentPanel !== false;
     schedule();
   });
-  chrome.storage.local.get(["enabled", "subagentPanel"]).then(initial => {
+  chrome.storage.local.get(["subagentPanel"]).then(initial => {
     settings = { ...initial, ...settings };
-    enabled = settings.enabled !== false && settings.subagentPanel !== false;
+    enabled = settings.subagentPanel !== false;
     schedule();
   });
   desktop.addEventListener("change", schedule);
