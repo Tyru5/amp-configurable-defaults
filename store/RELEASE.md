@@ -1,4 +1,4 @@
-# Version 1.1.0 submission checklist
+# Version 1.2.0 submission checklist
 
 ## Prepared in this repository
 
@@ -8,15 +8,16 @@
 - Public privacy policy, support URL, listing copy, and permission explanations.
 - Reproducible upload ZIP with `manifest.json` at its root and SHA-256 checksum.
 - Syntax, toolbar behavior, packaging, and local browser fixture checks.
-- Signed-in Helium checks with two real subagents, both sides, Files, resizing,
-  master disable/re-enable, and the extracted release ZIP.
+- Signed-in Helium checks of independent Options, inline summaries, reading
+  sheets on both sides, narrow layouts, thread hover cards, and tool disclosures.
+- Fixture checks of active-agent pulses, terminal states, and reduced motion.
 - Privacy-redacted live 1280 × 800 screenshots. See `screenshots/README.md`
   for coverage, suggested uploads, and supplemental images that are fixtures.
 
 ## Before uploading
 
-- [ ] Test the final extracted release on real, signed-in Amp. Earlier Helium
-      verification predates footer hiding and independent feature toggles.
+- [ ] Smoke-test the final versioned ZIP on real, signed-in Amp. The 1.2.0
+      runtime was tested before the version-only packaging update.
 - [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep
       fixture previews separately identified. No private content is published.
 - [ ] Repeat the final smoke test in current Google Chrome. Helium and fixture
@@ -43,7 +44,7 @@ python3 scripts/package.py
 ```
 
 1. Open https://chrome.google.com/webstore/devconsole.
-2. Add a new item and upload `dist/amp-better-defaults-1.1.0.zip` directly.
+2. Add a new item and upload `dist/amp-better-defaults-1.2.0.zip` directly.
    Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, promo tile, and
    the suggested real screenshots in `store/screenshots/README.md`. Never upload
@@ -55,8 +56,8 @@ python3 scripts/package.py
    it and you want to review approval before making the listing public.
 
 Store review, approval, and publication have not been performed by this project.
-Options now exposes every extension feature independently, with a master switch.
-The nine local preferences are documented in the privacy policy and listing.
+Sidebar placement is independent of other Options; there is no master switch.
+The eight local preferences are documented in the privacy policy and listing.
 Existing defaults remain, including footer hiding off. Existing draft release
 screenshots have not been replaced. Review the footer states, individual opt-outs,
 cross-tab changes, and recovery with both footer and header switch hidden before

@@ -30,6 +30,7 @@
   .sidebar-body a { display: flex; gap: 6px; padding: 8px; color: inherit; text-decoration: none; border-radius: 6px; }
   .sidebar-body a:hover, .sidebar-body a:focus-visible { background: #e5e8df; }
   .sidebar-body [data-thread-row-nesting-depth] { width: 12px; flex-shrink: 0; }
+  [data-thread-list-hover-card] { position: fixed; left: 0; top: 0; z-index: 50; width: 320px; padding: 12px; border-radius: 6px; background: white; box-shadow: 0 4px 20px #0003; }
   .account { padding: 18px; margin-top: auto; border-top: 1px solid #ddd; color: #62665c; }
   [data-slot="sidebar-inset"] { flex: 1; min-width: 0; display: flex; flex-direction: column; background: white; }
   .thread-layout-panes { height: 100%; min-height: 0; }
@@ -295,4 +296,72 @@
 <script src="../background.js"></script>
 <script src="../content.js"></script>
 <script src="../subagents.js"></script>
+<script>
+  // Native hover contract from Amp's b1575130.js, inspected 2026-10-24.
+  // Fixture content only. In particular, preserve the native overflow-close guard.
+  let hoverAnchor, hoverCard, hoverTimer, hoverFrame;
+  function closeHover() {
+    clearTimeout(hoverTimer);
+    cancelAnimationFrame(hoverFrame);
+    hoverCard?.remove();
+    hoverCard = hoverAnchor = null;
+  }
+  function placeHover() {
+    if (!hoverAnchor?.isConnected) return closeHover();
+    const rect = hoverAnchor.getBoundingClientRect();
+    const touch = hoverAnchor.hasAttribute('data-sidebar-touch-preview');
+    const x = rect.right + 5;
+    const maxX = innerWidth - hoverCard.offsetWidth - 8;
+    if (!touch && x > maxX) return closeHover();
+    const left = Math.min(touch ? Math.max(8, rect.left) : x, Math.max(8, maxX));
+    const top = Math.min(touch ? rect.bottom + 5 : rect.top, Math.max(8, innerHeight - hoverCard.offsetHeight - 8));
+    hoverCard.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+    hoverFrame = requestAnimationFrame(placeHover);
+  }
+  function openHover(anchor) {
+    closeHover();
+    hoverAnchor = anchor;
+    hoverCard = document.createElement('div');
+    hoverCard.setAttribute('data-thread-list-hover-card', '');
+    hoverCard.setAttribute('role', 'tooltip');
+    const title = document.createElement('strong');
+    title.setAttribute('data-thread-hover-card-title', '');
+    title.textContent = anchor.textContent;
+    const detail = document.createElement('p');
+    detail.textContent = 'Local hover fixture · Updated just now';
+    const link = document.createElement('a');
+    link.href = '#hover-details';
+    link.textContent = 'View thread details';
+    hoverCard.append(title, detail, link);
+    document.body.append(hoverCard);
+    placeHover();
+  }
+  document.addEventListener('pointerover', event => {
+    if (event.pointerType !== 'mouse') return;
+    const anchor = event.target.closest('[data-sidebar-thread-id]');
+    if (!anchor || anchor === hoverAnchor) return;
+    clearTimeout(hoverTimer);
+    // Exercise native safe-triangle deferral as well as the initial open delay.
+    hoverTimer = setTimeout(() => openHover(anchor), hoverCard ? 120 : 600);
+  });
+  document.addEventListener('pointerout', event => {
+    const next = event.relatedTarget;
+    if (next instanceof Element && next.closest('[data-sidebar-thread-id], [data-thread-list-hover-card]')) return;
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(closeHover, 100);
+  });
+  document.addEventListener('focusin', event => {
+    const anchor = event.target.closest('[data-sidebar-thread-id]');
+    if (anchor && event.target.matches(':focus-visible')) openHover(anchor);
+  });
+  document.addEventListener('focusout', event => {
+    if (!event.relatedTarget?.closest('[data-thread-list-hover-card]')) closeHover();
+  });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeHover(); });
+  document.addEventListener('pointerdown', event => {
+    if (!event.target.closest('[data-thread-list-hover-card]')) closeHover();
+  }, true);
+  addEventListener('scroll', closeHover, true);
+  addEventListener('resize', closeHover);
+</script>
 </html>

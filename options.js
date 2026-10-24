@@ -1,5 +1,4 @@
 const toggles = {
-  enabled: document.querySelector("#enabled"),
   right: document.querySelector("#right"),
   resizeSidebar: document.querySelector("#resizeSidebar"),
   moveViews: document.querySelector("#moveViews"),

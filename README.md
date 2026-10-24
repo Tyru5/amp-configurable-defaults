@@ -32,13 +32,16 @@ native layout and resize behavior. Right-mode width is saved separately.
 In right mode, auxiliary views such as Files, Changes, Terminal, Desktop, and
 Portal open to the left of the conversation. Their dividers still resize in
 the direction you drag. Left mode restores their native placement on the right.
-Child thread rows are indented by 20px per level in right mode, up to 64px,
+Child thread rows are indented by 20px per level on either side, up to 64px,
 using Amp's existing parent-child hierarchy without reordering threads.
-To turn all extension behavior off or back on, click the **right-sidebar arrow icon**
-in Amp's sidebar header. If its visibility option is on, it stays available while behavior is off. You can also
-right-click the extension's toolbar icon, choose **Options**, and toggle
-**Enable extension behavior**. Both controls stay synchronized across open Amp
-tabs and preserve your saved side and width.
+The **right-sidebar arrow icon** in Amp's sidebar header switches placement,
+just like the toolbar icon and **Move sidebar to the right** in **Options**.
+These controls stay synchronized across open Amp tabs and preserve other feature
+choices and your saved right-side width. There is no master feature switch.
+The obsolete `enabled` preference from older versions is ignored.
+
+Hovering or keyboard-focusing a thread in the right sidebar opens Amp's native
+thread information card to its left. Amp still owns the content and dismissal.
 
 Every extension feature has its own checkbox in **Options**:
 
@@ -47,14 +50,14 @@ Every extension feature has its own checkbox in **Options**:
 | Move sidebar to the right | On | Native left sidebar; also controlled by the toolbar icon |
 | Resize and remember right-sidebar width | On | Native width, no right resize handle; saved width retained |
 | Keep auxiliary views opposite the sidebar | On | Native view placement and divider input |
-| Indent child threads in the right sidebar | On | Native row spacing |
-| Show extension switch in sidebar header | On | No injected master switch; use Options to recover |
+| Indent child threads | On | Native row spacing on either side |
+| Show placement switch in sidebar header | On | No injected placement switch; use Options or the toolbar icon |
 | Enable subagent reading panel | On | Native inline activity; removes any open panel |
 | Hide sidebar footer | Off | Native footer visible |
 
-Feature choices remain editable while the master switch is off and survive
-disable/re-enable. Resizing and indentation apply only in right mode; left-side
-behavior stays native. Amp's existing collapse/expand controls remain available
+Feature choices remain editable and active with either sidebar placement.
+Custom resizing applies only in right mode; left-side resizing stays native.
+Amp's existing collapse/expand controls remain available
 and follow sidebar placement. The subagent panel works on either side, independently
 of auxiliary-view placement, and starts closed after being re-enabled.
 
@@ -63,15 +66,21 @@ section: Puck, Activity, Projects, the app grid, pinned shortcuts, and the
 account row. The footer is visible by default in both left and right modes.
 Thread lists and header controls stay available. Uncheck the option to restore
 the footer. Options is always reachable by right-clicking the browser's extension
-toolbar icon, even while the footer is hidden. Master disable restores the footer
-without forgetting this preference. The choice applies across open Amp tabs and
+toolbar icon, even while the footer is hidden. Changing sidebar placement does
+not change footer visibility. The choice applies across open Amp tabs and
 survives browser restarts. Mobile below 768px keeps its native footer.
-When the current conversation has subagent activity, a **Subagents** button
-appears in its header. Open it for an agent list with the selected task and
-output below, on the opposite side from navigation. Files and Changes remain
-open alongside it. Narrow desktop layouts use a drawer rather than squeeze
-the conversation. Close the panel, press Escape inside it, or choose **View
-original** to return to native inline activity.
+Subagent activity always has a compact inline summary. Click it to expand the
+original Amp content, including when the optional panel is disabled or on mobile.
+Running and delegated agents have a gently pulsing status dot; completed,
+failed, and cancelled agents do not. Reduced motion keeps the active dot static.
+Tool-call summaries and individual tool headers use tinted rows with a left
+border to distinguish execution activity from assistant prose.
+On desktop, the **Subagents** header button opens an agent list opposite
+navigation. Hover or focus **Task** or **Output** to preview a wider reading
+sheet; click to keep it open. Escape closes the sheet first, then the panel.
+**View original** reveals the selected activity inline. Files and Changes remain
+open alongside the list. Narrow desktop layouts use an overlay rather than
+squeeze the conversation.
 
 The panel reads only subagent content already rendered by Amp, and keeps its
 view in memory for the current thread. It does not save or transmit prompts
@@ -80,7 +89,7 @@ as such. Background tasks remain labeled **Delegated** until Amp exposes a
 completion. Results with duplicate task descriptions appear separately rather
 than risk attaching them to the wrong agent.
 
-Below 768px, Amp's mobile layout is unchanged.
+Below 768px, navigation stays native and subagents use inline summaries only.
 Disable or remove the extension, then refresh open Amp tabs to restore the
 original page layout.
 
@@ -98,8 +107,8 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 
 ## Scope and privacy
 
-Only permission: `storage`, for the master state, feature choices, sidebar side,
-and right-sidebar width on this device. The nine keys are listed in the privacy policy.
+Only permission: `storage`, for feature choices, sidebar side,
+and right-sidebar width on this device. The eight active keys are listed in the privacy policy.
 The content script runs only on `https://ampcode.com/*`. No network requests,
 analytics, dependencies, or changes to thread data. This is an independent
 extension, not an official Amp extension.
@@ -145,7 +154,7 @@ python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
 
-The build writes `dist/amp-better-defaults-1.1.0.zip` and a SHA-256 checksum.
+The build writes `dist/amp-better-defaults-1.2.0.zip` and a SHA-256 checksum.
 The manifest is at the ZIP root as required by the Web Store. Only runtime
 files, icons, and the license are included, never tests or developer previews.
 GitHub Actions runs syntax, toolbar behavior, and packaging checks on pushes
@@ -186,6 +195,11 @@ markup. It covers switching sides, storage changes, resizing, collapse/reopen,
 dynamic shell replacement, footer visibility and cross-tab preferences, the
 mobile breakpoint, independent feature opt-outs, and subagent selection,
 streaming text, completion, duplicate descriptions, and inline restoration.
+Hover checks reproduce Amp's native overflow-close guard and cover mouse and
+keyboard previews, interactive content, changing card size, and side changes.
+This hover fix was also verified in signed-in Helium on 2026-10-24. It uses
+Amp's `data-sidebar-touch-preview` marker to bypass that guard for mouse and keyboard
+previews, then repositions the native card. Touch input and mobile remain native.
 
 The earlier extension build was also tested in a signed-in Helium session on
 2026-10-24, including two real background subagents, their completed outputs,
@@ -194,9 +208,13 @@ Helium reported no extension manifest or runtime errors. Changes coexistence
 is covered by the fixture suite; the live check does not cover every Amp view
 or unloaded thread history. Recheck compatibility after Amp layout updates.
 
-The footer hiding and independent feature toggles have local fixture and Options
-coverage, not signed-in live Amp verification. The mobile fixture tests CSS
-breakpoints; it does not model Amp's native mobile sidebar sheet.
+The 1.2.0 runtime was verified in signed-in Helium on 2026-10-24: independent
+Options with left placement, centered settings, inline subagent expansion with
+the panel disabled, both reading-sheet positions, narrow layouts, native thread
+hover cards, and tool disclosures. Active-agent pulse transitions and reduced
+motion were verified with fixtures, not a currently running live subagent.
+The mobile fixture tests CSS breakpoints; it does not model Amp's native mobile
+sidebar sheet.
 
 ## Chrome Web Store release
 
