@@ -21,7 +21,7 @@
   [data-slot="sidebar-container"] { position: absolute; inset-block: 0; left: 0; width: var(--sidebar-width); background: #f4f5f0; border-right: 1px solid #ddd; }
   [data-slot="sidebar-inner"] { height: 100%; display: flex; flex-direction: column; }
   .sidebar-toolbar { display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px 0 46px; border-bottom: 1px solid #ddd; font-weight: 600; }
-  .sidebar-body { padding: 18px 10px; }
+  .sidebar-body { padding: 18px 10px; flex: 1; min-height: 0; overflow: auto; }
   .sidebar-body p { margin: 0 10px 20px; color: #6b6d67; font-size: 13px; }
   .sidebar-body button { width: 100%; text-align: left; background: transparent; border: 0; margin-bottom: 6px; }
   .sidebar-body button:first-of-type { background: #e5e8df; }
@@ -92,7 +92,11 @@
                   <li data-slot="sidebar-menu-item" id="thread-other"><a data-sidebar-thread-id="other" href="#other">Platform investigation</a></li>
                 </ul><p>Archived</p>
               </div>
-              <div class="account">Your workspace</div>
+              <div data-slot="sidebar-footer" class="account">
+                <nav aria-label="Footer navigation"><a href="#puck">Puck</a> <a href="#activity">Activity</a> <a href="#projects">Projects</a> <button aria-label="All apps">▦</button></nav>
+                <div><a href="#pinned">Pinned project</a></div>
+                <button aria-label="Account">Your workspace</button>
+              </div>
             </div>
           </aside>
         </div>
@@ -141,7 +145,7 @@
     if (event.key !== 'extension-settings') return;
     const before = JSON.parse(event.oldValue || '{}');
     const after = JSON.parse(event.newValue || '{}');
-    const changes = Object.fromEntries(['right', 'rightWidth', 'enabled'].filter(key => before[key] !== after[key]).map(key => [key, { newValue: after[key] }]));
+    const changes = Object.fromEntries([...new Set([...Object.keys(before), ...Object.keys(after)])].filter(key => before[key] !== after[key]).map(key => [key, { newValue: after[key] }]));
     listeners.forEach(fn => fn(changes, 'local'));
   });
   function mount() {

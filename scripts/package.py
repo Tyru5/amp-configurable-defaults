@@ -37,7 +37,7 @@ def build(output_dir=None):
 
     output_dir = Path(output_dir) if output_dir else ROOT / "dist"
     output_dir.mkdir(parents=True, exist_ok=True)
-    archive = output_dir / f"amp-sidebar-right-{manifest['version']}.zip"
+    archive = output_dir / f"amp-better-defaults-{manifest['version']}.zip"
     with ZipFile(archive, "w", compression=ZIP_DEFLATED) as bundle:
         for filename in sorted(files):
             # Fixed metadata makes releases byte-for-byte reproducible.

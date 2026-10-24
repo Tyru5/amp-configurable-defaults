@@ -3,6 +3,11 @@
 
 /* Only the desktop app shell, never marketing pages or mobile sidebar sheets. */
 @media (min-width: 768px) {
+  /* The native footer owns navigation, pinned shortcuts, and the account row. */
+  html[data-amp-sidebar-hide-footer] [data-slot="sidebar-container"] [data-slot="sidebar-footer"] {
+    display: none !important;
+  }
+
   /* Keep the master switch reachable even when the layout changes are off. */
   [data-amp-sidebar-toggle] {
     display: inline-flex;
@@ -41,12 +46,12 @@
   }
 
   /* Tabbed Views and the alternate secondary pane sit opposite navigation. */
-  html[data-amp-sidebar-right] .multi-pane-pane-group[data-direction="horizontal"],
-  html[data-amp-sidebar-right] .thread-file-tab-pane-group[data-direction="horizontal"] {
+  html[data-amp-sidebar-move-views] .multi-pane-pane-group[data-direction="horizontal"],
+  html[data-amp-sidebar-move-views] .thread-file-tab-pane-group[data-direction="horizontal"] {
     flex-direction: row-reverse !important;
   }
 
-  html[data-amp-sidebar-right] [data-slot="sidebar-container"] [data-amp-thread-child] {
+  html[data-amp-sidebar-indent] [data-slot="sidebar-container"] [data-amp-thread-child] {
     margin-inline-start: var(--amp-thread-indent);
   }
 
@@ -72,6 +77,11 @@
     left: auto !important;
     right: var(--sidebar-width) !important;
     transform: translateX(4px) !important;
+  }
+
+  /* The native left-side resize handler is not valid on the right. */
+  html[data-amp-sidebar-right]:not([data-amp-sidebar-resize]) .app-content-frame > .resize-handle {
+    display: none !important;
   }
 
   html[data-amp-sidebar-right] .app-content-frame:not(.app-sidebar-closed) > .sidebar-trigger-wrapper {

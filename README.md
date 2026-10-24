@@ -1,4 +1,4 @@
-# Amp sidebar right
+# amp better defaults
 
 A dependency-free Chrome Manifest V3 extension for `https://ampcode.com`.
 The desktop sidebar starts on the right. Click the extension's toolbar button
@@ -16,7 +16,7 @@ The Chrome Web Store release is in preparation, not published or approved.
 3. Turn on **Developer mode**.
 4. Click **Load unpacked** and select the extracted folder that directly
    contains `manifest.json`. You can also load this cloned repository folder.
-5. Pin **Amp sidebar right** from Chrome's Extensions menu.
+5. Pin **amp better defaults** from Chrome's Extensions menu.
 6. Refresh any Amp tabs that were already open.
 
 Click the pinned icon to switch sides. Drag the divider to resize the right
@@ -28,10 +28,37 @@ the direction you drag. Left mode restores their native placement on the right.
 Child thread rows are indented by 20px per level in right mode, up to 64px,
 using Amp's existing parent-child hierarchy without reordering threads.
 To turn all extension behavior off or back on, click the **right-sidebar arrow icon**
-in Amp's sidebar header. It stays available while behavior is off. You can also
+in Amp's sidebar header. If its visibility option is on, it stays available while behavior is off. You can also
 right-click the extension's toolbar icon, choose **Options**, and toggle
 **Enable extension behavior**. Both controls stay synchronized across open Amp
 tabs and preserve your saved side and width.
+
+Every extension feature has its own checkbox in **Options**:
+
+| Setting | Default | When off |
+| --- | --- | --- |
+| Move sidebar to the right | On | Native left sidebar; also controlled by the toolbar icon |
+| Resize and remember right-sidebar width | On | Native width, no right resize handle; saved width retained |
+| Keep auxiliary views opposite the sidebar | On | Native view placement and divider input |
+| Indent child threads in the right sidebar | On | Native row spacing |
+| Show extension switch in sidebar header | On | No injected master switch; use Options to recover |
+| Enable subagent reading panel | On | Native inline activity; removes any open panel |
+| Hide sidebar footer | Off | Native footer visible |
+
+Feature choices remain editable while the master switch is off and survive
+disable/re-enable. Resizing and indentation apply only in right mode; left-side
+behavior stays native. Amp's existing collapse/expand controls remain available
+and follow sidebar placement. The subagent panel works on either side, independently
+of auxiliary-view placement, and starts closed after being re-enabled.
+
+In **Options**, check **Hide sidebar footer** to hide the whole desktop bottom
+section: Puck, Activity, Projects, the app grid, pinned shortcuts, and the
+account row. The footer is visible by default in both left and right modes.
+Thread lists and header controls stay available. Uncheck the option to restore
+the footer. Options is always reachable by right-clicking the browser's extension
+toolbar icon, even while the footer is hidden. Master disable restores the footer
+without forgetting this preference. The choice applies across open Amp tabs and
+survives browser restarts. Mobile below 768px keeps its native footer.
 When the current conversation has subagent activity, a **Subagents** button
 appears in its header. Open it for an agent list with the selected task and
 output below, on the opposite side from navigation. Files and Changes remain
@@ -64,7 +91,8 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 
 ## Scope and privacy
 
-Only permission: `storage`, for the enabled state, side, and right-sidebar width on this device.
+Only permission: `storage`, for the master state, feature choices, sidebar side,
+and right-sidebar width on this device. The nine keys are listed in the privacy policy.
 The content script runs only on `https://ampcode.com/*`. No network requests,
 analytics, dependencies, or changes to thread data. This is an independent
 extension, not an official Amp extension.
@@ -85,11 +113,12 @@ node --check content.js
 node --check subagents.js
 node --check options.js
 node --test tests/background.test.mjs
+node --test tests/options.test.mjs
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
 
-The build writes `dist/amp-sidebar-right-1.0.0.zip` and a SHA-256 checksum.
+The build writes `dist/amp-better-defaults-1.1.0.zip` and a SHA-256 checksum.
 The manifest is at the ZIP root as required by the Web Store. Only runtime
 files, icons, and the license are included, never tests or developer previews.
 GitHub Actions runs syntax, toolbar behavior, and packaging checks on pushes
@@ -117,17 +146,26 @@ Selectors were checked against Amp's publicly served app assets on 2026-10-23.
 Amp's layout is not a public API, so a future site update may require adjusting
 `sidebar.css` or the divider selector in `content.js`.
 
+The footer selector was inspected in signed-in Helium on 2026-10-24:
+`[data-slot="sidebar-container"] [data-slot="sidebar-footer"]` contains all
+three footer rows. Hiding it uses desktop-only CSS without moving app nodes.
+
 Automated browser verification uses a local fixture based on the current app
 markup. It covers switching sides, storage changes, resizing, collapse/reopen,
-dynamic shell replacement, the mobile breakpoint, and subagent selection,
+dynamic shell replacement, footer visibility and cross-tab preferences, the
+mobile breakpoint, independent feature opt-outs, and subagent selection,
 streaming text, completion, duplicate descriptions, and inline restoration.
 
-The unpacked extension was also tested in a signed-in Helium session on
+The earlier extension build was also tested in a signed-in Helium session on
 2026-10-24, including two real background subagents, their completed outputs,
 both panel sides, Files coexistence, the narrow drawer, and the master switch.
 Helium reported no extension manifest or runtime errors. Changes coexistence
 is covered by the fixture suite; the live check does not cover every Amp view
 or unloaded thread history. Recheck compatibility after Amp layout updates.
+
+The footer hiding and independent feature toggles have local fixture and Options
+coverage, not signed-in live Amp verification. The mobile fixture tests CSS
+breakpoints; it does not model Amp's native mobile sidebar sheet.
 
 ## Chrome Web Store release
 

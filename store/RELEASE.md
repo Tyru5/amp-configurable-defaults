@@ -1,4 +1,4 @@
-# Version 1.0.0 submission checklist
+# Version 1.1.0 submission checklist
 
 ## Prepared in this repository
 
@@ -15,7 +15,8 @@
 
 ## Before uploading
 
-- [x] Test the extracted release on real, signed-in Amp in Helium.
+- [ ] Test the final extracted release on real, signed-in Amp. Earlier Helium
+      verification predates footer hiding and independent feature toggles.
 - [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep
       fixture previews separately identified. No private content is published.
 - [ ] Repeat the final smoke test in current Google Chrome. Helium and fixture
@@ -36,12 +37,13 @@ node --check content.js
 node --check subagents.js
 node --check options.js
 node --test tests/background.test.mjs
+node --test tests/options.test.mjs
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
 
 1. Open https://chrome.google.com/webstore/devconsole.
-2. Add a new item and upload `dist/amp-sidebar-right-1.0.0.zip` directly.
+2. Add a new item and upload `dist/amp-better-defaults-1.1.0.zip` directly.
    Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, promo tile, and
    the suggested real screenshots in `store/screenshots/README.md`. Never upload
@@ -53,6 +55,12 @@ python3 scripts/package.py
    it and you want to review approval before making the listing public.
 
 Store review, approval, and publication have not been performed by this project.
+Options now exposes every extension feature independently, with a master switch.
+The nine local preferences are documented in the privacy policy and listing.
+Existing defaults remain, including footer hiding off. Existing draft release
+screenshots have not been replaced. Review the footer states, individual opt-outs,
+cross-tab changes, and recovery with both footer and header switch hidden before
+submission. Fixture checks do not prove signed-in Amp or native mobile-sheet behavior.
 Do not reuse a version number for a later store upload after it has been accepted;
 increment `manifest.json` and rebuild for subsequent updates.
 

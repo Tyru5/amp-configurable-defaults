@@ -5,17 +5,24 @@
   let right = true;
   let resize = null;
   let settingsReady = false;
+  let settings = {};
+  const settingKeys = ["right", "rightWidth", "enabled", "hideSidebarFooter",
+    "resizeSidebar", "moveViews", "indentThreads", "showHeaderToggle"];
 
   const sidebarSelector = '[data-slot="sidebar-container"]';
   function updateHeader() {
     for (const header of document.querySelectorAll(`${sidebarSelector} .sidebar-toolbar`)) {
       let button = header.querySelector('[data-amp-sidebar-toggle]');
+      if (settings.showHeaderToggle === false) {
+        button?.remove();
+        continue;
+      }
       if (!button) {
         button = document.createElement("button");
         button.type = "button";
         button.setAttribute("data-amp-sidebar-toggle", "");
         button.setAttribute("role", "switch");
-        button.setAttribute("aria-label", "Amp sidebar right extension");
+        button.setAttribute("aria-label", "amp better defaults extension");
         button.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 4v16M6 12h7m-3-3 3 3-3 3"/></svg>';
         button.addEventListener("click", () => {
           chrome.storage.local.set({ enabled: !enabled }).catch(() => {
@@ -27,7 +34,7 @@
         else header.append(button);
       }
       button.setAttribute("aria-checked", String(enabled));
-      button.title = `${enabled ? "Disable" : "Enable"} Amp sidebar right extension`;
+      button.title = `${enabled ? "Disable" : "Enable"} amp better defaults extension`;
       button.disabled = !settingsReady;
     }
   }
@@ -36,7 +43,7 @@
   let indentPending = false;
   function indentThreads() {
     indentPending = false;
-    if (!enabled) return;
+    if (!enabled || settings.indentThreads === false) return;
     for (const row of document.querySelectorAll(`${sidebarSelector} [data-slot="sidebar-menu-item"]`)) {
       const marker = row.querySelector(':scope > [data-sidebar-thread-id] > [data-thread-row-nesting-depth]');
       const depth = Number(marker?.dataset.threadRowNestingDepth);
@@ -70,7 +77,7 @@
   let viewDrag = null;
   const mirroredEvents = new WeakSet();
   function viewHandle(target) {
-    return right && desktop.matches && target instanceof Element
+    return right && settings.moveViews !== false && desktop.matches && target instanceof Element
       ? target.closest(':is(.thread-file-tab-pane-group, .multi-pane-pane-group)[data-direction="horizontal"] > [data-pane-resizer]')
       : null;
   }
@@ -123,15 +130,18 @@
   window.addEventListener("blur", () => { viewDrag = null; });
 
   function apply(settings) {
-    const wasEnabled = enabled;
     enabled = settings.enabled !== false;
     right = enabled && settings.right !== false;
     updateHeader();
-    if (enabled && !wasEnabled) indentThreads();
-    if (!right) viewDrag = null;
+    indentThreads();
+    if (!right || settings.moveViews === false) viewDrag = null;
+    root.toggleAttribute("data-amp-sidebar-hide-footer", enabled && settings.hideSidebarFooter === true);
     root.toggleAttribute("data-amp-sidebar-right", right);
+    root.toggleAttribute("data-amp-sidebar-move-views", right && settings.moveViews !== false);
+    root.toggleAttribute("data-amp-sidebar-indent", right && settings.indentThreads !== false);
+    root.toggleAttribute("data-amp-sidebar-resize", right && settings.resizeSidebar !== false);
     const width = settings.rightWidth;
-    const customWidth = Number.isFinite(width) && width >= 200 && width <= 480;
+    const customWidth = right && settings.resizeSidebar !== false && Number.isFinite(width) && width >= 200 && width <= 480;
     root.toggleAttribute("data-amp-sidebar-right-width", customWidth);
     if (customWidth) {
       root.style.setProperty("--amp-sidebar-right-width", `${width}px`);
@@ -141,20 +151,19 @@
   }
 
   // Register first so changes made while the initial read is pending are not lost.
-  let settings = {};
   let changed = false;
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
-    for (const key of ["right", "rightWidth", "enabled"]) {
+    for (const key of settingKeys) {
       if (changes[key]) {
         changed = true;
         settings[key] = changes[key].newValue;
       }
     }
     apply(settings);
-    if (!right) finishResize();
+    if (!right || settings.resizeSidebar === false) finishResize();
   });
-  chrome.storage.local.get(["right", "rightWidth", "enabled"]).then((initial) => {
+  chrome.storage.local.get(settingKeys).then((initial) => {
     settings = changed ? { ...initial, ...settings } : initial;
     settingsReady = true;
     apply(settings);
@@ -163,7 +172,7 @@
   // Amp's native divider assumes a left sidebar. Own only this divider while
   // right mode is active, leaving Amp's other split panes and left mode alone.
   document.addEventListener("pointerdown", (event) => {
-    if (!right || !desktop.matches || event.button !== 0 || !event.isPrimary) return;
+    if (!right || settings.resizeSidebar === false || !desktop.matches || event.button !== 0 || !event.isPrimary) return;
     const handle = event.target instanceof Element
       ? event.target.closest(".app-content-frame > .resize-handle")
       : null;
@@ -197,7 +206,7 @@
   }, true);
 
   document.addEventListener("dblclick", (event) => {
-    if (!right || !desktop.matches || !(event.target instanceof Element)) return;
+    if (!right || settings.resizeSidebar === false || !desktop.matches || !(event.target instanceof Element)) return;
     if (!event.target.closest(".app-content-frame > .resize-handle")) return;
     event.preventDefault();
     event.stopImmediatePropagation();

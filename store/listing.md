@@ -1,10 +1,10 @@
 # Chrome Web Store listing
 
-Submission copy for version 1.0.0. This file is not a claim of store approval.
+Submission copy for version 1.1.0. This file is not a claim of store approval.
 
 ## Listing fields
 
-- Name: Amp sidebar right
+- Name: amp better defaults
 - Summary: Move Amp's desktop navigation sidebar to the right. Click the toolbar icon to switch sides.
 - Language: English
 - Suggested category: Workflow & Planning
@@ -16,7 +16,7 @@ Submission copy for version 1.0.0. This file is not a claim of store approval.
 
 Put Amp's navigation sidebar on the right side of your browser window.
 
-Amp sidebar right changes the desktop layout on ampcode.com. It starts on the
+amp better defaults changes the desktop layout on ampcode.com. It starts on the
 right, and you can click its Chrome toolbar icon to switch back to the left.
 Your choice applies across open Amp tabs and is remembered on this device.
 
@@ -28,13 +28,20 @@ Features:
 - Indent child threads using Amp's existing hierarchy in right-sidebar mode.
 - Keep Files, Changes, Terminal, Desktop, and Portal opposite navigation.
 - Turn all extension behavior off or on from the sidebar header or Options.
+- Optionally hide the whole desktop sidebar footer from Options, visible by default.
 - Read subagent tasks and results in an optional panel opposite navigation.
 - Leave mobile layouts below 768px unchanged.
+
+Every feature has its own Options checkbox: right-side placement, right-side
+resizing, auxiliary-view placement, child-thread indentation, header-switch
+visibility, subagent panel, and footer hiding. All default on except footer
+hiding. Turning off resizing restores native width without erasing the saved
+width. Collapse/expand stays native. Master disable preserves every preference.
 
 After installing, pin the extension and refresh any open Amp tabs. The toolbar
 badge shows R for right, L for left, or OFF when extension behavior is disabled.
 
-Privacy: only your enabled state, sidebar-side, and width preferences are stored locally.
+Privacy: only your master state, feature choices, sidebar side, and width are stored locally.
 No analytics, tracking, advertising, data collection, or network requests.
 Source code is public under the MIT license.
 
@@ -48,11 +55,12 @@ Independent project. Not affiliated with or endorsed by Amp.
 
 Single purpose:
 Customize Amp's desktop reading layout: position navigation on either side,
-resize the right sidebar, and optionally read subagent activity opposite it.
+resize the right sidebar, optionally hide its footer, and read subagent activity opposite it.
 
 Storage permission justification:
-The storage permission saves the enabled state, selected side, and right-sidebar width in
-chrome.storage.local. These three preferences apply to open Amp tabs and survive
+The storage permission saves nine preferences in chrome.storage.local: enabled,
+right, rightWidth, hideSidebarFooter, resizeSidebar, moveViews, indentThreads,
+showHeaderToggle, and subagentPanel. They apply to open Amp tabs and survive
 browser restarts. No page contents or personal data are persisted.
 
 Host access justification:
@@ -92,6 +100,15 @@ behavior. Use Amp's own sidebar toggle to collapse or reopen navigation. Drag
 the divider, or double-click it to reset width. On a thread with subagent
 activity, click Subagents in the conversation header to open its reading
 panel; close it or choose View original to restore inline activity.
+Right-click the extension toolbar icon and choose Options for **Hide sidebar
+footer**. It hides bottom navigation, pinned shortcuts, and the account row on
+desktop, independently of sidebar side. Uncheck it in Options to restore them.
+Master disable also restores the footer without clearing the preference. Mobile
+is unchanged. No account or shortcut contents are read by this setting.
+Options also controls each other feature independently. To test recovery, turn
+off the header-switch setting while hiding the footer, then use the extension's
+right-click Options menu to restore either. Feature choices remain editable
+while the master switch is off. Left-side resizing and indentation stay native.
 
 If the dashboard requests access instructions, provide the normal Amp sign-in
 steps. Do not put personal credentials in this public repository. Resolve any

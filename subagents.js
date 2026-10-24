@@ -4,7 +4,7 @@
   const eventSelector = '[data-transcript-automation-event="subagent"]';
   const detailSelector = "[data-transcript-subagent-prompt], [data-transcript-subagent-response], [data-transcript-subagent-error], [data-transcript-automation-event-markdown], [data-transcript-automation-event-text]";
   let enabled = false;
-  let changed = false;
+  let settings = {};
   let pending = false;
   let state;
   let sequence = 0;
@@ -276,13 +276,16 @@
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
     attributeFilter: ["data-thread-id", "data-transcript-tool-status", "data-transcript-subagent-working"] });
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "local" || !changes.enabled) return;
-    changed = true;
-    enabled = changes.enabled.newValue !== false;
+    if (area !== "local" || !(changes.enabled || changes.subagentPanel)) return;
+    for (const key of ["enabled", "subagentPanel"]) {
+      if (changes[key]) settings[key] = changes[key].newValue;
+    }
+    enabled = settings.enabled !== false && settings.subagentPanel !== false;
     schedule();
   });
-  chrome.storage.local.get("enabled").then(settings => {
-    if (!changed) enabled = settings.enabled !== false;
+  chrome.storage.local.get(["enabled", "subagentPanel"]).then(initial => {
+    settings = { ...initial, ...settings };
+    enabled = settings.enabled !== false && settings.subagentPanel !== false;
     schedule();
   });
   desktop.addEventListener("change", schedule);
