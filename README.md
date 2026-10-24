@@ -141,7 +141,7 @@ Live, privacy-redacted 1280 × 800 captures are included. Finish the publisher
 account requirements and privacy certifications in the Web Store dashboard.
 Do not substitute the supplemental fixture images for real app screenshots.
 
-The original icon shows a navy window frame, turquoise right sidebar, and coral
-right-pointing arrow. It uses no Amp logo or wordmark. `store/icon-master.png`
+The original icon uses forest green, warm cream, and muted olive colors from
+Amp's public app icon, without its logo or wordmark. `store/icon-master.png`
 is the raster master for the four runtime icons and promotional tile.
 The Amp name identifies the compatible service and remains its owner's property.
