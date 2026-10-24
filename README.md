@@ -8,9 +8,16 @@ choice applies to all open Amp tabs and survives browser restarts.
 Independent project, not affiliated with or endorsed by Amp. The code is MIT licensed.
 The Chrome Web Store release is in preparation, not published or approved.
 
+The [landing page](docs/index.html) explains the features and local installation.
+Serve the repository with a static server and open `/docs/` to preview it.
+The page has no build step, external fonts, or third-party scripts.
+See [GitHub Pages deployment](#github-pages-deployment) to publish the existing
+site directly from `docs/`. Hosting is not enabled by these files alone.
+
 ## Install locally
 
-1. Download the versioned ZIP from a repository release, or build it below.
+1. [Download the source ZIP](https://github.com/Tyru5/amp-sidebar-right/archive/refs/heads/main.zip),
+   clone this repository, or build a packaged ZIP below.
    **Extract the ZIP** to a permanent folder. Do not select the ZIP in Chrome.
 2. Open `chrome://extensions` in Chrome.
 3. Turn on **Developer mode**.
@@ -85,6 +92,32 @@ than risk attaching them to the wrong agent.
 Below 768px, navigation stays native and subagents use inline summaries only.
 Disable or remove the extension, then refresh open Amp tabs to restore the
 original page layout.
+
+## GitHub Pages deployment
+
+Publish the existing `docs/` site without a build step or custom workflow.
+`docs/.nojekyll` disables Jekyll processing. Styles, scripts, images, and fonts
+use relative paths, so they work under the repository's URL prefix.
+
+After the landing-page branch and Pages preparation are merged and pushed to
+`main`:
+
+1. Open the repository's **Settings → Pages**.
+2. Choose **Deploy from a branch**, then **main** and **/docs**. Click **Save**.
+3. Wait for the Pages deployment in **Actions** to succeed.
+4. Check <https://tyru5.github.io/amp-sidebar-right/>, including the layout
+   switch, installation link, FAQ, and images.
+
+Later pushes to `main` publish updates automatically. No PR previews are
+configured. GitHub publishes `docs/`, not the extension source or `tests/`.
+
+Preview and verify the publishing directory locally:
+
+```sh
+python3 -m http.server 8766 --bind 127.0.0.1 --directory docs
+# In another terminal:
+node tests/landing.mjs http://localhost:8766/
+```
 
 ## Development preview
 
@@ -164,10 +197,14 @@ In another terminal in this repository:
 
 ```sh
 node tests/browser.mjs
+node tests/landing.mjs
 ```
 
 The fixture's on-page toggle calls the actual service worker handler through
 a mock Chrome API. It is not a control added to the live Amp page.
+The landing-page checks cover its illustrative layout switch, keyboard access,
+FAQ, installation link, asset loading, and responsive overflow. Its demo does
+not change the extension's settings or access an Amp account.
 
 ## Compatibility and verification
 
