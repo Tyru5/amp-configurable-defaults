@@ -1,119 +1,417 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#e7eddf">
-  <meta name="description" content="Make Amp's desktop web layout your own. Right-side navigation, remembered width, child thread hierarchy, and a dedicated subagent reading panel. An independent, open-source Chrome extension.">
-  <meta property="og:title" content="amp better defaults | Your Amp. Your layout.">
-  <meta property="og:description" content="A small, open-source Chrome extension for a more personal Amp workspace. See the features and install locally.">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">
-  <title>amp better defaults | Your Amp. Your layout.</title>
-  <link rel="icon" href="assets/icon.png" type="image/png">
-  <link rel="preload" href="assets/manrope.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="landing.css">
-  <script src="landing.js" defer></script>
-</head>
-<body>
-  <a class="skip" href="#main">Skip to content</a>
-  <div class="header-band">
-    <header class="site-header wrap">
-      <a class="brand" href="#" aria-label="amp configurable defaults home"><img src="assets/icon.png" width="38" height="38" alt=""><span class="brand-title" aria-hidden="true">amp <span class="brand-edit"><s>better</s><span class="brand-correction">configurable</span></span> <strong>defaults</strong></span></a>
-      <nav aria-label="Main navigation">
-        <a href="#features">Features</a>
-        <a href="#install">How to install</a>
-        <a class="nav-source" href="https://github.com/Tyru5/amp-sidebar-right">GitHub <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
-      </nav>
-    </header>
-  </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#e7eddf" />
+    <meta
+      name="description"
+      content="Make Amp's desktop web layout your own. Right-side navigation, remembered width, child thread hierarchy, and a dedicated subagent reading panel. An independent, open-source Chrome extension."
+    />
+    <meta property="og:title" content="amp configurable defaults | Your Amp. Your layout." />
+    <meta
+      property="og:description"
+      content="A small, open-source Chrome extension for a more personal Amp workspace. See the features and install locally."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <title>amp configurable defaults | Your Amp. Your layout.</title>
+    <link rel="icon" href="assets/icon.png" type="image/png" />
+    <link rel="preload" href="assets/manrope.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="landing.css" />
+    <script src="landing.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="header-band">
+      <header class="site-header wrap">
+        <a class="brand" href="#" aria-label="amp configurable defaults home"
+          ><img src="assets/icon.png" width="38" height="38" alt="" /><span
+            class="brand-title"
+            aria-hidden="true"
+            >amp
+            <span class="brand-edit"
+              ><s>better</s><span class="brand-correction">configurable</span></span
+            >
+            <strong>defaults</strong></span
+          ></a
+        >
+        <nav aria-label="Main navigation">
+          <a href="#features">Features</a>
+          <a href="#install">How to install</a>
+          <a class="nav-source" href="https://github.com/Tyru5/amp-configurable-defaults"
+            >GitHub
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg
+          ></a>
+        </nav>
+      </header>
+    </div>
     <main id="main">
-    <div class="opening">
-      <section class="hero wrap" aria-labelledby="hero-title">
-        <div class="hero-intro">
-          <h1 id="hero-title">Your Amp.<br>Your layout.</h1>
-          <div class="hero-copy">
-            <p>A few better defaults for the way you work. Move navigation to the right, make room for your threads, and give subagents a place of their own.</p>
-            <a class="button primary" href="#install"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4"/></svg>Install locally</a>
-            <p class="install-note">Version 1.2.0 · Free, open source. For Amp in desktop Chrome.<br>Not on the Chrome Web Store yet.</p>
-          </div>
-        </div>
-        <div class="demo-heading">
-          <p>Same Amp. A different point of view.</p>
-          <div class="side-controls" role="group" aria-label="Illustrative demo sidebar position">
-            <button type="button" data-side="left" aria-pressed="false">Left sidebar</button>
-            <button type="button" data-side="right" aria-pressed="true">Right sidebar</button>
-          </div>
-        </div>
-        <div class="workspace" data-side="right" aria-label="Illustrative Amp layout preview">
-          <div class="browser-bar"><span class="browser-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>ampcode.com</span><span class="browser-label">Layout preview</span></div>
-          <div class="workspace-body">
-            <aside class="demo-agents" aria-label="Illustrative subagent panel">
-              <div class="pane-title">Subagents <span>2</span></div>
-              <div class="agent"><span class="status-dot"></span>Review accessibility<small>Finished · Task · Output</small></div>
-              <div class="agent"><span class="status-dot"></span>Check responsive layout<small>Finished · Task · Output</small></div>
-              <div class="agent-guide"><strong>A list, not a wall of text.</strong><p>In the extension, hover or focus Task or Output for a reading sheet. Click to keep it open.</p><span>Illustration only</span></div>
-            </aside>
-            <div class="demo-conversation">
-              <div class="conversation-top">Build a thoughtful workspace <span>Subagents 2</span></div>
-              <div class="conversation-content"><div class="sample-prompt">Let's make a little more room to think.</div><div class="sample-response"><span class="amp-mark" aria-hidden="true">a</span><div><strong>A layout that works your way.</strong><p>Navigation on one side. Agent output on the other. Your conversation in the middle.</p><div class="sample-code"><span>workspace</span><br>&nbsp;&nbsp;conversation: in focus<br>&nbsp;&nbsp;sidebar: your choice<br>&nbsp;&nbsp;subagents: in view</div><div class="inline-summary">✓ Review accessibility · Finished</div></div></div></div>
-              <div class="demo-composer"><span>What would you like to build?</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 12 5-5 5 5M12 7v11"/></svg></div>
+      <div class="opening">
+        <section class="hero wrap" aria-labelledby="hero-title">
+          <div class="hero-intro">
+            <h1 id="hero-title">Your Amp.<br />Your layout.</h1>
+            <div class="hero-copy">
+              <p>
+                A few better defaults for the way you work. Move navigation to the right, make room
+                for your threads, and give subagents a place of their own.
+              </p>
+              <a class="button primary" href="#install"
+                ><svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4" /></svg
+                >Install locally</a
+              >
+              <p class="install-note">
+                Version 1.2.0 · Free, open source. For Amp in desktop Chrome.<br />Not on the Chrome
+                Web Store yet.
+              </p>
             </div>
-            <aside class="demo-navigation" aria-label="Illustrative navigation sidebar">
-              <div class="pane-title"><span class="demo-wordmark">amp</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M14 5v14"/></svg></div>
-              <div class="new-thread"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New thread</div>
-              <p class="thread-label">Your threads</p>
-              <div class="demo-thread current">Build a thoughtful workspace</div>
-              <div class="demo-thread child">Review accessibility</div>
-              <div class="demo-thread child">Check responsive layout</div>
-              <div class="demo-thread">Explore the API</div>
-              <div class="demo-thread">Ship the small things</div>
-              <div class="demo-footer"><span>Projects</span><span>Activity</span><span class="profile-dot">Y</span></div>
-            </aside>
           </div>
-        </div>
-        <div class="demo-caption"><span>Illustrative desktop layout with sample content, not a live Amp session.</span><span id="demo-status" role="status">Right sidebar selected in preview.</span></div>
-        <div class="opening-footer"><span>Made for ampcode.com</span><span>Local storage + access to ampcode.com only</span><span>No analytics in the extension</span></div>
-      </section>
-  </div>
+          <div class="demo-heading">
+            <p>Same Amp. A different point of view.</p>
+            <div class="side-controls" role="group" aria-label="Illustrative demo sidebar position">
+              <button type="button" data-side="left" aria-pressed="false">Left sidebar</button>
+              <button type="button" data-side="right" aria-pressed="true">Right sidebar</button>
+            </div>
+          </div>
+          <div class="workspace" data-side="right" aria-label="Illustrative Amp layout preview">
+            <div class="browser-bar">
+              <span class="browser-dots" aria-hidden="true"><i></i><i></i><i></i></span
+              ><span>ampcode.com</span><span class="browser-label">Layout preview</span>
+            </div>
+            <div class="workspace-body">
+              <aside class="demo-agents" aria-label="Illustrative subagent panel">
+                <div class="pane-title">Subagents <span>2</span></div>
+                <div class="agent">
+                  <span class="status-dot"></span>Review accessibility<small
+                    >Finished · Task · Output</small
+                  >
+                </div>
+                <div class="agent">
+                  <span class="status-dot"></span>Check responsive layout<small
+                    >Finished · Task · Output</small
+                  >
+                </div>
+                <div class="agent-guide">
+                  <strong>A list, not a wall of text.</strong>
+                  <p>
+                    In the extension, hover or focus Task or Output for a reading sheet. Click to
+                    keep it open.
+                  </p>
+                  <span>Illustration only</span>
+                </div>
+              </aside>
+              <div class="demo-conversation">
+                <div class="conversation-top">
+                  Build a thoughtful workspace <span>Subagents 2</span>
+                </div>
+                <div class="conversation-content">
+                  <div class="sample-prompt">Let's make a little more room to think.</div>
+                  <div class="sample-response">
+                    <span class="amp-mark" aria-hidden="true">a</span>
+                    <div>
+                      <strong>A layout that works your way.</strong>
+                      <p>
+                        Navigation on one side. Agent output on the other. Your conversation in the
+                        middle.
+                      </p>
+                      <div class="sample-code">
+                        <span>workspace</span><br />&nbsp;&nbsp;conversation: in focus<br />&nbsp;&nbsp;sidebar:
+                        your choice<br />&nbsp;&nbsp;subagents: in view
+                      </div>
+                      <div class="inline-summary">✓ Review accessibility · Finished</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="demo-composer">
+                  <span>What would you like to build?</span
+                  ><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m7 12 5-5 5 5M12 7v11" />
+                  </svg>
+                </div>
+              </div>
+              <aside class="demo-navigation" aria-label="Illustrative navigation sidebar">
+                <div class="pane-title">
+                  <span class="demo-wordmark">amp</span
+                  ><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4" y="5" width="16" height="14" rx="2" />
+                    <path d="M14 5v14" />
+                  </svg>
+                </div>
+                <div class="new-thread">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>New
+                  thread
+                </div>
+                <p class="thread-label">Your threads</p>
+                <div class="demo-thread current">Build a thoughtful workspace</div>
+                <div class="demo-thread child">Review accessibility</div>
+                <div class="demo-thread child">Check responsive layout</div>
+                <div class="demo-thread">Explore the API</div>
+                <div class="demo-thread">Ship the small things</div>
+                <div class="demo-footer">
+                  <span>Projects</span><span>Activity</span><span class="profile-dot">Y</span>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <div class="demo-caption">
+            <span>Illustrative desktop layout with sample content, not a live Amp session.</span
+            ><span id="demo-status" role="status">Right sidebar selected in preview.</span>
+          </div>
+          <div class="opening-footer">
+            <span>Made for ampcode.com</span><span>Local storage + access to ampcode.com only</span
+            ><span>No analytics in the extension</span>
+          </div>
+        </section>
+      </div>
       <section id="features" class="features wrap" aria-labelledby="features-title">
-        <div class="section-intro"><h2 id="features-title">Small changes.<br>More room for your work.</h2><p>Pick a side without switching anything else off. Layout settings and the optional reading panel have independent controls in Options.</p></div>
+        <div class="section-intro">
+          <h2 id="features-title">Small changes.<br />More room for your work.</h2>
+          <p>
+            Pick a side without switching anything else off. Layout settings and the optional
+            reading panel have independent controls in Options.
+          </p>
+        </div>
         <div class="feature-story">
-          <div class="feature-copy"><svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="8" width="30" height="24" rx="3"/><path d="M25 8v24M11 16h8m-8 6h5"/></svg><h3>Put navigation on your side.</h3><p>The sidebar starts on the right. Click the pinned extension icon for settings. The sidebar header arrow and <strong>Move sidebar to the right</strong> setting switch placement only. The toolbar's R/L badge shows your saved side.</p><p>In right mode, drag the divider to set your width. Double-click to restore Amp's width. Your choice stays put across tabs and browser restarts.</p><div class="feature-detail">Child threads indent by depth on either side. Switching sides keeps your other settings.</div></div>
-          <figure><img src="assets/right-sidebar.png" alt="Privacy-redacted live Amp capture of the earlier 1.1 layout, with navigation on the right and child threads indented beneath their parent." width="1280" height="800" loading="lazy"><figcaption>Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24, 2026. Private content hidden. In v1.2 the header arrow switches sides, not all features.</figcaption></figure>
+          <div class="feature-copy">
+            <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
+              <rect x="5" y="8" width="30" height="24" rx="3" />
+              <path d="M25 8v24M11 16h8m-8 6h5" />
+            </svg>
+            <h3>Put navigation on your side.</h3>
+            <p>
+              The sidebar starts on the right. Click the pinned extension icon for settings. The
+              sidebar header arrow and <strong>Move sidebar to the right</strong> setting switch
+              placement only. The toolbar's R/L badge shows your saved side.
+            </p>
+            <p>
+              In right mode, drag the divider to set your width. Double-click to restore Amp's
+              width. Your choice stays put across tabs and browser restarts.
+            </p>
+            <div class="feature-detail">
+              Child threads indent by depth on either side. Switching sides keeps your other
+              settings.
+            </div>
+          </div>
+          <figure>
+            <img
+              src="assets/right-sidebar.png"
+              alt="Privacy-redacted live Amp capture of the earlier 1.1 layout, with navigation on the right and child threads indented beneath their parent."
+              width="1280"
+              height="800"
+              loading="lazy"
+            />
+            <figcaption>
+              Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24, 2026. Private content
+              hidden. In v1.2 the header arrow switches sides, not all features.
+            </figcaption>
+          </figure>
         </div>
         <div class="feature-story reverse">
-          <div class="feature-copy"><svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="8" width="30" height="24" rx="3"/><path d="M16 8v24m-6-17h2m-2 5h2m9-5h9m-9 6h9m-9 5h6"/></svg><h3>Give subagents their own reading room.</h3><p>Open <strong>Subagents</strong> in the desktop conversation header for a compact agent list opposite navigation. Hover or focus <strong>Task</strong> or <strong>Output</strong> to preview a wider reading sheet. Click to pin it open.</p><p>Files and Changes can stay alongside the list; narrower desktop windows use an overlay. Escape closes the sheet first, then the panel. <strong>View original</strong> reveals the selected activity inline.</p><div class="feature-detail">Compact inline summaries remain on mobile and when the panel is off. Click one to expand Amp's original content.</div></div>
-          <figure><img src="assets/right-subagents.png" alt="Privacy-redacted live Amp capture of the earlier v1.1 layout, with two finished subagents in a left-side panel and navigation on the right." width="1280" height="800" loading="lazy"><figcaption>Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24, 2026. Private content hidden. In v1.2, Task and Output open in a separate reading sheet.</figcaption></figure>
+          <div class="feature-copy">
+            <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
+              <rect x="5" y="8" width="30" height="24" rx="3" />
+              <path d="M16 8v24m-6-17h2m-2 5h2m9-5h9m-9 6h9m-9 5h6" />
+            </svg>
+            <h3>Give subagents their own reading room.</h3>
+            <p>
+              Open <strong>Subagents</strong> in the desktop conversation header for a compact agent
+              list opposite navigation. Hover or focus <strong>Task</strong> or
+              <strong>Output</strong> to preview a wider reading sheet. Click to pin it open.
+            </p>
+            <p>
+              Files and Changes can stay alongside the list; narrower desktop windows use an
+              overlay. Escape closes the sheet first, then the panel.
+              <strong>View original</strong> reveals the selected activity inline.
+            </p>
+            <div class="feature-detail">
+              Compact inline summaries remain on mobile and when the panel is off. Click one to
+              expand Amp's original content.
+            </div>
+          </div>
+          <figure>
+            <img
+              src="assets/right-subagents.png"
+              alt="Privacy-redacted live Amp capture of the earlier v1.1 layout, with two finished subagents in a left-side panel and navigation on the right."
+              width="1280"
+              height="800"
+              loading="lazy"
+            />
+            <figcaption>
+              Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24, 2026. Private content
+              hidden. In v1.2, Task and Output open in a separate reading sheet.
+            </figcaption>
+          </figure>
         </div>
         <div class="more-features">
-          <article><h3>Keep tools opposite navigation.</h3><p>Files, Changes, Terminal, Desktop, and Portal move left in right-sidebar mode. Their dividers resize in the direction you drag.</p></article>
-          <article><h3>Clear the footer, if you want.</h3><p>Hide the desktop sidebar's bottom section, including shortcuts and the account row. It's visible by default and easy to restore in Options.</p></article>
-          <article><h3>Less hunting. More reading.</h3><p>Right-sidebar thread cards open to the left on hover or keyboard focus. Tool rows get a subtle tint; active subagent dots pulse gently, or stay still with reduced motion.</p></article>
+          <article>
+            <h3>Keep tools opposite navigation.</h3>
+            <p>
+              Files, Changes, Terminal, Desktop, and Portal move left in right-sidebar mode. Their
+              dividers resize in the direction you drag.
+            </p>
+          </article>
+          <article>
+            <h3>Clear the footer, if you want.</h3>
+            <p>
+              Hide the desktop sidebar's bottom section, including shortcuts and the account row.
+              It's visible by default and easy to restore in Options.
+            </p>
+          </article>
+          <article>
+            <h3>Less hunting. More reading.</h3>
+            <p>
+              Right-sidebar thread cards open to the left on hover or keyboard focus. Tool rows get
+              a subtle tint; active subagent dots pulse gently, or stay still with reduced motion.
+            </p>
+          </article>
         </div>
       </section>
       <section id="install" class="installation" aria-labelledby="install-title">
         <div class="wrap install-layout">
-          <div class="install-intro"><h2 id="install-title">A small install.<br>A familiar workspace.</h2><p>The Web Store release is in preparation. For now, load the open-source extension locally in Chrome.</p><a class="button light" href="https://github.com/Tyru5/amp-sidebar-right/archive/refs/heads/main.zip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4"/></svg>Download source ZIP</a><p class="download-note">Downloads the repository's main branch from GitHub.<br>No build step needed.</p><a class="text-link" href="https://github.com/Tyru5/amp-sidebar-right">Read the source on GitHub</a></div>
+          <div class="install-intro">
+            <h2 id="install-title">A small install.<br />A familiar workspace.</h2>
+            <p>
+              The Web Store release is in preparation. For now, load the open-source extension
+              locally in Chrome.
+            </p>
+            <a
+              class="button light"
+              href="https://github.com/Tyru5/amp-configurable-defaults/archive/refs/heads/main.zip"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4" /></svg
+              >Download source ZIP</a
+            >
+            <p class="download-note">
+              Downloads the repository's main branch from GitHub.<br />No build step needed.
+            </p>
+            <a class="text-link" href="https://github.com/Tyru5/amp-configurable-defaults"
+              >Read the source on GitHub</a
+            >
+          </div>
           <ol class="install-steps">
-            <li><div><h3>Download and extract.</h3><p>Unzip the source into a permanent folder. Inside it, find the <code>amp-sidebar-right-main</code> folder containing <code>manifest.json</code>. Keep that folder; Chrome loads the extension from it.</p></div></li>
-            <li><div><h3>Load it in Chrome.</h3><p>Type <code>chrome://extensions</code> into Chrome's address bar. Enable <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and select the folder containing <code>manifest.json</code>, not the ZIP. Keep Developer mode on. Chrome may show a developer-mode warning.</p></div></li>
-            <li><div><h3>Pin it. Refresh Amp. Pick a side.</h3><p>Pin <strong>amp better defaults</strong> from Chrome's Extensions menu. Refresh existing Amp tabs, then click the pinned icon to customize each feature in the popup. Right-click the icon and choose <strong>Options</strong> for the full settings page.</p></div></li>
+            <li>
+              <div>
+                <h3>Download and extract.</h3>
+                <p>
+                  Unzip the source into a permanent folder. Inside it, find the
+                  <code>amp-configurable-defaults-main</code> folder containing
+                  <code>manifest.json</code>. Keep that folder; Chrome loads the extension from it.
+                </p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <h3>Load it in Chrome.</h3>
+                <p>
+                  Type <code>chrome://extensions</code> into Chrome's address bar. Enable
+                  <strong>Developer mode</strong>, click <strong>Load unpacked</strong>, and select
+                  the folder containing <code>manifest.json</code>, not the ZIP. Keep Developer mode
+                  on. Chrome may show a developer-mode warning.
+                </p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <h3>Pin it. Refresh Amp. Pick a side.</h3>
+                <p>
+                  Pin <strong>amp configurable defaults</strong> from Chrome's Extensions menu.
+                  Refresh existing Amp tabs, then click the pinned icon to customize each feature in
+                  the popup. Right-click the icon and choose <strong>Options</strong> for the full
+                  settings page.
+                </p>
+              </div>
+            </li>
           </ol>
         </div>
       </section>
       <section class="questions wrap" aria-labelledby="questions-title">
-        <div><h2 id="questions-title">A few things<br>worth knowing.</h2><p>Just a local extension.<br>Your Amp account stays yours.</p></div>
+        <div>
+          <h2 id="questions-title">A few things<br />worth knowing.</h2>
+          <p>Just a local extension.<br />Your Amp account stays yours.</p>
+        </div>
         <div class="faq-list">
-          <details><summary>Is this an official Amp extension?</summary><p>No. This is an independent, MIT-licensed project. It is not affiliated with or endorsed by Amp. The Amp name identifies the service it works with.</p></details>
-          <details><summary>What does it store or read?</summary><p>The extension needs local storage and access to ampcode.com only. Chrome may describe that access as reading and changing site data. Eight active layout and feature preferences are saved in your local Chrome profile, not synced between devices. Inline summaries and the reading panel use rendered subagent titles, statuses, tasks, results, and errors in memory for the current thread, expanding Amp's native disclosures as needed. That view is discarded on navigation or reload; subagent content is never saved or transmitted. No additional history is fetched. The extension makes no network requests and has no analytics.</p><a href="https://github.com/Tyru5/amp-sidebar-right/blob/main/PRIVACY.md">Read the full privacy policy</a></details>
-          <details><summary>Does it work in the native Amp desktop app?</summary><p>No. Use Amp in desktop Chrome or a Chrome-installed PWA. Chrome extensions cannot modify the separate native Amp app, and Chrome on mobile does not support extensions. Below 768px in a supported browser, navigation stays native and subagents use compact inline summaries rather than the desktop panel.</p></details>
-          <details><summary>How do I change or undo my settings?</summary><p>Right-click the extension's toolbar icon and choose Options. Layout settings and the desktop reading panel have separate checkboxes. Switching sides does not disable other features, and turning off the panel keeps inline summaries. There is no master on/off switch in v1.2. To remove all extension changes, disable or remove the extension in Chrome, then refresh open Amp tabs.</p></details>
-          <details><summary>What if an Amp update changes the layout?</summary><p>Amp's page structure isn't a public API. A site update may require an extension update. Disable the extension in Chrome and refresh Amp if something looks wrong, and report the issue on GitHub. Local installs do not auto-update: download and extract the new source ZIP, replacing the files in the existing folder Chrome loads. For a cloned install, run <code>git pull</code> in that folder instead. Click <strong>Reload</strong> in Chrome's extensions page, re-enable the extension if you disabled it, and refresh Amp. Keep the installed folder in place; deleting or moving it breaks the install.</p><a href="https://github.com/Tyru5/amp-sidebar-right/issues">Report a compatibility issue</a></details>
+          <details>
+            <summary>Is this an official Amp extension?</summary>
+            <p>
+              No. This is an independent, MIT-licensed project. It is not affiliated with or
+              endorsed by Amp. The Amp name identifies the service it works with.
+            </p>
+          </details>
+          <details>
+            <summary>What does it store or read?</summary>
+            <p>
+              The extension needs local storage and access to ampcode.com only. Chrome may describe
+              that access as reading and changing site data. Eight active layout and feature
+              preferences are saved in your local Chrome profile, not synced between devices. Inline
+              summaries and the reading panel use rendered subagent titles, statuses, tasks,
+              results, and errors in memory for the current thread, expanding Amp's native
+              disclosures as needed. That view is discarded on navigation or reload; subagent
+              content is never saved or transmitted. No additional history is fetched. The extension
+              makes no network requests and has no analytics.
+            </p>
+            <a href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md"
+              >Read the full privacy policy</a
+            >
+          </details>
+          <details>
+            <summary>Does it work in the native Amp desktop app?</summary>
+            <p>
+              No. Use Amp in desktop Chrome or a Chrome-installed PWA. Chrome extensions cannot
+              modify the separate native Amp app, and Chrome on mobile does not support extensions.
+              Below 768px in a supported browser, navigation stays native and subagents use compact
+              inline summaries rather than the desktop panel.
+            </p>
+          </details>
+          <details>
+            <summary>How do I change or undo my settings?</summary>
+            <p>
+              Right-click the extension's toolbar icon and choose Options. Layout settings and the
+              desktop reading panel have separate checkboxes. Switching sides does not disable other
+              features, and turning off the panel keeps inline summaries. There is no master on/off
+              switch in v1.2. To remove all extension changes, disable or remove the extension in
+              Chrome, then refresh open Amp tabs.
+            </p>
+          </details>
+          <details>
+            <summary>What if an Amp update changes the layout?</summary>
+            <p>
+              Amp's page structure isn't a public API. A site update may require an extension
+              update. Disable the extension in Chrome and refresh Amp if something looks wrong, and
+              report the issue on GitHub. Local installs do not auto-update: download and extract
+              the new source ZIP, replacing the files in the existing folder Chrome loads. For a
+              cloned install, run <code>git pull</code> in that folder instead. Click
+              <strong>Reload</strong> in Chrome's extensions page, re-enable the extension if you
+              disabled it, and refresh Amp. Keep the installed folder in place; deleting or moving
+              it breaks the install.
+            </p>
+            <a href="https://github.com/Tyru5/amp-configurable-defaults/issues"
+              >Report a compatibility issue</a
+            >
+          </details>
         </div>
       </section>
-      <section class="closing wrap" aria-labelledby="closing-title"><div><h2 id="closing-title">Make a little room.</h2><p>Your next thread can feel a little more like you.</p></div><a class="button primary" href="#install">Install locally<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-5-5 5 5 5-5"/></svg></a></section>
+      <div class="closing wrap"><a class="button primary" href="#install">Install locally</a></div>
     </main>
-    <footer class="site-footer wrap"><a class="brand" href="#" aria-label="amp configurable defaults home"><img src="assets/icon.png" width="30" height="30" alt=""><span class="brand-title" aria-hidden="true">amp <span class="brand-edit"><s>better</s><span class="brand-correction">configurable</span></span> <strong>defaults</strong></span></a><p>Independent project. Not affiliated with or endorsed by Amp.</p><div><a href="https://github.com/Tyru5/amp-sidebar-right/blob/main/PRIVACY.md">Privacy</a><a href="https://github.com/Tyru5/amp-sidebar-right/blob/main/LICENSE">MIT license</a><a href="https://github.com/Tyru5/amp-sidebar-right">GitHub</a></div></footer>
-</body>
+    <footer class="site-footer wrap">
+      <a class="brand" href="#" aria-label="amp configurable defaults home"
+        ><img src="assets/icon.png" width="30" height="30" alt="" /><span
+          class="brand-title"
+          aria-hidden="true"
+          >amp
+          <span class="brand-edit"
+            ><s>better</s><span class="brand-correction">configurable</span></span
+          >
+          <strong>defaults</strong></span
+        ></a
+      >
+      <p>Independent project. Not affiliated with or endorsed by Amp.</p>
+      <div>
+        <a href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md">Privacy</a
+        ><a href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/LICENSE"
+          >MIT license</a
+        ><a href="https://github.com/Tyru5/amp-configurable-defaults">GitHub</a>
+      </div>
+    </footer>
+  </body>
 </html>

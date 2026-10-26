@@ -1,4 +1,4 @@
-# amp better defaults
+# amp configurable defaults
 
 A dependency-free Chrome Manifest V3 extension for `https://ampcode.com`.
 The desktop sidebar starts on the right. Click the extension's toolbar button
@@ -16,14 +16,14 @@ site directly from `docs/`. Hosting is not enabled by these files alone.
 
 ## Install locally
 
-1. [Download the source ZIP](https://github.com/Tyru5/amp-sidebar-right/archive/refs/heads/main.zip),
+1. [Download the source ZIP](https://github.com/Tyru5/amp-configurable-defaults/archive/refs/heads/main.zip),
    clone this repository, or build a packaged ZIP below.
    **Extract the ZIP** to a permanent folder. Do not select the ZIP in Chrome.
 2. Open `chrome://extensions` in Chrome.
 3. Turn on **Developer mode**.
 4. Click **Load unpacked** and select the extracted folder that directly
    contains `manifest.json`. You can also load this cloned repository folder.
-5. Pin **amp better defaults** from Chrome's Extensions menu.
+5. Pin **amp configurable defaults** from Chrome's Extensions menu.
 6. Refresh any Amp tabs that were already open.
 
 Click the pinned icon to change sidebar placement or any other feature in the
@@ -48,15 +48,15 @@ thread information card to its left. Amp still owns the content and dismissal.
 
 Every extension feature has its own checkbox in **Options**:
 
-| Setting | Default | When off |
-| --- | --- | --- |
-| Move sidebar to the right | On | Native left sidebar; also controlled by the sidebar header switch |
-| Resize and remember right-sidebar width | On | Native width, no right resize handle; saved width retained |
-| Keep auxiliary views opposite the sidebar | On | Native view placement and divider input |
-| Indent child threads | On | Native row spacing on either side |
-| Show placement switch in sidebar header | On | No injected placement switch; use Options or the toolbar icon |
-| Enable subagent reading panel | On | Native inline activity; removes any open panel |
-| Hide sidebar footer | Off | Native footer visible |
+| Setting                                   | Default | When off                                                          |
+| ----------------------------------------- | ------- | ----------------------------------------------------------------- |
+| Move sidebar to the right                 | On      | Native left sidebar; also controlled by the sidebar header switch |
+| Resize and remember right-sidebar width   | On      | Native width, no right resize handle; saved width retained        |
+| Keep auxiliary views opposite the sidebar | On      | Native view placement and divider input                           |
+| Indent child threads                      | On      | Native row spacing on either side                                 |
+| Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
+| Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
+| Hide sidebar footer                       | Off     | Native footer visible                                             |
 
 Feature choices remain editable and active with either sidebar placement.
 Custom resizing applies only in right mode; left-side resizing stays native.
@@ -108,7 +108,7 @@ After the landing-page branch and Pages preparation are merged and pushed to
 1. Open the repository's **Settings → Pages**.
 2. Choose **Deploy from a branch**, then **main** and **/docs**. Click **Save**.
 3. Wait for the Pages deployment in **Actions** to succeed.
-4. Check <https://tyru5.github.io/amp-sidebar-right/>, including the layout
+4. Check <https://ampyourway.dev/>, including the layout
    switch, installation link, FAQ, and images.
 
 Later pushes to `main` publish updates automatically. No PR previews are
@@ -127,8 +127,8 @@ node tests/landing.mjs http://localhost:8766/
 These are local compatibility fixtures based on Amp's published markup,
 not screenshots of a signed-in Amp session and not Web Store listing images.
 
-| Right sidebar | Left sidebar |
-| --- | --- |
+| Right sidebar                                              | Left sidebar                                             |
+| ---------------------------------------------------------- | -------------------------------------------------------- |
 | ![Right sidebar in local fixture](docs/previews/right.png) | ![Left sidebar in local fixture](docs/previews/left.png) |
 
 See the [feature screenshot catalog](store/screenshots/README.md) for
@@ -183,7 +183,7 @@ python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
 
-The build writes `dist/amp-better-defaults-1.2.0.zip` and a SHA-256 checksum.
+The build writes `dist/amp-configurable-defaults-1.2.0.zip` and a SHA-256 checksum.
 The manifest is at the ZIP root as required by the Web Store. Only runtime
 files, icons, and the license are included, never tests or developer previews.
 GitHub Actions runs syntax, toolbar behavior, and packaging checks on pushes

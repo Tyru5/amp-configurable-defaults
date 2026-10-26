@@ -1,10 +1,10 @@
 # Privacy policy
 
-Effective October 24, 2026. Applies to amp better defaults version 1.2.0.
+Effective October 24, 2026. Applies to amp configurable defaults version 1.2.0.
 
 ## What the extension does
 
-amp better defaults changes the desktop sidebar layout and provides an optional
+amp configurable defaults changes the desktop sidebar layout and provides an optional
 subagent reading panel on `https://ampcode.com`. It is independent of Amp and
 is not affiliated with or endorsed by Amp.
 
@@ -76,7 +76,7 @@ removes its locally stored preferences from that Chrome profile.
 ## Contact and changes
 
 For privacy questions, open an issue at
-<https://github.com/Tyru5/amp-sidebar-right/issues>. Do not include private thread
+<https://github.com/Tyru5/amp-configurable-defaults/issues>. Do not include private thread
 contents, credentials, or other sensitive information in a public issue.
 
 This policy will be updated here if the extension's data practices change.

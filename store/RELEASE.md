@@ -44,7 +44,7 @@ python3 scripts/package.py
 ```
 
 1. Open https://chrome.google.com/webstore/devconsole.
-2. Add a new item and upload `dist/amp-better-defaults-1.2.0.zip` directly.
+2. Add a new item and upload `dist/amp-configurable-defaults-1.2.0.zip` directly.
    Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, promo tile, and
    the suggested real screenshots in `store/screenshots/README.md`. Never upload

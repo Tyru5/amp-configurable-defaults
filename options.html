@@ -1,46 +1,192 @@
 <!doctype html>
 <html lang="en">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>amp better defaults settings</title>
-<style>
-  :root { color-scheme: light dark; }
-  body { margin: 0; min-height: 100dvh; box-sizing: border-box; padding: 24px; display: flex; font: 14px/1.5 system-ui, sans-serif; color: CanvasText; background: Canvas; }
-  main { width: 100%; max-width: 36rem; min-width: 0; margin: auto; }
-  h1 { font-size: 20px; margin: 0 0 20px; }
-  label { display: flex; align-items: center; gap: 10px; padding-block: 8px; cursor: pointer; font-weight: 600; }
-  input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; }
-  input:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
-  p { margin: 8px 0; }
-  #status { min-height: 1.5em; }
-  .popup body { width: 420px; min-height: 0; max-height: 580px; padding: 16px; display: block; overflow-y: auto; }
-  .popup h1 { margin-bottom: 4px; }
-  .popup p { font-size: 12px; margin: 4px 0 10px; }
-  .popup .page-help { display: none; }
-  #open-options { font: inherit; color: LinkText; background: none; border: 0; padding: 4px 0; margin-bottom: 8px; text-decoration: underline; cursor: pointer; }
-  #open-options:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
-</style>
-<body>
-<main>
-<h1>amp better defaults</h1>
-<button id="open-options" type="button" hidden>Open settings in a tab</button>
-<label><input id="right" type="checkbox" checked disabled aria-describedby="side-description">Move sidebar to the right</label>
-<p id="side-description">Uncheck for Amp’s native left sidebar. The sidebar header switch also changes this setting. Other features stay active on either side.</p>
-<label><input id="resizeSidebar" type="checkbox" checked disabled aria-describedby="resize-description">Resize and remember right-sidebar width</label>
-<p id="resize-description">Drag the right divider, or double-click to reset width. When off, right mode uses Amp’s width with no resize handle. Your saved width is kept. Left-side resizing stays native.</p>
-<label><input id="moveViews" type="checkbox" checked disabled aria-describedby="views-description">Keep auxiliary views opposite the sidebar</label>
-<p id="views-description">Move Files, Changes, Terminal, Desktop, and Portal left when navigation is on the right, with matching divider direction. When off, keep Amp’s native view placement.</p>
-<label><input id="indentThreads" type="checkbox" checked disabled aria-describedby="indent-description">Indent child threads</label>
-<p id="indent-description">Indent by hierarchy depth on either side without reordering threads. When off, keep native spacing. Mobile spacing stays native.</p>
-<label><input id="showHeaderToggle" type="checkbox" checked disabled aria-describedby="header-description">Show placement switch in sidebar header</label>
-<p id="header-description">Switch between left and right without changing other features. Options and the toolbar icon remain accessible when this switch is hidden.</p>
-<label><input id="subagentPanel" type="checkbox" checked disabled aria-describedby="subagent-description">Enable subagent reading panel</label>
-<p id="subagent-description">Offer an optional desktop agent list with Task and Output reading sheets. Compact inline summaries remain available when off, on either side, and on mobile.</p>
-<label><input id="hideSidebarFooter" type="checkbox" disabled aria-describedby="footer-description">Hide sidebar footer</label>
-<p id="footer-description">Hide the bottom navigation, pinned shortcuts, and account row on either side. Visible by default. Uncheck here to restore it. Mobile is unchanged.</p>
-<p class="page-help">Your preferences are remembered on this device. Changes apply immediately to open Amp tabs. Click the extension toolbar icon for quick settings, or right-click it → Options for this page.</p>
-<p id="status" role="status">Loading settings…</p>
-</main>
-<script src="options.js"></script>
-</body>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>amp configurable defaults settings</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      box-sizing: border-box;
+      padding: 24px;
+      display: flex;
+      font:
+        14px/1.5 system-ui,
+        sans-serif;
+      color: CanvasText;
+      background: Canvas;
+    }
+    main {
+      width: 100%;
+      max-width: 36rem;
+      min-width: 0;
+      margin: auto;
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0 0 20px;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-block: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      flex-shrink: 0;
+    }
+    input:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 3px;
+    }
+    p {
+      margin: 8px 0;
+    }
+    #status {
+      min-height: 1.5em;
+    }
+    .popup body {
+      width: 420px;
+      min-height: 0;
+      max-height: 580px;
+      padding: 16px;
+      display: block;
+      overflow-y: auto;
+    }
+    .popup h1 {
+      margin-bottom: 4px;
+    }
+    .popup p {
+      font-size: 12px;
+      margin: 4px 0 10px;
+    }
+    .popup .page-help {
+      display: none;
+    }
+    #open-options {
+      font: inherit;
+      color: LinkText;
+      background: none;
+      border: 0;
+      padding: 4px 0;
+      margin-bottom: 8px;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    #open-options:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 3px;
+    }
+  </style>
+  <body>
+    <main>
+      <h1>amp configurable defaults</h1>
+      <button id="open-options" type="button" hidden>Open settings in a tab</button>
+      <label
+        ><input
+          id="right"
+          type="checkbox"
+          checked
+          disabled
+          aria-describedby="side-description"
+        />Move sidebar to the right</label
+      >
+      <p id="side-description">
+        Uncheck for Amp’s native left sidebar. The sidebar header switch also changes this setting.
+        Other features stay active on either side.
+      </p>
+      <label
+        ><input
+          id="resizeSidebar"
+          type="checkbox"
+          checked
+          disabled
+          aria-describedby="resize-description"
+        />Resize and remember right-sidebar width</label
+      >
+      <p id="resize-description">
+        Drag the right divider, or double-click to reset width. When off, right mode uses Amp’s
+        width with no resize handle. Your saved width is kept. Left-side resizing stays native.
+      </p>
+      <label
+        ><input
+          id="moveViews"
+          type="checkbox"
+          checked
+          disabled
+          aria-describedby="views-description"
+        />Keep auxiliary views opposite the sidebar</label
+      >
+      <p id="views-description">
+        Move Files, Changes, Terminal, Desktop, and Portal left when navigation is on the right,
+        with matching divider direction. When off, keep Amp’s native view placement.
+      </p>
+      <label
+        ><input
+          id="indentThreads"
+          type="checkbox"
+          checked
+          disabled
+          aria-describedby="indent-description"
+        />Indent child threads</label
+      >
+      <p id="indent-description">
+        Indent by hierarchy depth on either side without reordering threads. When off, keep native
+        spacing. Mobile spacing stays native.
+      </p>
+      <label
+        ><input
+          id="showHeaderToggle"
+          type="checkbox"
+          checked
+          disabled
+          aria-describedby="header-description"
+        />Show placement switch in sidebar header</label
+      >
+      <p id="header-description">
+        Switch between left and right without changing other features. Options and the toolbar icon
+        remain accessible when this switch is hidden.
+      </p>
+      <label
+        ><input
+          id="subagentPanel"
+          type="checkbox"
+          checked
+          disabled
+          aria-describedby="subagent-description"
+        />Enable subagent reading panel</label
+      >
+      <p id="subagent-description">
+        Offer an optional desktop agent list with Task and Output reading sheets. Compact inline
+        summaries remain available when off, on either side, and on mobile.
+      </p>
+      <label
+        ><input
+          id="hideSidebarFooter"
+          type="checkbox"
+          disabled
+          aria-describedby="footer-description"
+        />Hide sidebar footer</label
+      >
+      <p id="footer-description">
+        Hide the bottom navigation, pinned shortcuts, and account row on either side. Visible by
+        default. Uncheck here to restore it. Mobile is unchanged.
+      </p>
+      <p class="page-help">
+        Your preferences are remembered on this device. Changes apply immediately to open Amp tabs.
+        Click the extension toolbar icon for quick settings, or right-click it → Options for this
+        page.
+      </p>
+      <p id="status" role="status">Loading settings…</p>
+    </main>
+    <script src="options.js"></script>
+  </body>
 </html>

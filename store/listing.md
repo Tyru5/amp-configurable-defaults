@@ -4,23 +4,24 @@ Submission copy for version 1.2.0. This file is not a claim of store approval.
 
 ## Listing fields
 
-- Name: amp better defaults
+- Name: amp configurable defaults
 - Summary: Move Amp's desktop navigation sidebar to the right. Click the toolbar icon to customize your settings.
 - Language: English
 - Suggested category: Workflow & Planning
-- Homepage: https://github.com/Tyru5/amp-sidebar-right
-- Support: https://github.com/Tyru5/amp-sidebar-right/issues
-- Privacy policy: https://github.com/Tyru5/amp-sidebar-right/blob/main/PRIVACY.md
+- Homepage: https://github.com/Tyru5/amp-configurable-defaults
+- Support: https://github.com/Tyru5/amp-configurable-defaults/issues
+- Privacy policy: https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md
 
 ## Detailed description
 
 Put Amp's navigation sidebar on the right side of your browser window.
 
-amp better defaults changes the desktop layout on ampcode.com. It starts on the
+amp configurable defaults changes the desktop layout on ampcode.com. It starts on the
 right. Click its Chrome toolbar icon to open settings and choose either side.
 Your choice applies across open Amp tabs and is remembered on this device.
 
 Features:
+
 - Switch between left and right sidebar positions with one click.
 - Drag the right-sidebar divider to resize it.
 - Double-click the divider to restore Amp's original width.
