@@ -7,17 +7,24 @@ const source = await readFile(new URL('../options.js', import.meta.url), 'utf8')
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const features = ['right', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel'];
 
-function options() {
-  const controls = Object.fromEntries(['enabled', ...features, 'hideSidebarFooter', 'status'].map(id => [id, {
-    checked: id === 'enabled', disabled: true, textContent: '',
+function options(search = '', openOptionsPage = async () => {}) {
+  const controls = Object.fromEntries(['enabled', ...features, 'hideSidebarFooter', 'status', 'open-options'].map(id => [id, {
+    checked: id === 'enabled', disabled: true, textContent: '', hidden: true,
     addEventListener(type, fn) { this[type] = fn; },
   }]));
+  const window = { closed: false, close() { this.closed = true; } };
   let resolveRead, rejectRead, changed, save;
   const read = new Promise((resolve, reject) => { resolveRead = resolve; rejectRead = reject; });
   const writes = [];
   runInNewContext(source, {
-    document: { querySelector: selector => controls[selector.slice(1)] },
-    chrome: { storage: {
+    URLSearchParams,
+    location: { search },
+    window,
+    document: {
+      documentElement: { classList: { add() {} } },
+      querySelector: selector => controls[selector.slice(1)],
+    },
+    chrome: { runtime: { openOptionsPage }, storage: {
       local: {
         get: () => read,
         set: values => { writes.push({ ...values }); return save?.(); },
@@ -25,7 +32,7 @@ function options() {
       onChanged: { addListener(fn) { changed = fn; } },
     } },
   });
-  return { controls, writes, resolveRead, rejectRead,
+  return { controls, writes, resolveRead, rejectRead, window,
     setSave: fn => { save = fn; },
     external: (key, newValue, area = 'local') => changed({ [key]: { newValue } }, area),
   };
@@ -35,6 +42,7 @@ test('Options defaults footer visible, saves opt-in, and restores it independent
   const app = options();
   app.resolveRead({});
   await tick();
+  assert.equal(app.controls['open-options'].hidden, true);
   const { right, hideSidebarFooter: footer, status } = app.controls;
   assert.equal(right.checked, true);
   assert.equal(footer.checked, false);
@@ -117,4 +125,35 @@ test('every feature saves with right placement off, ignoring the legacy master s
     assert.equal(app.controls.right.checked, false);
   }
   assert.equal(app.controls.enabled.change, undefined, 'legacy master is not an Options control');
+});
+
+test('popup saves every setting, receives external changes, and opens the full Options page', async () => {
+  let opened = false;
+  const app = options('?popup', async () => { opened = true; });
+  app.resolveRead({ right: false, hideSidebarFooter: true });
+  await tick();
+  assert.equal(app.controls.right.checked, false);
+  assert.equal(app.controls.hideSidebarFooter.checked, true);
+  for (const key of [...features, 'hideSidebarFooter']) {
+    const toggle = app.controls[key];
+    const next = !toggle.checked;
+    toggle.checked = next;
+    await toggle.change();
+    assert.deepEqual(app.writes.at(-1), { [key]: next });
+    app.external(key, !next);
+    assert.equal(toggle.checked, !next);
+  }
+  assert.equal(app.controls['open-options'].hidden, false);
+  await app.controls['open-options'].click();
+  assert.equal(opened, true);
+  assert.equal(app.window.closed, true);
+});
+
+test('popup announces failure to open the full Options page', async () => {
+  const app = options('?popup', async () => { throw new Error('unavailable'); });
+  app.resolveRead({});
+  await tick();
+  await app.controls['open-options'].click();
+  assert.match(app.controls.status.textContent, /Could not open settings/);
+  assert.equal(app.window.closed, false);
 });

@@ -2,7 +2,7 @@
 
 A dependency-free Chrome Manifest V3 extension for `https://ampcode.com`.
 The desktop sidebar starts on the right. Click the extension's toolbar button
-to switch between right and left. The R/L badge shows the saved side. The
+to open a compact settings popup. The R/L badge shows the saved side. The
 choice applies to all open Amp tabs and survives browser restarts.
 
 Independent project, not affiliated with or endorsed by Amp. The code is MIT licensed.
@@ -26,7 +26,10 @@ site directly from `docs/`. Hosting is not enabled by these files alone.
 5. Pin **amp better defaults** from Chrome's Extensions menu.
 6. Refresh any Amp tabs that were already open.
 
-Click the pinned icon to switch sides. Drag the divider to resize the right
+Click the pinned icon to change sidebar placement or any other feature in the
+popup. Choose **Open settings in a tab**, or right-click the icon → **Options**,
+for the full settings page. Both views share the same saved preferences.
+Drag the divider to resize the right
 sidebar, or double-click it to restore Amp's width. Left mode restores Amp's
 native layout and resize behavior. Right-mode width is saved separately.
 In right mode, auxiliary views such as Files, Changes, Terminal, Desktop, and
@@ -35,7 +38,7 @@ the direction you drag. Left mode restores their native placement on the right.
 Child thread rows are indented by 20px per level on either side, up to 64px,
 using Amp's existing parent-child hierarchy without reordering threads.
 The **right-sidebar arrow icon** in Amp's sidebar header switches placement,
-just like the toolbar icon and **Move sidebar to the right** in **Options**.
+just like **Move sidebar to the right** in the popup or **Options**.
 These controls stay synchronized across open Amp tabs and preserve other feature
 choices and your saved right-side width. There is no master feature switch.
 The obsolete `enabled` preference from older versions is ignored.
@@ -47,7 +50,7 @@ Every extension feature has its own checkbox in **Options**:
 
 | Setting | Default | When off |
 | --- | --- | --- |
-| Move sidebar to the right | On | Native left sidebar; also controlled by the toolbar icon |
+| Move sidebar to the right | On | Native left sidebar; also controlled by the sidebar header switch |
 | Resize and remember right-sidebar width | On | Native width, no right resize handle; saved width retained |
 | Keep auxiliary views opposite the sidebar | On | Native view placement and divider input |
 | Indent child threads | On | Native row spacing on either side |
@@ -200,8 +203,8 @@ node tests/browser.mjs
 node tests/landing.mjs
 ```
 
-The fixture's on-page toggle calls the actual service worker handler through
-a mock Chrome API. It is not a control added to the live Amp page.
+The fixture's on-page toggle changes the placement preference through a mock
+Chrome storage API. It is not the toolbar popup or a control added to live Amp.
 The landing-page checks cover its illustrative layout switch, keyboard access,
 FAQ, installation link, asset loading, and responsive overflow. Its demo does
 not change the extension's settings or access an Amp account.

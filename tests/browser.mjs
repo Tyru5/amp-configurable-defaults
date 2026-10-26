@@ -67,7 +67,7 @@ try {
   browser('eval', `document.querySelector('#view-group').className = 'thread-file-tab-pane-group'`);
   check(`document.querySelector('#message').value === 'Keep this unsent draft' && getComputedStyle(document.querySelector('#view-pane')).direction === 'ltr'`, 'views retain text direction and the unsent draft');
   browser('click', '#switch');
-  check(`(${bounds}).sidebar.x === 56 && (${bounds}).main.x === 356`, 'toolbar handler restores left layout');
+  check(`(${bounds}).sidebar.x === 56 && (${bounds}).main.x === 356`, 'placement preference restores left layout');
   check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'footer preference works independently of sidebar side');
   check(`(${threadIndent('child')}) === 20`, 'left mode retains the independent indentation preference');
   check(`document.querySelector('#agent-pane').getBoundingClientRect().right <= document.querySelector('#view-pane').getBoundingClientRect().left`, 'left-sidebar mode restores views on the right');
@@ -93,7 +93,7 @@ try {
   check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'header switch does not disable footer hiding');
   check(`document.querySelector('#agent-pane').getBoundingClientRect().right <= document.querySelector('#view-pane').getBoundingClientRect().left`, 'auxiliary views remain opposite left navigation');
   browser('click', '#switch');
-  check(`JSON.parse(localStorage.getItem('extension-settings')).right === true && document.querySelector('[data-amp-sidebar-toggle]').getAttribute('aria-checked') === 'true'`, 'toolbar and header control the same placement preference');
+  check(`JSON.parse(localStorage.getItem('extension-settings')).right === true && document.querySelector('[data-amp-sidebar-toggle]').getAttribute('aria-checked') === 'true'`, 'settings changes and header control the same placement preference');
   browser('click', '#switch');
   const nativeHandleX = evaluate(`Math.round(document.querySelector('[data-pane-resizer]').getBoundingClientRect().x + 2)`);
   const nativeViewWidth = evaluate(`document.querySelector('#view-pane').getBoundingClientRect().width`);

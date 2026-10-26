@@ -11,6 +11,20 @@ const status = document.querySelector("#status");
 const changed = new Set();
 const checked = (key, value) => key === "hideSidebarFooter" ? value === true : value !== false;
 
+if (new URLSearchParams(location.search).has("popup")) {
+  document.documentElement.classList.add("popup");
+  const openOptions = document.querySelector("#open-options");
+  openOptions.hidden = false;
+  openOptions.addEventListener("click", async () => {
+    try {
+      await chrome.runtime.openOptionsPage();
+      window.close();
+    } catch {
+      status.textContent = "Could not open settings. Please try again.";
+    }
+  });
+}
+
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
   for (const [key, toggle] of Object.entries(toggles)) {
@@ -40,7 +54,7 @@ for (const [key, toggle] of Object.entries(toggles)) {
       await chrome.storage.local.set({ [key]: toggle.checked });
       status.textContent = "Saved.";
     } catch {
-      // A newer change from another Options tab wins over a failed save.
+      // A newer change from another settings view wins over a failed save.
       if (!changed.has(key)) toggle.checked = previous;
       status.textContent = "Could not save. Please try again.";
     } finally {

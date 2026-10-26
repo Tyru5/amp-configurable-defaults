@@ -107,7 +107,7 @@
           <div class="thread-title-bar-container"><div class="title-bar app-title-bar"><span>Camera identification initiative</span></div></div>
           <div id="view-group" class="thread-file-tab-pane-group" data-pane-group data-direction="horizontal" style="flex-direction: row">
             <div id="agent-pane" data-pane style="flex: 68 1 0px">
-              <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. Use the test control above to exercise the same toggle handler as the Chrome toolbar button.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
+              <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. The test control above changes the same placement preference as the extension settings.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
               <div class="thread-chat-scroll-region"><div data-thread-transcript-scroll data-thread-id="fixture-a"><div data-thread-transcript-content id="fixture-transcript"></div></div></div>
             </div>
             <div data-pane-resizer data-slot="resizable-handle" role="separator" aria-label="Resize views" tabindex="0" hidden></div>
@@ -121,7 +121,6 @@
 </template>
 <script>
   const listeners = [];
-  let clickAction;
   window.chrome = {
     storage: {
       local: {
@@ -136,10 +135,9 @@
       onChanged: { addListener(fn) { listeners.push(fn); } }
     },
     action: {
-      onClicked: { addListener(fn) { clickAction = fn; } },
       async setBadgeText({ text }) { document.querySelector('#switch').textContent = `Switch sidebar side · ${text}`; },
       async setBadgeBackgroundColor() {},
-      async setTitle({ title }) { document.querySelector('#switch').title = title; }
+      async setTitle() {}
     }
   };
   addEventListener('storage', event => {
@@ -192,7 +190,10 @@
   };
   mount();
   document.querySelector('#replace').onclick = mount;
-  document.querySelector('#switch').onclick = () => clickAction();
+  document.querySelector('#switch').onclick = async () => {
+    const { right = true } = await chrome.storage.local.get();
+    await chrome.storage.local.set({ right: !right });
+  };
 
   // Representative native markers verified against real Task runs in Helium.
   const agents = new Map();

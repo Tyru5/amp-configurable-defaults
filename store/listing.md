@@ -5,7 +5,7 @@ Submission copy for version 1.2.0. This file is not a claim of store approval.
 ## Listing fields
 
 - Name: amp better defaults
-- Summary: Move Amp's desktop navigation sidebar to the right. Click the toolbar icon to switch sides.
+- Summary: Move Amp's desktop navigation sidebar to the right. Click the toolbar icon to customize your settings.
 - Language: English
 - Suggested category: Workflow & Planning
 - Homepage: https://github.com/Tyru5/amp-sidebar-right
@@ -17,7 +17,7 @@ Submission copy for version 1.2.0. This file is not a claim of store approval.
 Put Amp's navigation sidebar on the right side of your browser window.
 
 amp better defaults changes the desktop layout on ampcode.com. It starts on the
-right, and you can click its Chrome toolbar icon to switch back to the left.
+right. Click its Chrome toolbar icon to open settings and choose either side.
 Your choice applies across open Amp tabs and is remembered on this device.
 
 Features:
@@ -97,7 +97,8 @@ review and certify Google's data-use declarations before submission.
 ## Reviewer notes
 
 This extension has no account or payment flow. The target Amp app requires
-an Amp account. The Chrome toolbar button switches sidebar sides. The
+an Amp account. The Chrome toolbar button opens a settings popup with every
+feature checkbox and an **Open settings in a tab** button. The
 arrow icon in Amp's sidebar header also switches placement without disabling
 other features. Use Amp's own sidebar toggle to collapse or reopen navigation. Drag
 the divider, or double-click it to reset width. On a thread with subagent

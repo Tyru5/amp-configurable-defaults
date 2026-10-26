@@ -13,12 +13,19 @@
   input:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
   p { margin: 8px 0; }
   #status { min-height: 1.5em; }
+  .popup body { width: 420px; min-height: 0; max-height: 580px; padding: 16px; display: block; overflow-y: auto; }
+  .popup h1 { margin-bottom: 4px; }
+  .popup p { font-size: 12px; margin: 4px 0 10px; }
+  .popup .page-help { display: none; }
+  #open-options { font: inherit; color: LinkText; background: none; border: 0; padding: 4px 0; margin-bottom: 8px; text-decoration: underline; cursor: pointer; }
+  #open-options:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
 </style>
 <body>
 <main>
 <h1>amp better defaults</h1>
+<button id="open-options" type="button" hidden>Open settings in a tab</button>
 <label><input id="right" type="checkbox" checked disabled aria-describedby="side-description">Move sidebar to the right</label>
-<p id="side-description">Uncheck for Amp’s native left sidebar. The toolbar icon and sidebar header switch also change this setting. Other features stay active on either side.</p>
+<p id="side-description">Uncheck for Amp’s native left sidebar. The sidebar header switch also changes this setting. Other features stay active on either side.</p>
 <label><input id="resizeSidebar" type="checkbox" checked disabled aria-describedby="resize-description">Resize and remember right-sidebar width</label>
 <p id="resize-description">Drag the right divider, or double-click to reset width. When off, right mode uses Amp’s width with no resize handle. Your saved width is kept. Left-side resizing stays native.</p>
 <label><input id="moveViews" type="checkbox" checked disabled aria-describedby="views-description">Keep auxiliary views opposite the sidebar</label>
@@ -31,7 +38,7 @@
 <p id="subagent-description">Offer an optional desktop agent list with Task and Output reading sheets. Compact inline summaries remain available when off, on either side, and on mobile.</p>
 <label><input id="hideSidebarFooter" type="checkbox" disabled aria-describedby="footer-description">Hide sidebar footer</label>
 <p id="footer-description">Hide the bottom navigation, pinned shortcuts, and account row on either side. Visible by default. Uncheck here to restore it. Mobile is unchanged.</p>
-<p>Your preferences are remembered on this device. Changes apply immediately to open Amp tabs. You can always reopen this page from the extension toolbar icon’s right-click menu → Options.</p>
+<p class="page-help">Your preferences are remembered on this device. Changes apply immediately to open Amp tabs. Click the extension toolbar icon for quick settings, or right-click it → Options for this page.</p>
 <p id="status" role="status">Loading settings…</p>
 </main>
 <script src="options.js"></script>
