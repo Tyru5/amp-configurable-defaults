@@ -4,6 +4,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Amp sidebar compatibility fixture</title>
 <style>
+  /* Composer stand-in: Attachments region and trigger structure from Amp's 4b22e4d9.js, inspected 2026-10-26. */
+  .fixture-composer { margin: 8px 12px; border: 1px solid #80808060; border-radius: 12px; font: 13px system-ui, sans-serif; }
+  .fixture-composer-input { padding: 10px 12px; color: GrayText; }
+  .fixture-composer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 8px 8px; }
+  .fixture-composer-toolbar [role="region"] { display: flex; align-items: center; gap: 4px; min-width: 0; }
+  .fixture-composer-toolbar button { border: 0; background: none; font-size: 15px; }
   * { box-sizing: border-box; }
   body { margin: 0; font: 15px system-ui, sans-serif; color: #20231f; background: #fafaf8; }
   .test-controls { height: 64px; padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #ddd; }
@@ -109,6 +115,7 @@
             <div id="agent-pane" data-pane style="flex: 68 1 0px">
               <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. The test control above changes the same placement preference as the extension settings.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
               <div class="thread-chat-scroll-region"><div data-thread-transcript-scroll data-thread-id="fixture-a"><div data-thread-transcript-content id="fixture-transcript"></div></div></div>
+              <div data-thread-composer-footer><div data-message-composer-root class="fixture-composer"><div class="fixture-composer-input">Message the agent…</div><div class="fixture-composer-toolbar"><div role="region" aria-label="Attachments"><span class="relative inline-flex shrink-0 border border-transparent"><button type="button" aria-label="Add images and files">📎</button><input type="file" multiple="" tabindex="-1" aria-hidden="true" hidden></span><!----></div><button type="button" class="fixture-send" aria-label="Send">↑</button></div></div></div>
             </div>
             <div data-pane-resizer data-slot="resizable-handle" role="separator" aria-label="Resize views" tabindex="0" hidden></div>
             <section id="view-pane" data-pane style="flex: 32 1 0px" hidden><h2 id="view-title">Files</h2><p>Local fixture view content, not a live executor.</p></section>
@@ -120,6 +127,32 @@
   </div>
 </template>
 <script>
+  // Shapes of /threads/<id>/__data results, from Amp's thread route loader and
+  // its mode/runner display helpers, inspected 2026-10-26. Fixture values only.
+  window.fixtureThreadData = {
+    'fixture-a': { type: 'result', transcriptPage: { messages: [
+      { role: 'assistant', usage: { model: 'claude-sonnet-5' } },
+      { role: 'assistant', usage: { model: 'claude-opus-5-5' } },
+      { role: 'assistant', parentToolUseId: 'toolu_sub', usage: { model: 'claude-haiku-5-5' } },
+      { role: 'user' },
+    ] }, thread: { id: 'fixture-a', agentMode: 'high', meta: { executorType: 'local-client' },
+      env: { initial: { runnerID: 'tiru5-macbook-pro', hostname: 'Tyrus-MBP.local', trees: [{ uri: 'file:///Users/tiru5/My%20Repo', repository: { dir: 'app' } }] } } } },
+    'fixture-b': { type: 'result', transcriptPage: { messages: [] },
+      thread: { id: 'fixture-b', agentMode: 'medium', meta: { executorType: 'sandbox' } } },
+    'fixture-c': { type: 'result', transcriptPage: { messages: [{ role: 'assistant', usage: { model: 'claude-opus-5' } }] },
+      thread: { id: 'fixture-c', agentMode: 'external-agent:claude-code', meta: { executorType: 'local-client', features: ['model:claude-sonnet-5-5', 'effort:xhigh'] },
+        env: { initial: { runnerID: '0f8fad5b-d9cb-469f-a165-70867728950e', hostname: 'build-box', workingDirectory: 'file:///srv/my%20work' } } } },
+  };
+  window.fixtureThreadRequests = [];
+  const nativeFetch = window.fetch;
+  window.fetch = async (input, init) => {
+    const match = String(input).match(/^\/threads\/([^/]+)\/__data$/);
+    if (!match) return nativeFetch(input, init);
+    const id = decodeURIComponent(match[1]);
+    fixtureThreadRequests.push({ id, credentials: init?.credentials });
+    const data = fixtureThreadData[id];
+    return new Response(data ? JSON.stringify(data) : 'missing', { status: data ? 200 : 500 });
+  };
   const listeners = [];
   window.chrome = {
     storage: {
@@ -297,6 +330,7 @@
 <script src="../background.js"></script>
 <script src="../content.js"></script>
 <script src="../subagents.js"></script>
+<script src="../composer.js"></script>
 <script>
   // Native hover contract from Amp's b1575130.js, inspected 2026-10-24.
   // Fixture content only. In particular, preserve the native overflow-close guard.

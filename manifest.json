@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "amp configurable defaults",
   "version": "1.2.0",
-  "description": "Move Amp's desktop navigation sidebar to the right. Click the toolbar icon to customize your settings.",
+  "description": "Move Amp's desktop navigation sidebar to the right and show each thread's model and runner in the composer. Click the toolbar icon to customize your settings.",
   "homepage_url": "https://github.com/Tyru5/amp-configurable-defaults",
   "icons": {
     "16": "icons/icon-16.png",
@@ -30,7 +30,7 @@
     {
       "matches": ["https://ampcode.com/*"],
       "css": ["sidebar.css"],
-      "js": ["content.js", "subagents.js"],
+      "js": ["content.js", "subagents.js", "composer.js"],
       "run_at": "document_start"
     }
   ]

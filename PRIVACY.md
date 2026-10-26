@@ -10,7 +10,7 @@ is not affiliated with or endorsed by Amp.
 
 ## Information stored on your device
 
-The extension uses eight preferences in `chrome.storage.local`:
+The extension uses nine preferences in `chrome.storage.local`:
 
 - `right`: whether the sidebar should appear on the right.
 - `rightWidth`: the selected right-sidebar width, or no custom width.
@@ -20,6 +20,7 @@ The extension uses eight preferences in `chrome.storage.local`:
 - `indentThreads`: indent child threads on either side.
 - `showHeaderToggle`: show the sidebar placement switch in the sidebar header.
 - `subagentPanel`: offer the subagent reading panel.
+- `showComposerContext`: show the thread's model and runner in the composer.
 
 All boolean preferences except `hideSidebarFooter` default to true. Each feature
 can be turned off independently in Options. Changing sidebar placement preserves
@@ -38,16 +39,22 @@ statuses, and content already rendered by Amp to provide compact inline summarie
 When a summary is expanded or the subagent panel is open, it expands
 native subagent disclosures as needed and displays their rendered task prompts,
 results, and errors (plain text in the reading sheet, native content inline).
-It does not fetch additional thread data or
-access Amp's APIs.
+When **Show model and runner in the composer** is on, the extension requests
+the open thread's page data from `https://ampcode.com/threads/<id>/__data`, the
+same same-origin request Amp's thread page makes, using your existing Amp
+session. It reads only the thread's mode, model, executor type, runner name or
+hostname, and working directory from the response, keeps them in memory for
+the current tab, and displays them in the composer next to the upload button. The response is not
+stored or sent anywhere else. Turning the setting off stops these requests.
 
 This reading panel keeps a temporary, in-memory view for the current thread,
 including the last visible content when Amp unmounts an entry. It is discarded
 on thread navigation or page reload. Disabling the panel keeps inline summaries. Task
 prompts and output are never written to extension storage, browser storage,
-files, or a server. Only the eight preferences above are persisted.
+files, or a server. Only the nine preferences above are persisted.
 
-The extension does not read ordinary conversation messages, composer drafts,
+Apart from the model name recorded on the latest assistant reply, the extension
+does not read ordinary conversation messages, composer drafts,
 account details, passwords, authentication tokens, or browsing history. It
 does not alter or submit thread data. Closing the panel collapses disclosures
 it expanded, except those the user chose to reveal inline.
@@ -58,7 +65,9 @@ footer** in extension Options to restore it. Mobile footers are unchanged.
 ## Collection and sharing
 
 The extension does not collect or transmit personal information. It contains
-no analytics, advertising, tracking, external services, or network requests.
+no analytics, advertising, tracking, or external services. Its only network
+request is the optional same-origin thread data request to `ampcode.com`
+described above.
 It does not sell, share, or transfer user data to any third party. All code
 runs locally and is bundled with the extension; no remote code is loaded.
 

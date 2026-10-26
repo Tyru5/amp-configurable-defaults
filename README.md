@@ -43,6 +43,13 @@ These controls stay synchronized across open Amp tabs and preserve other feature
 choices and your saved right-side width. There is no master feature switch.
 The obsolete `enabled` preference from older versions is ignored.
 
+In the thread composer, to the right of the upload button, a compact label shows
+the model the thread is using and where it runs: the runner name for local
+threads, or **Orb** for cloud threads. Hover it for the mode and directory. The values come from the same thread data Amp's
+page loads, fetched from `ampcode.com` with your existing session. It refreshes
+on thread changes and at most once a minute while the tab is visible. Before
+the first reply, it shows the thread's mode until a model is known.
+
 Hovering or keyboard-focusing a thread in the right sidebar opens Amp's native
 thread information card to its left. Amp still owns the content and dismissal.
 
@@ -56,6 +63,7 @@ Every extension feature has its own checkbox in **Options**:
 | Indent child threads                      | On      | Native row spacing on either side                                 |
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
 | Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
+| Show model and runner in the composer     | On      | Composer unchanged; no thread data requests                       |
 | Hide sidebar footer                       | Off     | Native footer visible                                             |
 
 Feature choices remain editable and active with either sidebar placement.

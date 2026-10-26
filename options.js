@@ -5,6 +5,7 @@ const toggles = {
   indentThreads: document.querySelector("#indentThreads"),
   showHeaderToggle: document.querySelector("#showHeaderToggle"),
   subagentPanel: document.querySelector("#subagentPanel"),
+  showComposerContext: document.querySelector("#showComposerContext"),
   hideSidebarFooter: document.querySelector("#hideSidebarFooter"),
 };
 const status = document.querySelector("#status");

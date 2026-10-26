@@ -333,3 +333,30 @@
     width: auto;
   }
 }
+
+/* Model and runner context beside the composer's upload button. */
+[data-amp-composer-context] {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  /* Amp's toolbar region shrink-wraps its content, so cap in absolute units. */
+  max-width: 32rem;
+  margin-inline-start: 6px;
+  overflow: hidden;
+  color: var(--muted-foreground, GrayText);
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: nowrap;
+}
+[data-amp-composer-context-item] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-amp-composer-context-item]:last-child { flex: 0 1000 auto; }
+[data-amp-composer-context-item] + [data-amp-composer-context-item]::before {
+  content: "·";
+  margin-inline: 6px;
+  opacity: .6;
+}
