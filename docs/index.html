@@ -3,7 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#e7eddf" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#e7eddf" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1b2a22" media="(prefers-color-scheme: dark)" />
+    <script>
+      try {
+        const theme = localStorage.getItem("landing-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+          document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+            meta.content = theme === "dark" ? "#1b2a22" : "#e7eddf";
+          });
+        }
+      } catch {
+        // Storage can be unavailable; the system theme still works.
+      }
+    </script>
     <meta
       name="description"
       content="Make Amp's desktop web layout your own. Right-side navigation, remembered width, child thread hierarchy, and a dedicated subagent reading panel. An independent, open-source Chrome extension."
@@ -26,7 +41,7 @@
     <div class="header-band">
       <header class="site-header wrap">
         <a class="brand" href="#" aria-label="amp configurable defaults home"
-          ><img src="assets/icon.png" width="38" height="38" alt="" /><span
+          ><img src="assets/logo.png" width="76" height="36" alt="" /><span
             class="brand-title"
             aria-hidden="true"
             >amp
@@ -43,6 +58,33 @@
             >GitHub
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg
           ></a>
+          <fieldset class="theme-control" aria-label="Theme" hidden>
+            <label title="System theme">
+              <input type="radio" name="theme" value="system" aria-label="System theme" checked />
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="13" rx="2" />
+                <path d="M8 21h8m-4-4v4" />
+              </svg>
+              <span>System</span>
+            </label>
+            <label title="Light theme">
+              <input type="radio" name="theme" value="light" aria-label="Light theme" />
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+                />
+              </svg>
+              <span>Light</span>
+            </label>
+            <label title="Dark theme">
+              <input type="radio" name="theme" value="dark" aria-label="Dark theme" />
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20.5 13.4A9 9 0 0 1 10.6 3.5a9 9 0 1 0 9.9 9.9Z" />
+              </svg>
+              <span>Dark</span>
+            </label>
+          </fieldset>
         </nav>
       </header>
     </div>
@@ -395,7 +437,7 @@
     </main>
     <footer class="site-footer wrap">
       <a class="brand" href="#" aria-label="amp configurable defaults home"
-        ><img src="assets/icon.png" width="30" height="30" alt="" /><span
+        ><img src="assets/logo.png" width="64" height="30" alt="" /><span
           class="brand-title"
           aria-hidden="true"
           >amp

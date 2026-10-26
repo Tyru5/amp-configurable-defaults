@@ -30,7 +30,12 @@ const bounds = `(() => {
 
 try {
   browser("open", url);
+  browser("check", 'input[name="theme"][value="system"]');
+  browser("set", "media", "light");
   viewport(1440, 1000);
+  const lightBackground = JSON.parse(
+    browser("--json", "eval", "getComputedStyle(document.documentElement).backgroundColor"),
+  ).data.result;
   check(
     `document.querySelectorAll('main section').length === 4 && document.querySelectorAll('h1').length === 1`,
     "all landing content is inside one main landmark",
@@ -109,6 +114,71 @@ try {
     `[...document.images].every(image => image.complete && image.naturalWidth > 0)`,
     "all landing images load",
   );
+  browser("set", "media", "dark");
+  check(
+    `getComputedStyle(document.documentElement).colorScheme === 'dark' && getComputedStyle(document.documentElement).backgroundColor !== ${JSON.stringify(lightBackground)}`,
+    "system dark preference changes the page palette without a reload",
+  );
+  for (const width of [320, 390, 700, 768, 1024, 1280, 1440]) {
+    viewport(width, 900);
+    check(
+      `document.documentElement.scrollWidth <= innerWidth`,
+      `dark theme has no horizontal overflow at ${width}px`,
+    );
+  }
+  browser("focus", 'button[data-side="left"]');
+  browser("press", "Enter");
+  check(
+    `document.querySelector('button[data-side="left"]').getAttribute('aria-pressed') === 'true' && getComputedStyle(document.activeElement).outlineStyle !== 'none'`,
+    "dark theme retains keyboard selection and visible focus",
+  );
+  browser("set", "media", "light");
+  check(
+    `getComputedStyle(document.documentElement).colorScheme === 'light' && getComputedStyle(document.documentElement).backgroundColor === ${JSON.stringify(lightBackground)}`,
+    "switching the system preference back restores the light palette",
+  );
+  browser("check", 'input[name="theme"][value="dark"]');
+  check(
+    `getComputedStyle(document.documentElement).colorScheme === 'dark' && getComputedStyle(document.documentElement).backgroundColor !== ${JSON.stringify(lightBackground)} && [...document.querySelectorAll('meta[name="theme-color"]')].every(meta => meta.content === '#1b2a22')`,
+    "explicit dark mode overrides a light system preference and browser chrome",
+  );
+  browser("reload");
+  check(
+    `document.querySelector('input[name="theme"]:checked').value === 'dark' && getComputedStyle(document.documentElement).colorScheme === 'dark'`,
+    "the saved dark override survives a reload",
+  );
+  browser("set", "media", "dark");
+  browser("focus", 'input[name="theme"]:checked');
+  browser("press", "ArrowLeft");
+  check(
+    `document.querySelector('input[name="theme"]:checked').value === 'light' && getComputedStyle(document.documentElement).backgroundColor === ${JSON.stringify(lightBackground)} && getComputedStyle(document.activeElement).outlineStyle !== 'none'`,
+    "keyboard selection can override a dark system preference with light mode",
+  );
+  browser("reload");
+  check(
+    `document.querySelector('input[name="theme"]:checked').value === 'light' && getComputedStyle(document.documentElement).colorScheme === 'light' && [...document.querySelectorAll('meta[name="theme-color"]')].every(meta => meta.content === '#e7eddf')`,
+    "the saved light override and browser chrome survive a reload",
+  );
+  browser("check", 'input[name="theme"][value="system"]');
+  check(
+    `localStorage.getItem('landing-theme') === null && getComputedStyle(document.documentElement).colorScheme === 'dark' && [...document.querySelectorAll('meta[name="theme-color"]')].every(meta => meta.content === (meta.media.includes('dark') ? '#1b2a22' : '#e7eddf'))`,
+    "System clears the saved override and restores automatic page and browser colors",
+  );
+  browser("set", "media", "light");
+  check(
+    `getComputedStyle(document.documentElement).backgroundColor === ${JSON.stringify(lightBackground)}`,
+    "System continues responding to preference changes after a manual override",
+  );
+  browser(
+    "eval",
+    `void Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Storage blocked', 'SecurityError'); } })`,
+  );
+  browser("check", 'input[name="theme"][value="dark"]');
+  check(
+    `getComputedStyle(document.documentElement).colorScheme === 'dark'`,
+    "theme selection still works when storage is blocked",
+  );
+  browser("reload");
   browser("set", "media", "reduced-motion");
   check(
     `getComputedStyle(document.documentElement).scrollBehavior === 'auto'`,

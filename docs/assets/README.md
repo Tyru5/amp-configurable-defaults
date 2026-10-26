@@ -1,6 +1,8 @@
 # Landing page assets
 
 - `icon.png` is copied unchanged from `icons/icon-128.png`.
+- `logo.png` is a tightly cropped transparent export of `store/icon-master.png`
+  for the header and footer. Its integrated sliders represent configurable defaults.
 - `right-sidebar.png` is copied unchanged from `store/screenshots/`. It is an
   earlier v1.1 live, signed-in Helium capture from October 24, 2026 at
   1280 × 800, with private content masked before capture. Its caption notes
