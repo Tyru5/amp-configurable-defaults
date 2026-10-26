@@ -431,6 +431,41 @@ try {
   browser('eval', 'chrome.storage.local.set({ showComposerContext: true })');
   browser('wait', '--fn', `(${contextText}).includes('Orb')`);
   check(`(${contextText}) === 'medium | Orb'`, 'turning the setting back on restores the line');
+  const orb = '[data-amp-info-orb]';
+  const infoCard = '[data-amp-info-card]';
+  browser('set', 'viewport', '1280', '800', '2');
+  browser('mouse', 'move', '640', '780');
+  browser('wait', '--fn', `document.querySelector('${orb}') !== null`);
+  check(`(() => { const o = document.querySelector('${orb}').getBoundingClientRect(); const m = document.querySelector('.thread-title-bar-container').getBoundingClientRect(); return Math.abs(o.top + o.height / 2 - innerHeight / 2) < 1 && Math.abs(o.left - m.left - 12) < 1; })()`, 'info orb floats mid-height at the conversation left edge');
+  check(`document.querySelector('${infoCard}').hidden`, 'info card starts collapsed');
+  browser('hover', orb);
+  browser('wait', '--fn', `!document.querySelector('${infoCard}').hidden`);
+  check(`document.querySelector('${infoCard}').innerText.replace(/\\s+/g, ' ') === 'Thread Camera identification initiative Executor Orb Executor Project amp-configurable-defaults Mode ↯high Visibility Private'`, 'hover shows title-bar details, including ones Amp hides at this width');
+  browser('mouse', 'move', '640', '780');
+  browser('wait', '--fn', `document.querySelector('${infoCard}').hidden`);
+  browser('click', orb);
+  browser('mouse', 'move', '640', '780');
+  browser('wait', '300');
+  check(`!document.querySelector('${infoCard}').hidden && document.querySelector('${orb}').getAttribute('aria-pressed') === 'true'`, 'clicking pins the card after the pointer leaves');
+  browser('eval', `document.querySelector('[data-title-text]').textContent = 'Renamed thread'`);
+  browser('wait', '--fn', `document.querySelector('${infoCard}').textContent.includes('Renamed thread')`);
+  browser('click', orb);
+  browser('mouse', 'move', '640', '780');
+  browser('wait', '--fn', `document.querySelector('${infoCard}').hidden`);
+  check(`document.querySelector('${orb}').getAttribute('aria-pressed') === 'false'`, 'clicking again unpins and hover-away collapses');
+  browser('click', orb);
+  // agent-browser's `press Escape` stops headless frame production, which stalls every
+  // rAF-scheduled script afterwards. Deliver the key to whatever element has focus.
+  browser('eval', `document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))`);
+  check(`document.querySelector('${infoCard}').hidden && document.activeElement.matches('${orb}')`, 'Escape closes a pinned card and keeps focus on the orb');
+  browser('eval', 'chrome.storage.local.set({ infoOrb: false })');
+  browser('wait', '--fn', `!document.querySelector('${orb}') && !document.querySelector('${infoCard}')`);
+  browser('eval', 'chrome.storage.local.set({ infoOrb: true })');
+  browser('wait', '--fn', `document.querySelector('${orb}') !== null`);
+  browser('set', 'viewport', '767', '800', '2');
+  browser('wait', '--fn', `!document.querySelector('${orb}')`);
+  check(`!document.querySelector('${orb}')`, 'info orb is removed when disabled and on mobile');
+  browser('set', 'viewport', '1280', '800', '2');
   console.log('All browser checks passed.');
 } finally {
   browser('close');

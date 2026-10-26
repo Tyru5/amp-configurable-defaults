@@ -42,7 +42,8 @@
   .thread-layout-panes { height: 100%; min-height: 0; }
   .thread-workspace { height: 100%; display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
   .title-bar { display: flex; align-items: center; flex-shrink: 0; height: 52px; padding: 0 18px; border-bottom: 1px solid #eee; font-weight: 600; }
-  .title-bar > span { margin-right: auto; }
+  .title-bar > h2 { margin: 0 auto 0 0; font-size: inherit; }
+  .title-bar .hidden { display: none; }
   [data-thread-transcript-scroll] { padding: 12px; }
   [data-transcript-subagent], [data-transcript-automation-event] { margin: 12px; padding: 10px; border: 1px solid #ddd; }
   [data-transcript-expandable-row] { cursor: pointer; }
@@ -110,7 +111,7 @@
         <div class="resize-handle" role="separator" aria-label="Resize sidebar"></div>
         <main data-slot="sidebar-inset">
           <div class="thread-layout-panes"><div class="thread-workspace">
-          <div class="thread-title-bar-container"><div class="title-bar app-title-bar"><span>Camera identification initiative</span></div></div>
+          <div class="thread-title-bar-container"><div class="title-bar app-title-bar"><h2><span role="img" aria-label="Orb Executor" data-thread-title-executor-icon="sandbox"></span><span data-title-text>Camera identification initiative</span></h2><span class="thread-title-bar-meta-control hidden" data-tooltip-trigger="true"><svg></svg><span class="truncate">amp-configurable-defaults</span></span><span class="thread-title-bar-meta-control hidden" data-tooltip-trigger="true"><span>↯high</span></span><span class="thread-title-bar-mode-icon hidden" role="img" aria-label="high" data-thread-title-mode-icon="high"></span><span class="thread-title-bar-meta-control" data-tooltip-trigger="true"><span class="border">Private</span></span></div></div>
           <div id="view-group" class="thread-file-tab-pane-group" data-pane-group data-direction="horizontal" style="flex-direction: row">
             <div id="agent-pane" data-pane style="flex: 68 1 0px">
               <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. The test control above changes the same placement preference as the extension settings.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
@@ -331,6 +332,7 @@
 <script src="../content.js"></script>
 <script src="../subagents.js"></script>
 <script src="../composer.js"></script>
+<script src="../info-orb.js"></script>
 <script>
   // Native hover contract from Amp's b1575130.js, inspected 2026-10-24.
   // Fixture content only. In particular, preserve the native overflow-close guard.

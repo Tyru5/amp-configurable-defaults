@@ -360,3 +360,61 @@
   margin-inline: 6px;
   opacity: .6;
 }
+
+/* Thread info orb: a quiet handle at the conversation's left edge. Hover or
+   focus previews Amp's title-bar details; clicking pins the card open. */
+[data-amp-info-orb] {
+  position: fixed;
+  top: 50%;
+  left: calc(var(--amp-info-orb-left, 0px) + 12px);
+  z-index: 50;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--foreground, CanvasText) 18%, transparent);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--foreground, CanvasText) 35%, transparent), transparent 55%),
+    color-mix(in srgb, var(--primary, #b8860b) 55%, var(--background, Canvas));
+  box-shadow: 0 1px 6px #0003;
+  opacity: .7;
+  transform: translateY(-50%);
+  transition: opacity 120ms ease-out, transform 120ms ease-out;
+  cursor: pointer;
+}
+[data-amp-info-orb]:hover,
+[data-amp-info-orb][aria-expanded="true"] { opacity: 1; transform: translateY(-50%) scale(1.08); }
+[data-amp-info-orb][aria-pressed="true"] {
+  opacity: 1;
+  outline: 2px solid var(--primary, #b8860b);
+  outline-offset: 2px;
+}
+[data-amp-info-orb]:focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: 2px; }
+[data-amp-info-card]:not([hidden]) {
+  position: fixed;
+  top: 50%;
+  left: calc(var(--amp-info-orb-left, 0px) + 38px);
+  z-index: 50;
+  width: min(320px, calc(100vw - var(--amp-info-orb-left, 0px) - 54px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--foreground, CanvasText) 12%, transparent);
+  border-radius: 10px;
+  background: var(--popover, var(--background, Canvas));
+  color: var(--popover-foreground, var(--foreground, CanvasText));
+  box-shadow: 0 8px 32px #0004;
+  font: 13px/1.5 system-ui, sans-serif;
+  transform: translateY(-50%);
+}
+[data-amp-info-card] dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 14px;
+  margin: 0;
+}
+[data-amp-info-card] dt { color: var(--muted-foreground, GrayText); }
+[data-amp-info-card] dd { margin: 0; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) {
+  [data-amp-info-orb] { transition: none; }
+}

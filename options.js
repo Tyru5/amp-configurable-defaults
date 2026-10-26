@@ -6,6 +6,7 @@ const toggles = {
   showHeaderToggle: document.querySelector("#showHeaderToggle"),
   subagentPanel: document.querySelector("#subagentPanel"),
   showComposerContext: document.querySelector("#showComposerContext"),
+  infoOrb: document.querySelector("#infoOrb"),
   hideSidebarFooter: document.querySelector("#hideSidebarFooter"),
 };
 const status = document.querySelector("#status");

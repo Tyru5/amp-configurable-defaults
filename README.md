@@ -53,6 +53,11 @@ the first reply, it shows the thread's mode until a model is known.
 Hovering or keyboard-focusing a thread in the right sidebar opens Amp's native
 thread information card to its left. Amp still owns the content and dismissal.
 
+A small orb floats at mid-height on the conversation's left edge. Hover or focus
+it to see the thread title, executor, project, mode, and visibility from Amp's
+title bar, including details Amp hides at narrow widths. Click it to pin the
+card open; click again or press Escape to unpin. Desktop only.
+
 Every extension feature has its own checkbox in **Options**:
 
 | Setting                                   | Default | When off                                                          |
@@ -64,6 +69,7 @@ Every extension feature has its own checkbox in **Options**:
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
 | Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
 | Show model and runner in the composer     | On      | Composer unchanged; no thread data requests                       |
+| Show thread info orb                      | On      | No floating orb; title-bar details stay in Amp's title bar        |
 | Hide sidebar footer                       | Off     | Native footer visible                                             |
 
 Feature choices remain editable and active with either sidebar placement.

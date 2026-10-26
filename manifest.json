@@ -30,7 +30,7 @@
     {
       "matches": ["https://ampcode.com/*"],
       "css": ["sidebar.css"],
-      "js": ["content.js", "subagents.js", "composer.js"],
+      "js": ["content.js", "subagents.js", "composer.js", "info-orb.js"],
       "run_at": "document_start"
     }
   ]
