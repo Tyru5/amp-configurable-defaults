@@ -24,7 +24,17 @@
   Its SIL Open Font License is included in `caveat-OFL.txt`, and the font is
   also served locally.
 
-The hero's interactive preview is authored HTML and CSS with invented sample
-content, explicitly labeled as an illustration. It is not a screenshot of Amp,
-and its controls only change the preview. No generated design concept is used
-as live-product evidence.
+- `hero-live.webp` is the landing hero and README image. It is a real,
+  signed-in Amp session in Helium, captured October 26, 2026 at a 1681 × 1000
+  viewport and 2× scale during the info-orb work, then resized to 2400 × 1428.
+  It shows the right sidebar with child threads indented, the info orb pinned
+  open, and the composer's `gpt-6.1-sol · Orb` label. The orb and its CSS were
+  injected from this repository's `info-orb.js` and `sidebar.css`, because the
+  installed build predated the orb. After capture, solid bars masked the
+  conversation, a suggested reply, the thread name in the title bar and card,
+  and every sidebar thread and project name except `amp-configurable-defaults`
+  and `Floating info orb`. Nothing else was changed.
+- `thread-context.webp` is a crop of the same redacted capture, showing the
+  pinned info card and composer label, resized to 1600 × 931.
+
+No generated design concept is used as live-product evidence.

@@ -8,6 +8,11 @@ choice applies to all open Amp tabs and survives browser restarts.
 Independent project, not affiliated with or endorsed by Amp. The code is MIT licensed.
 The Chrome Web Store release is in preparation, not published or approved.
 
+![Live Amp with the sidebar on the right, the thread info orb pinned, and the model and runner in the composer. Private text redacted.](docs/assets/hero-live.webp)
+
+_Live, signed-in Amp in Helium, October 26, 2026. Conversation, thread names,
+and project names are redacted._
+
 The [landing page](docs/index.html) explains the features and local installation.
 Serve the repository with a static server and open `/docs/` to preview it.
 The page has no build step, external fonts, or third-party scripts.
@@ -151,8 +156,9 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 ## Scope and privacy
 
 Only permission: `storage`, for feature choices, sidebar side,
-and right-sidebar width on this device. The eight active keys are listed in the privacy policy.
-The content script runs only on `https://ampcode.com/*`. No network requests,
+and right-sidebar width on this device. The ten keys are listed in the privacy policy.
+The content script runs only on `https://ampcode.com/*`. Its only network request
+is the optional same-origin thread data request for the composer label. No
 analytics, dependencies, or changes to thread data. This is an independent
 extension, not an official Amp extension.
 
@@ -258,6 +264,10 @@ hover cards, and tool disclosures. Active-agent pulse transitions and reduced
 motion were verified with fixtures, not a currently running live subagent.
 The mobile fixture tests CSS breakpoints; it does not model Amp's native mobile
 sidebar sheet.
+
+The composer label and info orb were checked on live, signed-in Amp in Helium on
+2026-10-26. The landing page hero is a full-viewport capture from that session, with
+private text masked after capture; see `docs/assets/README.md`.
 
 ## Chrome Web Store release
 

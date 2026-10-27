@@ -1,7 +1,3 @@
-const workspace = document.querySelector(".workspace");
-const sideButtons = document.querySelectorAll("button[data-side]");
-const status = document.querySelector("#demo-status");
-
 const themeControl = document.querySelector(".theme-control");
 for (const input of themeControl.querySelectorAll("input")) {
   input.checked = input.value === (document.documentElement.dataset.theme || "system");
@@ -29,14 +25,3 @@ themeControl.addEventListener("change", (event) => {
     // The selected theme still applies for this page when storage is blocked.
   }
 });
-
-for (const button of sideButtons) {
-  button.addEventListener("click", () => {
-    const side = button.dataset.side;
-    workspace.dataset.side = side;
-    for (const choice of sideButtons) {
-      choice.setAttribute("aria-pressed", String(choice === button));
-    }
-    status.textContent = `${side === "right" ? "Right" : "Left"} sidebar selected in preview.`;
-  });
-}

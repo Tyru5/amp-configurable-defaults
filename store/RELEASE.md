@@ -36,6 +36,8 @@
 node --check background.js
 node --check content.js
 node --check subagents.js
+node --check composer.js
+node --check info-orb.js
 node --check options.js
 node --test tests/background.test.mjs
 node --test tests/options.test.mjs
@@ -57,7 +59,7 @@ python3 scripts/package.py
 
 Store review, approval, and publication have not been performed by this project.
 Sidebar placement is independent of other Options; there is no master switch.
-The eight local preferences are documented in the privacy policy and listing.
+The ten local preferences are documented in the privacy policy and listing.
 Existing defaults remain, including footer hiding off. Existing draft release
 screenshots have not been replaced. Review the footer states, individual opt-outs,
 cross-tab changes, and recovery with both footer and header switch hidden before

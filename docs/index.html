@@ -21,7 +21,7 @@
     </script>
     <meta
       name="description"
-      content="Make Amp's desktop web layout your own. Right-side navigation, remembered width, child thread hierarchy, and a dedicated subagent reading panel. An independent, open-source Chrome extension."
+      content="Make Amp's desktop web layout your own. Right-side navigation, remembered width, child thread hierarchy, a subagent reading panel, the thread's model and runner in the composer, and a pinnable thread info orb. An independent, open-source Chrome extension."
     />
     <meta property="og:title" content="amp configurable defaults | Your Amp. Your layout." />
     <meta
@@ -96,7 +96,8 @@
             <div class="hero-copy">
               <p>
                 A few better defaults for the way you work. Move navigation to the right, make room
-                for your threads, and give subagents a place of their own.
+                for your threads, give subagents a place of their own, and see which model and
+                runner each thread uses.
               </p>
               <a class="button primary" href="#install"
                 ><svg viewBox="0 0 24 24" aria-hidden="true">
@@ -109,97 +110,27 @@
               </p>
             </div>
           </div>
-          <div class="demo-heading">
-            <p>Same Amp. A different point of view.</p>
-            <div class="side-controls" role="group" aria-label="Illustrative demo sidebar position">
-              <button type="button" data-side="left" aria-pressed="false">Left sidebar</button>
-              <button type="button" data-side="right" aria-pressed="true">Right sidebar</button>
-            </div>
-          </div>
-          <div class="workspace" data-side="right" aria-label="Illustrative Amp layout preview">
-            <div class="browser-bar">
-              <span class="browser-dots" aria-hidden="true"><i></i><i></i><i></i></span
-              ><span>ampcode.com</span><span class="browser-label">Layout preview</span>
-            </div>
-            <div class="workspace-body">
-              <aside class="demo-agents" aria-label="Illustrative subagent panel">
-                <div class="pane-title">Subagents <span>2</span></div>
-                <div class="agent">
-                  <span class="status-dot"></span>Review accessibility<small
-                    >Finished · Task · Output</small
-                  >
-                </div>
-                <div class="agent">
-                  <span class="status-dot"></span>Check responsive layout<small
-                    >Finished · Task · Output</small
-                  >
-                </div>
-                <div class="agent-guide">
-                  <strong>A list, not a wall of text.</strong>
-                  <p>
-                    In the extension, hover or focus Task or Output for a reading sheet. Click to
-                    keep it open.
-                  </p>
-                  <span>Illustration only</span>
-                </div>
-              </aside>
-              <div class="demo-conversation">
-                <div class="conversation-top">
-                  Build a thoughtful workspace <span>Subagents 2</span>
-                </div>
-                <div class="conversation-content">
-                  <div class="sample-prompt">Let's make a little more room to think.</div>
-                  <div class="sample-response">
-                    <span class="amp-mark" aria-hidden="true">a</span>
-                    <div>
-                      <strong>A layout that works your way.</strong>
-                      <p>
-                        Navigation on one side. Agent output on the other. Your conversation in the
-                        middle.
-                      </p>
-                      <div class="sample-code">
-                        <span>workspace</span><br />&nbsp;&nbsp;conversation: in focus<br />&nbsp;&nbsp;sidebar:
-                        your choice<br />&nbsp;&nbsp;subagents: in view
-                      </div>
-                      <div class="inline-summary">✓ Review accessibility · Finished</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="demo-composer">
-                  <span>What would you like to build?</span
-                  ><svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="m7 12 5-5 5 5M12 7v11" />
-                  </svg>
-                </div>
-              </div>
-              <aside class="demo-navigation" aria-label="Illustrative navigation sidebar">
-                <div class="pane-title">
-                  <span class="demo-wordmark">amp</span
-                  ><svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="4" y="5" width="16" height="14" rx="2" />
-                    <path d="M14 5v14" />
-                  </svg>
-                </div>
-                <div class="new-thread">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>New
-                  thread
-                </div>
-                <p class="thread-label">Your threads</p>
-                <div class="demo-thread current">Build a thoughtful workspace</div>
-                <div class="demo-thread child">Review accessibility</div>
-                <div class="demo-thread child">Check responsive layout</div>
-                <div class="demo-thread">Explore the API</div>
-                <div class="demo-thread">Ship the small things</div>
-                <div class="demo-footer">
-                  <span>Projects</span><span>Activity</span><span class="profile-dot">Y</span>
-                </div>
-              </aside>
-            </div>
-          </div>
-          <div class="demo-caption">
-            <span>Illustrative desktop layout with sample content, not a live Amp session.</span
-            ><span id="demo-status" role="status">Right sidebar selected in preview.</span>
-          </div>
+          <figure class="hero-shot">
+            <img
+              src="assets/hero-live.webp"
+              alt="Live Amp session with the extension: navigation on the right with child threads indented beneath their parents, the thread info orb pinned open on the conversation's left edge, and the composer showing the model and Orb runner. Conversation text and thread names are redacted."
+              width="2400"
+              height="1428"
+              fetchpriority="high"
+            />
+            <figcaption>
+              <span
+                >A real Amp session in Helium, 1681 × 1000, October 26, 2026. Conversation, thread
+                names, and project names are redacted.</span
+              >
+              <ul class="hero-points" aria-label="Shown in this capture">
+                <li>Navigation on the right</li>
+                <li>Child threads indented</li>
+                <li>Thread info orb, pinned</li>
+                <li>Model and runner in the composer</li>
+              </ul>
+            </figcaption>
+          </figure>
           <div class="opening-footer">
             <span>Made for ampcode.com</span><span>Local storage + access to ampcode.com only</span
             ><span>No analytics in the extension</span>
@@ -210,8 +141,8 @@
         <div class="section-intro">
           <h2 id="features-title">Small changes.<br />More room for your work.</h2>
           <p>
-            Pick a side without switching anything else off. Layout settings and the optional
-            reading panel have independent controls in Options.
+            Pick a side without switching anything else off. Every feature has its own checkbox in
+            the toolbar popup and Options.
           </p>
         </div>
         <div class="feature-story">
@@ -282,6 +213,43 @@
             <figcaption>
               Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24, 2026. Private content
               hidden. In v1.2, Task and Output open in a separate reading sheet.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="feature-story">
+          <div class="feature-copy">
+            <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
+              <circle cx="11" cy="20" r="4" />
+              <rect x="18" y="10" width="17" height="20" rx="3" />
+              <path d="M22 16h9m-9 4h9m-9 4h6" />
+            </svg>
+            <h3>Know where every thread runs.</h3>
+            <p>
+              Next to the composer's upload button, a compact label shows the thread's model and
+              where it runs: your runner's name for local threads, or <strong>Orb</strong> for cloud
+              threads. Hover it for the mode and working directory.
+            </p>
+            <p>
+              A small orb floats on the conversation's left edge. Hover or focus it for the thread,
+              executor, project, mode, and visibility from Amp's title bar, even when narrow windows
+              hide them. Click to pin the card; click again or press Escape to unpin.
+            </p>
+            <div class="feature-detail">
+              The label reads the same thread data Amp's page loads, from ampcode.com with your
+              existing session. Both are desktop only and can be turned off separately.
+            </div>
+          </div>
+          <figure>
+            <img
+              src="assets/thread-context.webp"
+              alt="Live Amp capture: the thread info orb pinned open with executor Orb Executor, project No Project, mode medium, and visibility Private, and the composer label gpt-6.1-sol · Orb. Conversation text and the thread name are redacted."
+              width="1600"
+              height="931"
+              loading="lazy"
+            />
+            <figcaption>
+              Live Amp in Helium, October 26, 2026; crop of the capture above. Conversation and
+              thread name redacted.
             </figcaption>
           </figure>
         </div>
@@ -384,13 +352,15 @@
             <summary>What does it store or read?</summary>
             <p>
               The extension needs local storage and access to ampcode.com only. Chrome may describe
-              that access as reading and changing site data. Eight active layout and feature
-              preferences are saved in your local Chrome profile, not synced between devices. Inline
-              summaries and the reading panel use rendered subagent titles, statuses, tasks,
-              results, and errors in memory for the current thread, expanding Amp's native
-              disclosures as needed. That view is discarded on navigation or reload; subagent
-              content is never saved or transmitted. No additional history is fetched. The extension
-              makes no network requests and has no analytics.
+              that access as reading and changing site data. Ten layout and feature preferences are
+              saved in your local Chrome profile, not synced between devices. Inline summaries and
+              the reading panel use rendered subagent titles, statuses, tasks, results, and errors
+              in memory for the current thread, expanding Amp's native disclosures as needed. That
+              view is discarded on navigation or reload; subagent content is never saved or
+              transmitted. No additional history is fetched. With the composer label on, the
+              extension requests the open thread's data from ampcode.com, as Amp's own page does,
+              and keeps only its mode, model, and runner details in memory. That is its only network
+              request. There are no analytics.
             </p>
             <a href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md"
               >Read the full privacy policy</a
@@ -408,11 +378,11 @@
           <details>
             <summary>How do I change or undo my settings?</summary>
             <p>
-              Right-click the extension's toolbar icon and choose Options. Layout settings and the
-              desktop reading panel have separate checkboxes. Switching sides does not disable other
-              features, and turning off the panel keeps inline summaries. There is no master on/off
-              switch in v1.2. To remove all extension changes, disable or remove the extension in
-              Chrome, then refresh open Amp tabs.
+              Click the extension's toolbar icon for the settings popup, or right-click it and
+              choose Options. Every feature has its own checkbox. Switching sides does not disable
+              other features, and turning off the panel keeps inline summaries. There is no master
+              on/off switch in v1.2. To remove all extension changes, disable or remove the
+              extension in Chrome, then refresh open Amp tabs.
             </p>
           </details>
           <details>

@@ -34,19 +34,23 @@ Features:
 - Keep expandable inline subagent summaries, even with the panel disabled.
 - Identify active subagents by pulsing dots, with reduced-motion support.
 - Distinguish tool calls from prose with tinted disclosure rows.
+- See the thread's model and runner (or Orb) next to the composer's upload button.
+- Hover, focus, or pin a floating orb for the thread's title-bar details.
 - Keep mobile navigation native; inline summaries and tool styling remain available.
 
 Every feature has its own Options checkbox: right-side placement, right-side
 resizing, auxiliary-view placement, child-thread indentation, header-switch
-visibility, subagent panel, and footer hiding. All default on except footer
-hiding. Turning off resizing restores native width without erasing the saved
+visibility, subagent panel, composer model and runner, thread info orb, and
+footer hiding. All default on except footer hiding. Turning off resizing restores native width without erasing the saved
 width. Collapse/expand stays native. Placement changes preserve every preference.
 
 After installing, pin the extension and refresh any open Amp tabs. The toolbar
 badge shows R for right or L for left.
 
 Privacy: only your feature choices, sidebar side, and width are stored locally.
-No analytics, tracking, advertising, data collection, or network requests.
+No analytics, tracking, advertising, or data collection. The optional composer
+label fetches the open thread's data from ampcode.com with your existing session,
+keeps it in memory, and sends it nowhere else.
 Source code is public under the MIT license.
 
 Requires Amp in Chrome or a Chrome-installed PWA. This extension cannot change
@@ -59,12 +63,13 @@ Independent project. Not affiliated with or endorsed by Amp.
 
 Single purpose:
 Customize Amp's desktop reading layout: position navigation on either side,
-resize the right sidebar, optionally hide its footer, and read subagent activity opposite it.
+resize the right sidebar, optionally hide its footer, read subagent activity
+opposite it, and show the open thread's model, runner, and title-bar details.
 
 Storage permission justification:
-The storage permission saves eight preferences in chrome.storage.local:
+The storage permission saves ten preferences in chrome.storage.local:
 right, rightWidth, hideSidebarFooter, resizeSidebar, moveViews, indentThreads,
-showHeaderToggle, and subagentPanel. They apply to open Amp tabs and survive
+showHeaderToggle, subagentPanel, showComposerContext, and infoOrb. They apply to open Amp tabs and survive
 browser restarts. No page contents or personal data are persisted.
 
 Host access justification:
@@ -72,8 +77,12 @@ The content script runs only on https://ampcode.com/* to change the app's
 sidebar layout, handle its resize divider, and display rendered subagent
 activity in an optional reading panel. It needs automatic access on page load
 to restore the user's layout. Subagent prompts and results remain in memory
-for the current thread; they are not saved or transmitted. It does not run on
-other sites or access Amp APIs, ordinary messages, credentials, or browsing history.
+for the current thread; they are not saved or transmitted. When the composer
+label is on, it requests the open thread's page data from
+https://ampcode.com/threads/<id>/__data, the same same-origin request Amp's
+page makes, and keeps only the mode, model, executor, runner, and working
+directory in memory. The info orb reads details already in Amp's title bar.
+It does not run on other sites or read credentials or browsing history.
 
 Remote code:
 No, I am not using remote code. All JavaScript and CSS are bundled in the ZIP.
@@ -90,6 +99,8 @@ review and certify Google's data-use declarations before submission.
   Both use original window/sidebar/arrow artwork, without an Amp logo or
   wordmark. The promotional tile is artwork, not an app screenshot.
 - Live screenshots: `store/screenshots/`, 1280 × 800 PNGs from signed-in Helium.
+  They predate the composer label and info orb; the redacted live capture in
+  `docs/assets/hero-live.webp` shows both but is not sized for the store.
   Conversation content, task/output content, thread titles, and account details
   are hidden for privacy. See `screenshots/README.md` for the suggested five.
 - `fixture-*.png` and `docs/previews/` are labeled compatibility demonstrations,

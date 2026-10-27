@@ -20,13 +20,6 @@ function check(expression, label) {
   assert.ok(result, label);
   console.log(`PASS ${label}`);
 }
-const bounds = `(() => {
-  const box = selector => {
-    const { left, right } = document.querySelector(selector).getBoundingClientRect();
-    return { left, right };
-  };
-  return { nav: box('.demo-navigation'), chat: box('.demo-conversation'), agents: box('.demo-agents') };
-})()`;
 
 try {
   browser("open", url);
@@ -40,38 +33,19 @@ try {
     `document.querySelectorAll('main section').length === 4 && document.querySelectorAll('h1').length === 1`,
     "all landing content is inside one main landmark",
   );
-  browser("click", 'button[data-side="left"]');
   check(
-    `document.querySelector('button[data-side="left"]').getAttribute('aria-pressed') === 'true' && document.querySelector('button[data-side="right"]').getAttribute('aria-pressed') === 'false'`,
-    "demo selection exposes its pressed state",
+    `(() => { const img = document.querySelector('.hero-shot img'); return img.currentSrc.endsWith('assets/hero-live.webp') && img.alt.includes('redacted') && img.getBoundingClientRect().width > 1000; })()`,
+    "hero shows the redacted live Amp capture at full width",
   );
   check(
-    `(${bounds}).nav.right <= (${bounds}).chat.left && (${bounds}).agents.left >= (${bounds}).chat.right`,
-    "left demo places navigation left and subagents right",
+    `document.querySelector('.hero-shot figcaption').textContent.includes('real Amp session') && document.querySelectorAll('.hero-points li').length === 4`,
+    "hero caption identifies the live capture and what it shows",
   );
-  check(
-    `document.querySelector('.demo-thread.child').getBoundingClientRect().left > document.querySelector('.demo-thread.current').getBoundingClientRect().left`,
-    "left preview retains child hierarchy in v1.2",
-  );
-  browser("focus", 'button[data-side="right"]');
-  browser("press", "Enter");
-  check(
-    `(${bounds}).nav.left >= (${bounds}).chat.right && (${bounds}).agents.right <= (${bounds}).chat.left`,
-    "keyboard switches the demo back to right navigation",
-  );
-  check(
-    `document.querySelector('.demo-thread.child').getBoundingClientRect().left > document.querySelector('.demo-thread.current').getBoundingClientRect().left`,
-    "right preview retains child hierarchy in v1.2",
-  );
-  check(
-    `document.querySelector('[role="status"]').textContent === 'Right sidebar selected in preview.'`,
-    "selected layout is announced",
-  );
+  browser("focus", "details:nth-child(2) summary");
   check(
     `getComputedStyle(document.activeElement).outlineStyle !== 'none' && parseFloat(getComputedStyle(document.activeElement).outlineWidth) > 0`,
     "keyboard focus has a visible indicator",
   );
-  browser("focus", "details:nth-child(2) summary");
   browser("press", "Enter");
   check(
     `document.querySelector('details:nth-child(2)').open && document.querySelector('details:nth-child(2)').textContent.includes('reading and changing site data')`,
@@ -89,15 +63,9 @@ try {
     );
   }
   viewport(390, 844);
-  browser("click", 'button[data-side="left"]');
   check(
-    `(${bounds}).nav.right <= (${bounds}).chat.left`,
-    "compact illustration switches to left navigation",
-  );
-  browser("click", 'button[data-side="right"]');
-  check(
-    `(${bounds}).nav.left >= (${bounds}).chat.right`,
-    "compact illustration switches back to right navigation",
+    `(() => { const img = document.querySelector('.hero-shot img').getBoundingClientRect(); return img.left >= 0 && img.right <= innerWidth && Math.abs(img.width / img.height - 2400 / 1428) < 0.01; })()`,
+    "compact hero image fits the viewport without distortion",
   );
   browser("click", ".hero-copy .button");
   browser(
@@ -126,12 +94,6 @@ try {
       `dark theme has no horizontal overflow at ${width}px`,
     );
   }
-  browser("focus", 'button[data-side="left"]');
-  browser("press", "Enter");
-  check(
-    `document.querySelector('button[data-side="left"]').getAttribute('aria-pressed') === 'true' && getComputedStyle(document.activeElement).outlineStyle !== 'none'`,
-    "dark theme retains keyboard selection and visible focus",
-  );
   browser("set", "media", "light");
   check(
     `getComputedStyle(document.documentElement).colorScheme === 'light' && getComputedStyle(document.documentElement).backgroundColor === ${JSON.stringify(lightBackground)}`,
