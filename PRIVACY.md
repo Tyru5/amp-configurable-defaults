@@ -5,7 +5,7 @@ Effective October 27, 2026. Applies to amp configurable defaults version 1.2.0.
 ## What the extension does
 
 amp configurable defaults changes the desktop sidebar layout and provides an optional
-subagent reading panel on `https://ampcode.com`. It is independent of Amp and
+subagent reading panel and drag-to-split thread panes on `https://ampcode.com`. It is independent of Amp and
 is not affiliated with or endorsed by Amp.
 
 ## Information stored on your device
@@ -68,14 +68,33 @@ The optional footer setting hides the existing footer wrapper with CSS. It
 does not read the account row or pinned shortcut contents. Uncheck **Hide sidebar
 footer** in extension Options to restore it. Mobile footers are unchanged.
 
+## Embedded-thread security exception
+
+Dragging a sidebar thread to an edge opens the real Amp page in an iframe,
+using your existing Amp session. Amp loads and handles the conversation and
+composer normally, including any messages you choose to send. The extension
+reads the frame's page title and layout, and hides duplicate navigation. It
+does not copy or store that conversation or its drafts.
+
+Amp normally blocks framing. The `declarativeNetRequestWithHostAccess`
+permission and host access to `https://ampcode.com/*` allow a temporary rule
+that removes `X-Frame-Options` and `Content-Security-Policy` response headers
+for the exact tokenized thread URL, only as a subframe initiated by Amp in the
+current tab. **This also removes CSP's script and resource restrictions inside
+that frame.** Ordinary Amp navigations, other URLs, and other tabs retain their
+policies. The rule is removed when the split closes, its tab closes, or a new
+top-level Amp page loads. Rules are session-only, not persisted to disk.
+This feature does not use the browser's built-in Split View.
+
 ## Collection and sharing
 
 The extension does not collect or transmit personal information. It contains
-no analytics, advertising, tracking, or external services. Its only network
-request is the optional same-origin thread data request to `ampcode.com`
-described above.
+no analytics, advertising, tracking, or external collection services. Network
+activity includes the optional same-origin thread data request described above
+and the embedded Amp page's normal requests.
 It does not sell, share, or transfer user data to any third party. All code
-runs locally and is bundled with the extension; no remote code is loaded.
+implementing the extension is bundled locally. The embedded website loads Amp's
+own application code, as it does when opened in an ordinary tab.
 
 Amp and Chrome have their own privacy policies. This extension does not change
 how those services handle your data.

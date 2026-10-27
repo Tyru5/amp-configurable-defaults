@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: node --check background.js && node --check content.js && node --check subagents.js && node --check composer.js && node --check info-orb.js && node --check options.js && node --check docs/landing.js
+      - run: node --check background.js && node --check content.js && node --check thread-split.js && node --check subagents.js && node --check composer.js && node --check info-orb.js && node --check options.js && node --check docs/landing.js
       - run: node --test tests/background.test.mjs tests/options.test.mjs
       - run: python3 -m unittest discover -s tests -p '*_test.py'
       - run: python3 scripts/package.py

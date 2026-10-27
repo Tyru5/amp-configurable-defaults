@@ -14,8 +14,10 @@ def build(output_dir=None):
     manifest = json.loads((ROOT / "manifest.json").read_text())
     if manifest["manifest_version"] != 3:
         raise ValueError("Expected Manifest V3")
-    if manifest["permissions"] != ["storage"]:
+    if manifest["permissions"] != ["storage", "declarativeNetRequestWithHostAccess"]:
         raise ValueError("Review permissions and privacy disclosures before packaging")
+    if manifest.get("host_permissions") != ["https://ampcode.com/*"]:
+        raise ValueError("Thread embedding must be restricted to ampcode.com")
     if manifest["content_scripts"][0]["matches"] != ["https://ampcode.com/*"]:
         raise ValueError("Review host access and privacy disclosures before packaging")
 

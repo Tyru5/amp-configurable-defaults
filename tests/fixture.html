@@ -166,6 +166,8 @@
   };
   const listeners = [];
   window.chrome = {
+    runtime: { onMessage: { addListener() {} } },
+    tabs: { onRemoved: { addListener() {} } },
     storage: {
       local: {
         async get() { return JSON.parse(localStorage.getItem('extension-settings') || '{}'); },

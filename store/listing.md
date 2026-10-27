@@ -28,6 +28,7 @@ Features:
 - Keep using Amp's existing sidebar collapse and expand controls.
 - Indent child threads using Amp's existing hierarchy on either side.
 - Keep Files, Changes, Terminal, Desktop, and Portal opposite navigation.
+- Drag a sidebar thread to either edge to open a live second conversation in the same page.
 - Change sidebar placement without disabling other features.
 - Optionally hide the whole desktop sidebar footer from Options, visible by default.
 - Read subagent tasks and results in optional Task and Output reading sheets.
@@ -38,7 +39,7 @@ Features:
 - Hover, focus, or pin a floating orb for the thread's title-bar details.
 - Keep mobile navigation native; inline summaries and tool styling remain available.
 
-Every feature has its own Options checkbox: right-side placement, right-side
+Options has independent checkboxes for right-side placement, right-side
 resizing, auxiliary-view placement, child-thread indentation, header-switch
 visibility, subagent panel, composer model and runner, thread info orb, and
 footer hiding. All default on except footer hiding. Turning off resizing restores native width without erasing the saved
@@ -84,8 +85,18 @@ page makes, and keeps only the mode, model, executor, runner, and working
 directory in memory. The info orb reads details already in Amp's title bar.
 It does not run on other sites or read credentials or browsing history.
 
+Declarative net request permission justification:
+To embed a live Amp thread in the same page, a session-only rule removes
+X-Frame-Options and Content-Security-Policy for one exact tokenized thread URL,
+restricted to subframes initiated by ampcode.com in the requesting tab. This
+also relaxes script/resource protections in that embedded document. Closing
+the split or tab, or loading a new top-level Amp page, removes the rule.
+No policies are changed for ordinary navigations or other URLs/tabs.
+
 Remote code:
-No, I am not using remote code. All JavaScript and CSS are bundled in the ZIP.
+The extension's JavaScript and CSS are bundled in the ZIP. The embedded Amp
+website loads its own application code. Review this iframe behavior and the
+security exception against current store policy before certifying this field.
 
 Data usage:
 No user data is collected or transmitted. Leave collection-category checkboxes

@@ -418,3 +418,81 @@
 @media (prefers-reduced-motion: reduce) {
   [data-amp-info-orb] { transition: none; }
 }
+
+/* Keep Amp's owned nodes in place. The extra conversation is a sibling pane. */
+[data-slot="sidebar-inset"][data-amp-thread-split] {
+  display: grid !important;
+  grid-template-columns: minmax(0, var(--amp-main-track, 50fr)) 5px minmax(0, var(--amp-split-track, 50fr));
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+}
+[data-slot="sidebar-inset"][data-amp-thread-split="left"] {
+  grid-template-columns: minmax(0, var(--amp-split-track, 50fr)) 5px minmax(0, var(--amp-main-track, 50fr));
+}
+[data-amp-thread-split] > * { grid-row: 1; min-width: 0; min-height: 0; }
+[data-amp-thread-split="right"] > :not([data-amp-thread-pane], [data-amp-thread-divider]),
+[data-amp-thread-split="left"] > [data-amp-thread-pane] { grid-column: 1; }
+[data-amp-thread-split="left"] > :not([data-amp-thread-pane], [data-amp-thread-divider]),
+[data-amp-thread-split="right"] > [data-amp-thread-pane] { grid-column: 3; }
+[data-amp-thread-pane] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--background, Canvas);
+  color: var(--foreground, CanvasText);
+  font: 13px/1.5 system-ui, sans-serif;
+}
+[data-amp-thread-pane-header] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border, #80808060);
+}
+[data-amp-thread-pane-header] strong { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-amp-thread-pane-header] a { flex-shrink: 0; color: inherit; text-decoration: underline; font-size: 12px; }
+[data-amp-thread-pane] button { color: inherit; cursor: pointer; }
+[data-amp-thread-pane-header] button { border: 0; background: transparent; font-size: 22px; padding: 0 6px; }
+[data-amp-thread-pane] > [role="status"], [data-amp-thread-pane] > button { margin: 12px; }
+[data-amp-thread-pane] iframe { flex: 1; min-height: 0; width: 100%; border: 0; }
+[data-amp-thread-divider] { grid-column: 2; background: var(--border, #80808060); cursor: col-resize; touch-action: none; }
+[data-amp-thread-divider]:hover { background: var(--ring, #426dba); }
+[data-amp-thread-divider]:focus-visible, [data-amp-thread-pane] :is(a, button):focus-visible { outline: 2px solid var(--ring, #426dba); outline-offset: -2px; }
+[data-amp-split-resizing] { user-select: none; }
+[data-amp-split-resizing] iframe { pointer-events: none; }
+@media (max-width: 767px) {
+  [data-slot="sidebar-inset"][data-amp-thread-split] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, var(--amp-main-track, 50fr)) 5px minmax(0, var(--amp-split-track, 50fr));
+  }
+  [data-slot="sidebar-inset"][data-amp-thread-split="left"] {
+    grid-template-rows: minmax(0, var(--amp-split-track, 50fr)) 5px minmax(0, var(--amp-main-track, 50fr));
+  }
+  [data-amp-thread-split] > * { grid-column: 1 !important; }
+  [data-amp-thread-split="right"] > :not([data-amp-thread-pane], [data-amp-thread-divider]),
+  [data-amp-thread-split="left"] > [data-amp-thread-pane] { grid-row: 1; }
+  [data-amp-thread-split="left"] > :not([data-amp-thread-pane], [data-amp-thread-divider]),
+  [data-amp-thread-split="right"] > [data-amp-thread-pane] { grid-row: 3; }
+  [data-amp-thread-split] > [data-amp-thread-divider] { grid-row: 2; cursor: row-resize; }
+}
+[data-amp-thread-drop] { position: fixed; z-index: 100; display: flex; justify-content: space-between; }
+[data-amp-thread-drop-side] {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(160px, 25%);
+  padding: 16px;
+  border: 2px dashed var(--ring, #426dba);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--background, Canvas) 92%, transparent);
+  color: var(--foreground, CanvasText);
+  font: 500 14px/1.5 system-ui, sans-serif;
+  text-align: center;
+}
+[data-amp-thread-drop][data-active-side="left"] > [data-amp-thread-drop-side="left"],
+[data-amp-thread-drop][data-active-side="right"] > [data-amp-thread-drop-side="right"] {
+  border-style: solid;
+  background: color-mix(in srgb, var(--ring, #426dba) 20%, var(--background, Canvas));
+}

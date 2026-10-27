@@ -356,8 +356,10 @@
               view is discarded on navigation or reload; subagent content is never saved or
               transmitted. No additional history is fetched. With the composer label on, the
               extension requests the open thread's data from ampcode.com, as Amp's own page does,
-              and keeps only its mode, model, and runner details in memory. That is its only network
-              request. There are no analytics.
+              and keeps only its mode, model, and runner details in memory. Drag-to-split loads a
+              live Amp page with its normal network requests. A temporary, tab-scoped rule removes
+              framing and Content Security Policy headers only for that embedded thread URL;
+              this also relaxes script protections inside the frame. There are no analytics.
             </p>
             <a href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md"
               >Read the full privacy policy</a

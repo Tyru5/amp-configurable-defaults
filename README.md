@@ -40,6 +40,17 @@ native layout and resize behavior. Right-mode width is saved separately.
 In right mode, auxiliary views such as Files, Changes, Terminal, Desktop, and
 Portal open to the left of the conversation. Their dividers still resize in
 the direction you drag. Left mode restores their native placement on the right.
+
+Drag a sidebar thread to the left or right edge of the conversation to open it
+in a second pane **inside the same Amp page**, not the browser's Split View.
+Or focus a thread and press **Alt+Shift+Left/Right**. Drag the divider to resize,
+use its arrow keys, or double-click to reset. Dragging the same thread to the
+other edge moves its pane without reloading it. Close the current split before
+opening a different thread. Closing or reloading ends the split; it is not saved.
+Existing panes stack vertically below 768px; new splits require desktop width.
+The embedded page uses your Amp session and its native composer. See the
+[security exception](PRIVACY.md#embedded-thread-security-exception) before using it.
+
 Child thread rows are indented by 20px per level on either side, up to 64px,
 using Amp's existing parent-child hierarchy without reordering threads.
 The **right-sidebar arrow icon** in Amp's sidebar header switches placement,
@@ -70,7 +81,7 @@ the runner and working directory when available from the same thread data used
 by the composer label, even when that label is disabled. Click it to pin the
 card open; click again or press Escape to unpin. Desktop only.
 
-Every extension feature has its own checkbox in **Options**:
+These features have independent checkboxes in **Options**:
 
 | Setting                                   | Default | When off                                                          |
 | ----------------------------------------- | ------- | ----------------------------------------------------------------- |
@@ -162,11 +173,13 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 
 ## Scope and privacy
 
-Only permission: `storage`, for feature choices, sidebar side,
-and right-sidebar width on this device. The ten keys are listed in the privacy policy.
-The content script runs only on `https://ampcode.com/*`. Its only network request
-is the optional same-origin thread data request shared by the composer label and info orb. No
-analytics, dependencies, or changes to thread data. This is an independent
+Permissions: `storage` for local preferences, plus
+`declarativeNetRequestWithHostAccess` and access to `https://ampcode.com/*` for
+the embedded-thread security exception. The ten stored keys are listed in the
+privacy policy. The content script runs only on Amp. Network activity includes
+the optional same-origin thread data request and the embedded Amp page's normal
+requests. The extension does not collect analytics or submit thread data;
+you can interact with Amp's native composer inside a split. This is an independent
 extension, not an official Amp extension.
 
 See the full [privacy policy](PRIVACY.md).
@@ -202,6 +215,7 @@ amp orb service stop fixture
 ```sh
 node --check background.js
 node --check content.js
+node --check thread-split.js
 node --check subagents.js
 node --check options.js
 node --test tests/background.test.mjs
@@ -228,6 +242,14 @@ In another terminal in this repository:
 ```sh
 node tests/browser.mjs
 node tests/landing.mjs
+```
+
+For split-pane regression checks, pass an existing agent-browser session
+connected to your test browser. The test opens and closes only its own fixture
+tab, leaving the browser and other tabs open:
+
+```sh
+node tests/thread-split.mjs <connected-session> http://localhost:8765/tests/fixture.html
 ```
 
 The fixture's on-page toggle changes the placement preference through a mock

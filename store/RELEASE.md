@@ -2,7 +2,7 @@
 
 ## Prepared in this repository
 
-- Manifest V3, host access limited to `https://ampcode.com/*`, storage only.
+- Manifest V3, storage and declarative net request permissions; host access limited to `https://ampcode.com/*`.
 - Toolbar and extension icons at 16, 32, 48, and 128 pixels.
 - Required 440 × 280 promotional tile.
 - Public privacy policy, support URL, listing copy, and permission explanations.
@@ -16,6 +16,8 @@
 
 ## Before uploading
 
+- [ ] Review the embedded-thread framing/CSP exception and iframe remote-code
+      disclosures against current Web Store policy before submission.
 - [ ] Smoke-test the final versioned ZIP on real, signed-in Amp. The 1.2.0
       runtime was tested before the version-only packaging update.
 - [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep

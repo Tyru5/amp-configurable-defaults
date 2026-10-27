@@ -10,7 +10,8 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "declarativeNetRequestWithHostAccess"],
+  "host_permissions": ["https://ampcode.com/*"],
   "action": {
     "default_title": "amp configurable defaults: open settings",
     "default_popup": "options.html?popup",
@@ -30,7 +31,7 @@
     {
       "matches": ["https://ampcode.com/*"],
       "css": ["sidebar.css"],
-      "js": ["content.js", "subagents.js", "composer.js", "info-orb.js"],
+      "js": ["content.js", "thread-split.js", "subagents.js", "composer.js", "info-orb.js"],
       "run_at": "document_start"
     }
   ]
