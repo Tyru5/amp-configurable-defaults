@@ -45,8 +45,7 @@
 
   function runner(thread) {
     const type = thread.executorType ?? thread.meta?.executorType;
-    const mode = String(thread.agentMode ?? thread.meta?.agentMode ?? "");
-    if (type === "sandbox") return { label: "Executor", name: mode.startsWith("external-agent") ? "External agent" : "Orb", directory: null };
+    if (type === "sandbox") return { label: "Executor", name: "Orb", directory: null };
     if (type !== "local-client") return null;
     const env = thread.env?.initial;
     // Amp hides generated runner IDs and falls back to the hostname.
@@ -65,7 +64,8 @@
     const model = custom?.model ?? feature(thread.meta, "model:") ??
       lastModel(data.transcriptPage?.messages) ?? lastModel(thread.messages) ?? null;
     const mode = custom?.label ?? thread.agentMode ?? thread.meta?.agentMode ?? null;
-    return { model, mode, effort: feature(thread.meta, "effort:"), runner: runner(thread) };
+    // A generic external-agent usage marker does not identify the model.
+    return { model: model === "external-agent" ? null : model, mode, effort: feature(thread.meta, "effort:"), runner: runner(thread) };
   }
 
   async function load(id) {
@@ -120,7 +120,8 @@
     const parts = [];
     const mode = [context.mode, context.effort && `${context.effort} effort`].filter(Boolean).join(", ");
     if (context.model) parts.push(item("model", context.model, `Model: ${context.model}${mode ? `\nMode: ${mode}` : ""}`));
-    else if (mode) parts.push(item("mode", mode, `Mode: ${mode}`));
+    else if (context.mode) parts.push(item("mode", context.mode.startsWith("external-agent") ? "Model unavailable" : context.mode, `Mode: ${mode}`));
+    if (context.effort) parts.push(item("effort", `${context.effort} effort`, `Configured effort: ${context.effort}`));
     if (context.runner) {
       const { label, name, directory } = context.runner;
       parts.push(item("runner", name, `${label}: ${name}${directory ? `\nDirectory: ${directory}` : ""}`));

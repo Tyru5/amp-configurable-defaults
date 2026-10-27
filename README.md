@@ -53,7 +53,12 @@ the model the thread is using and where it runs: the runner name for local
 threads, or **Orb** for cloud threads. Hover it for the mode and directory. The values come from the same thread data Amp's
 page loads, fetched from `ampcode.com` with your existing session. It refreshes
 on thread changes and at most once a minute while the tab is visible. Before
-the first reply, it shows the thread's mode until a model is known.
+the first reply, it shows the thread's mode until a model is known. External
+agents show **Model unavailable** when the data does not identify a model,
+with the agent mode still available on hover. Their cloud executor is **Orb**.
+When the thread has an explicit effort setting, the label includes it beside
+the model, for example **high effort**. Missing effort is omitted, not inferred
+from the mode name.
 
 Hovering or keyboard-focusing a thread in the right sidebar opens Amp's native
 thread information card to its left. Amp still owns the content and dismissal.

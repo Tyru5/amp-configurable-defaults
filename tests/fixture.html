@@ -140,9 +140,19 @@
       env: { initial: { runnerID: 'tiru5-macbook-pro', hostname: 'Tyrus-MBP.local', trees: [{ uri: 'file:///Users/tiru5/My%20Repo', repository: { dir: 'app' } }] } } } },
     'fixture-b': { type: 'result', transcriptPage: { messages: [] },
       thread: { id: 'fixture-b', agentMode: 'medium', meta: { executorType: 'sandbox' } } },
+    'fixture-mode-effort': { type: 'result', transcriptPage: { messages: [] },
+      thread: { id: 'fixture-mode-effort', agentMode: 'medium', meta: { executorType: 'sandbox', features: ['effort:low'] } } },
     'fixture-c': { type: 'result', transcriptPage: { messages: [{ role: 'assistant', usage: { model: 'claude-opus-5' } }] },
       thread: { id: 'fixture-c', agentMode: 'external-agent:claude-code', meta: { executorType: 'local-client', features: ['model:claude-sonnet-5-5', 'effort:xhigh'] },
         env: { initial: { runnerID: '0f8fad5b-d9cb-469f-a165-70867728950e', hostname: 'build-box', workingDirectory: 'file:///srv/my%20work' } } } },
+    'fixture-orb-external': { type: 'result', transcriptPage: { messages: [{ role: 'assistant', usage: { model: 'external-agent' } }] },
+      thread: { id: 'fixture-orb-external', agentMode: 'external-agent:claude-code', meta: { executorType: 'sandbox', features: ['model:claude-opus-5-5', 'effort:high'] } } },
+    // Reported generic usage model with no explicit model selection. Do not
+    // mistake it for a model name or fall back to an older model.
+    'fixture-orb-unknown': { type: 'result', transcriptPage: { messages: [
+      { role: 'assistant', usage: { model: 'claude-sonnet-5' } },
+      { role: 'assistant', usage: { model: 'external-agent' } },
+    ] }, thread: { id: 'fixture-orb-unknown', agentMode: 'external-agent:claude-code', meta: { executorType: 'sandbox', features: ['effort:medium'] } } },
   };
   window.fixtureThreadRequests = [];
   const nativeFetch = window.fetch;
