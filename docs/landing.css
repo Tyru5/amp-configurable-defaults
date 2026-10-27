@@ -207,9 +207,7 @@ nav a:hover {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 12px;
-  font-size: 11px;
+  padding: 9px;
 }
 .theme-control input {
   appearance: none;
@@ -232,8 +230,7 @@ nav a:hover {
 .theme-control input:focus-visible {
   outline-offset: 2px;
 }
-.theme-control svg,
-.theme-control span {
+.theme-control svg {
   position: relative;
   pointer-events: none;
   color: var(--muted);
@@ -242,8 +239,7 @@ nav a:hover {
   width: 17px;
   height: 17px;
 }
-.theme-control input:checked ~ svg,
-.theme-control input:checked ~ span {
+.theme-control input:checked ~ svg {
   color: light-dark(white, #17251b);
 }
 .hero {
