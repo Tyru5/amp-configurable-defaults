@@ -4,10 +4,12 @@
   const contextSelector = "[data-amp-composer-context]";
   const refreshAfter = 60_000;
   let enabled = false;
+  let infoOrb = false;
   let settings = {};
   let pending = false;
   let loaded = { id: null, at: 0, context: null };
   let loading = null;
+  let runnerSignature;
 
   function threadID() {
     const scroll = document.querySelector("[data-thread-transcript-scroll][data-thread-id]");
@@ -45,9 +47,9 @@
 
   function runner(thread) {
     const type = thread.executorType ?? thread.meta?.executorType;
-    if (type === "sandbox") return { label: "Executor", name: "Orb", directory: null };
-    if (type !== "local-client") return null;
     const env = thread.env?.initial;
+    if (type === "sandbox") return { label: "Executor", name: "Orb", directory: directory(env) };
+    if (type !== "local-client") return null;
     // Amp hides generated runner IDs and falls back to the hostname.
     const id = env?.runnerID && !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(env.runnerID) ? env.runnerID : null;
     const name = id ?? env?.hostname ?? null;
@@ -131,13 +133,22 @@
 
   function update() {
     pending = false;
-    const id = enabled ? threadID() : null;
+    // Both displays share the same request and derivation, independently of
+    // whether the composer label itself is enabled.
+    const id = enabled || infoOrb ? threadID() : null;
+    const context = id && loaded.id === id ? loaded.context : null;
+    const runner = context?.runner ?? null;
+    const signature = JSON.stringify([id, runner]);
+    if (signature !== runnerSignature) {
+      runnerSignature = signature;
+      globalThis.ampThreadRunner = runner;
+      dispatchEvent(new Event("amp-thread-runner-change"));
+    }
+    if (enabled) render(context);
+    else remove();
     if (!id) {
-      remove();
       return;
     }
-    if (loaded.id === id) render(loaded.context);
-    else remove();
     const stale = loaded.id !== id || Date.now() - loaded.at > refreshAfter;
     if (!stale || loading?.id === id || document.visibilityState === "hidden") return;
     const request = { id };
@@ -162,14 +173,18 @@
   }).observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-thread-id"] });
   document.addEventListener("visibilitychange", schedule);
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "local" || !changes.showComposerContext) return;
-    settings.showComposerContext = changes.showComposerContext.newValue;
+    if (area !== "local" || (!changes.showComposerContext && !changes.infoOrb)) return;
+    for (const key of ["showComposerContext", "infoOrb"]) {
+      if (changes[key]) settings[key] = changes[key].newValue;
+    }
     enabled = settings.showComposerContext !== false;
+    infoOrb = settings.infoOrb !== false;
     schedule();
   });
-  chrome.storage.local.get(["showComposerContext"]).then(initial => {
+  chrome.storage.local.get(["showComposerContext", "infoOrb"]).then(initial => {
     settings = { ...initial, ...settings };
     enabled = settings.showComposerContext !== false;
+    infoOrb = settings.infoOrb !== false;
     schedule();
   });
 })();

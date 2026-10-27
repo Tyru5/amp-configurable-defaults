@@ -40,18 +40,18 @@ statuses, and content already rendered by Amp to provide compact inline summarie
 When a summary is expanded or the subagent panel is open, it expands
 native subagent disclosures as needed and displays their rendered task prompts,
 results, and errors (plain text in the reading sheet, native content inline).
-When **Show model and runner in the composer** is on, the extension requests
+When **Show model and runner in the composer** or **Show thread info orb** is on, the extension requests
 the open thread's page data from `https://ampcode.com/threads/<id>/__data`, the
 same same-origin request Amp's thread page makes, using your existing Amp
 session. It reads only the thread's mode, model, executor type, runner name or
 hostname, and working directory from the response, keeps them in memory for
-the current tab, and displays them in the composer next to the upload button. The response is not
-stored or sent anywhere else. Turning the setting off stops these requests.
+the current tab, and displays them in the enabled composer label or info card. The response is not
+stored or sent anywhere else. Turning both settings off stops these requests.
 
 When **Show thread info orb** is on, the extension reads the thread title,
 executor, project, mode, and visibility already shown in Amp's title bar and
-displays them in a card beside the conversation. It makes no request for them
-and does not store them.
+displays them in a card beside the conversation, along with the runner name and
+working directory from the shared thread data request. It does not store them.
 
 This reading panel keeps a temporary, in-memory view for the current thread,
 including the last visible content when Amp unmounts an entry. It is discarded

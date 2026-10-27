@@ -65,7 +65,9 @@ thread information card to its left. Amp still owns the content and dismissal.
 
 A small orb floats at mid-height on the conversation's left edge. Hover or focus
 it to see the thread title, executor, project, mode, and visibility from Amp's
-title bar, including details Amp hides at narrow widths. Click it to pin the
+title bar, including details Amp hides at narrow widths. The card also shows
+the runner and working directory when available from the same thread data used
+by the composer label, even when that label is disabled. Click it to pin the
 card open; click again or press Escape to unpin. Desktop only.
 
 Every extension feature has its own checkbox in **Options**:
@@ -78,7 +80,7 @@ Every extension feature has its own checkbox in **Options**:
 | Indent child threads                      | On      | Native row spacing on either side                                 |
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
 | Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
-| Show model and runner in the composer     | On      | Composer unchanged; no thread data requests                       |
+| Show model and runner in the composer     | On      | Composer unchanged; thread data still loads if the info orb is on |
 | Show thread info orb                      | On      | No floating orb; title-bar details stay in Amp's title bar        |
 | Hide sidebar footer                       | Off     | Native footer visible                                             |
 
@@ -163,7 +165,7 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 Only permission: `storage`, for feature choices, sidebar side,
 and right-sidebar width on this device. The ten keys are listed in the privacy policy.
 The content script runs only on `https://ampcode.com/*`. Its only network request
-is the optional same-origin thread data request for the composer label. No
+is the optional same-origin thread data request shared by the composer label and info orb. No
 analytics, dependencies, or changes to thread data. This is an independent
 extension, not an official Amp extension.
 

@@ -16,6 +16,9 @@
     };
     add("Thread", (bar.querySelector("[data-title-text]") ?? bar.querySelector("h2"))?.textContent);
     add("Executor", bar.querySelector("[data-thread-title-executor-icon]")?.getAttribute("aria-label"));
+    const runner = globalThis.ampThreadRunner;
+    if (runner?.label === "Runner") add("Runner", runner.name);
+    add("Directory", runner?.directory);
     let mode = false;
     for (const control of bar.querySelectorAll(".thread-title-bar-meta-control")) {
       if (control.querySelector(".truncate")) add("Project", control.textContent);
@@ -151,6 +154,7 @@
   new MutationObserver(records => {
     if (records.some(record => !(record.target instanceof Element && record.target.closest("[data-amp-info-orb], [data-amp-info-card]")))) schedule();
   }).observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "data-state"] });
+  addEventListener("amp-thread-runner-change", schedule);
   addEventListener("resize", schedule);
   desktop.addEventListener("change", schedule);
   chrome.storage.onChanged.addListener((changes, area) => {
