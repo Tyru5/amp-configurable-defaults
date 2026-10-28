@@ -41,6 +41,10 @@ try {
     `document.querySelector('.hero-shot figcaption').textContent.includes('real Amp session') && document.querySelectorAll('.hero-points li').length === 4`,
     "hero caption identifies the live capture and what it shows",
   );
+  check(
+    `(() => { const section = document.querySelector('#split-panes'); const image = section?.querySelector('img'); return image?.getAttribute('src') === 'assets/thread-split.webp' && image.alt.includes('redacted') && section.textContent.includes('Alt+Shift+Left') && section.textContent.includes('Alt+Shift+Right') && section.querySelector('a').hash === '#embedded-thread-security-exception'; })()`,
+    "split panes have a real redacted capture, keyboard instructions, and the security disclosure",
+  );
   browser("focus", "details:nth-child(2) summary");
   check(
     `getComputedStyle(document.activeElement).outlineStyle !== 'none' && parseFloat(getComputedStyle(document.activeElement).outlineWidth) > 0`,

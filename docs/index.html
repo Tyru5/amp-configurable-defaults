@@ -31,7 +31,7 @@
     </script>
     <meta
       name="description"
-      content="Make Amp's desktop web layout your own. Right-side navigation, remembered width, child thread hierarchy, a subagent reading panel, the thread's model and runner in the composer, and a pinnable thread info orb. An independent, open-source Chrome extension."
+      content="Make Amp's desktop web layout your own. Read two threads in split panes, move navigation to the right, give subagents a reading panel, and see each thread's model and runner. An independent, open-source Chrome extension."
     />
     <meta
       property="og:title"
@@ -132,8 +132,8 @@
             <div class="hero-copy">
               <p>
                 A few better defaults for the way you work. Move navigation to
-                the right, make room for your threads, give subagents a place of
-                their own, and see which model and runner each thread uses.
+                the right, read two threads side by side, give subagents a place
+                of their own, and see which model and runner each thread uses.
               </p>
               <a class="button primary" href="#install"
                 ><svg viewBox="0 0 24 24" aria-hidden="true">
@@ -224,6 +224,54 @@
               Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24,
               2026. Private content hidden. In v1.2 the header arrow switches
               sides, not all features.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="feature-story reverse" id="split-panes">
+          <div class="feature-copy">
+            <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
+              <rect x="5" y="8" width="30" height="24" rx="3" />
+              <path d="M20 8v24M10 15h5m-5 5h5m10-5h5m-5 5h5" />
+            </svg>
+            <h3>Two threads. One workspace.</h3>
+            <p>
+              Keep a reference conversation beside the thread you're working
+              in. Drag a sidebar thread to the left or right edge of the
+              conversation to open a second pane inside the same Amp page,
+              not the browser's Split View. Both threads keep Amp's native composer.
+            </p>
+            <p>
+              Prefer the keyboard? Focus a sidebar thread and press
+              <strong>Alt+Shift+Left</strong> or <strong>Alt+Shift+Right</strong>.
+              Drag the divider to resize, use its arrow keys, or double-click
+              to reset to an even split. Drag the same thread to the other
+              edge to move its pane without reloading it.
+            </p>
+            <p>
+              Use the pane's close button before opening a different thread.
+              Closing or reloading ends the split; it isn't saved. New splits
+              need a window at least 768px wide. Existing panes stack vertically
+              below that width.
+            </p>
+            <div class="feature-detail">
+              The embedded thread uses your signed-in Amp session. Read the
+              <a href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md#embedded-thread-security-exception"
+                >embedded-thread security exception</a
+              > before using split panes.
+            </div>
+          </div>
+          <figure>
+            <img
+              src="assets/thread-split.webp"
+              alt="Real Amp in Helium with two thread panes side by side, a divider between them, a composer in each pane, and navigation on the right. Private content is redacted."
+              width="2000"
+              height="1190"
+              loading="lazy"
+            />
+            <figcaption>
+              Live Amp in Helium, October 27, 2026, at 1681 × 1000. Captured
+              with the installed extension. Conversations, private thread and
+              project names, file name, and runner details redacted.
             </figcaption>
           </figure>
         </div>

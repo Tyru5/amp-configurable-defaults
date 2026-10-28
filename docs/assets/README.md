@@ -36,5 +36,15 @@
   and `Floating info orb`. Nothing else was changed.
 - `thread-context.webp` is a crop of the same redacted capture, showing the
   pinned info card and composer label, resized to 1600 × 931.
+- `thread-split.webp` is a real, signed-in Amp capture in Helium, taken October
+  27, 2026 at 1681 × 1000 and 2× scale, then resized to 2000 × 1190. The
+  installed extension opened a second thread on the right with
+  Alt+Shift+Right, without injected runtime code or fixture data. The native
+  composers, split header, divider, and navigation are unchanged. Opaque
+  post-capture masks cover both conversations, suggested replies, thread names,
+  private project names, a file name, and model/runner details. Labels identify
+  the masked conversations. The public `amp-configurable-defaults` project
+  name remains visible. Keyboard resizing and double-click reset were checked
+  in the same live session. No messages were sent.
 
 No generated design concept is used as live-product evidence.
