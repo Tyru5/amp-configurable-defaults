@@ -224,7 +224,7 @@ python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
 
-The build writes `dist/amp-configurable-defaults-1.2.0.zip` and a SHA-256 checksum.
+The build writes `dist/amp-configurable-defaults-1.3.0.zip` and a SHA-256 checksum.
 The manifest is at the ZIP root as required by the Web Store. Only runtime
 files, icons, and the license are included, never tests or developer previews.
 GitHub Actions runs syntax, toolbar behavior, and packaging checks on pushes

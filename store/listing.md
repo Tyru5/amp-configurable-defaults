@@ -1,6 +1,6 @@
 # Chrome Web Store listing
 
-Submission copy for version 1.2.0. This file is not a claim of store approval.
+Submission copy for version 1.3.0. This file is not a claim of store approval.
 
 ## Listing fields
 

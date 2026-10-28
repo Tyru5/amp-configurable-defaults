@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "amp configurable defaults",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Move Amp's desktop navigation sidebar to the right and show each thread's model and runner in the composer. Click the toolbar icon to customize your settings.",
   "homepage_url": "https://github.com/Tyru5/amp-configurable-defaults",
   "icons": {

@@ -1,4 +1,14 @@
-# Version 1.2.0 submission checklist
+# Version 1.3.0 submission checklist
+
+## Changes since 1.2.0
+
+- Renamed the extension to amp configurable defaults and added a compact toolbar
+  settings popup alongside the full Options page.
+- Added composer labels for the thread's model, runner or Orb, and explicit effort.
+- Added a floating, pinnable thread info orb with runner and working-directory details.
+- Added in-page thread split panes with drag-and-drop, keyboard shortcuts, and
+  resizable dividers. Embedding uses a scoped, session-only framing/CSP exception.
+- Added the landing page, theme choices, and privacy-redacted live screenshots.
 
 ## Prepared in this repository
 
@@ -18,8 +28,8 @@
 
 - [ ] Review the embedded-thread framing/CSP exception and iframe remote-code
       disclosures against current Web Store policy before submission.
-- [ ] Smoke-test the final versioned ZIP on real, signed-in Amp. The 1.2.0
-      runtime was tested before the version-only packaging update.
+- [ ] Smoke-test the final 1.3.0 ZIP on real, signed-in Amp. Earlier live checks
+      in README.md do not replace testing this packaged release.
 - [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep
       fixture previews separately identified. No private content is published.
 - [ ] Repeat the final smoke test in current Google Chrome. Helium and fixture
@@ -37,6 +47,7 @@
 ```sh
 node --check background.js
 node --check content.js
+node --check thread-split.js
 node --check subagents.js
 node --check composer.js
 node --check info-orb.js
@@ -48,7 +59,7 @@ python3 scripts/package.py
 ```
 
 1. Open https://chrome.google.com/webstore/devconsole.
-2. Add a new item and upload `dist/amp-configurable-defaults-1.2.0.zip` directly.
+2. Add a new item and upload `dist/amp-configurable-defaults-1.3.0.zip` directly.
    Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, promo tile, and
    the suggested real screenshots in `store/screenshots/README.md`. Never upload
