@@ -71,7 +71,11 @@ try {
     `(() => { const img = document.querySelector('.hero-shot img').getBoundingClientRect(); return img.left >= 0 && img.right <= innerWidth && Math.abs(img.width / img.height - 2400 / 1428) < 0.01; })()`,
     "compact hero image fits the viewport without distortion",
   );
-  browser("click", ".hero-copy .button");
+  check(
+    `['.hero-copy .button', '.closing .button', '#install .install-intro p a'].every(selector => document.querySelector(selector)?.href === 'https://chromewebstore.google.com/detail/amp-configurable-defaults/hpobhiphbifcjhplkegebmpiehkcpjod')`,
+    "primary install actions and installation copy link to the published Chrome Web Store listing",
+  );
+  browser("click", 'nav a[href="#install"]');
   browser(
     "wait",
     "--fn",
@@ -79,7 +83,7 @@ try {
   );
   check(
     `document.querySelector('#install .button').href === 'https://github.com/Tyru5/amp-configurable-defaults/archive/refs/heads/main.zip'`,
-    "install action reaches the guide and offers the public source archive",
+    "installation navigation still reaches the guide and offers the public source archive",
   );
   browser("eval", "Promise.all([...document.images].map(image => image.decode()))");
   check(
