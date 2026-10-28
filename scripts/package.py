@@ -14,6 +14,8 @@ def build(output_dir=None):
     manifest = json.loads((ROOT / "manifest.json").read_text())
     if manifest["manifest_version"] != 3:
         raise ValueError("Expected Manifest V3")
+    if len(manifest["description"]) > 132:
+        raise ValueError("Manifest description exceeds Chrome Web Store limit of 132 characters")
     if manifest["permissions"] != ["storage", "declarativeNetRequestWithHostAccess"]:
         raise ValueError("Review permissions and privacy disclosures before packaging")
     if manifest.get("host_permissions") != ["https://ampcode.com/*"]:

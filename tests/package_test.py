@@ -1,7 +1,9 @@
 import importlib.util
+import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -11,6 +13,16 @@ spec.loader.exec_module(package)
 
 
 class PackageTest(unittest.TestCase):
+    def test_description_length_limit(self):
+        manifest = json.loads((ROOT / "manifest.json").read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(package.json, "loads", return_value=manifest):
+                manifest["description"] = "x" * 132
+                package.build(directory)
+                manifest["description"] += "x"
+                with self.assertRaisesRegex(ValueError, "132 characters"):
+                    package.build(directory)
+
     def test_upload_has_root_manifest_and_only_runtime_files(self):
         with tempfile.TemporaryDirectory() as directory:
             archive = package.build(directory)
