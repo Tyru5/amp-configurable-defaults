@@ -5,11 +5,19 @@
   const refreshAfter = 60_000;
   let enabled = false;
   let infoOrb = false;
+  let showMessageTimestamps = false;
   let settings = {};
   let pending = false;
   let loaded = { id: null, at: 0, context: null };
   let loading = null;
   let runnerSignature;
+  let timestampRefresh;
+  const timestampSelector = "[data-amp-message-timestamp]";
+  const clock = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  const calendarDate = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
+  const fullDate = new Intl.DateTimeFormat(undefined, {
+    year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short",
+  });
 
   function threadID() {
     const scroll = document.querySelector("[data-thread-transcript-scroll][data-thread-id]");
@@ -66,8 +74,22 @@
     const model = custom?.model ?? feature(thread.meta, "model:") ??
       lastModel(data.transcriptPage?.messages) ?? lastModel(thread.messages) ?? null;
     const mode = custom?.label ?? thread.agentMode ?? thread.meta?.agentMode ?? null;
+    const timestamps = new Map();
+    for (const message of data.transcriptPage?.messages ?? thread.messages ?? []) {
+      const id = message.protocolMessageID ?? message.messageId;
+      if (id == null) continue;
+      timestamps.set(String(id), null);
+      if (message.parentToolUseId !== undefined || !["user", "assistant"].includes(message.role)) continue;
+      const complete = message.role === "assistant" && message.state?.type === "complete";
+      const finished = complete ? message.usage?.timestamp : null;
+      const value = finished ?? message.createdAt;
+      const date = value == null ? null : new Date(value);
+      if (!date || !Number.isFinite(date.getTime())) continue;
+      timestamps.set(String(id), { date, label: message.role === "user" ? "Sent" : finished ? "Finished" : "Started",
+        streaming: message.role === "assistant" && !complete });
+    }
     // A generic external-agent usage marker does not identify the model.
-    return { model: model === "external-agent" ? null : model, mode, effort: feature(thread.meta, "effort:"), runner: runner(thread) };
+    return { model: model === "external-agent" ? null : model, mode, effort: feature(thread.meta, "effort:"), runner: runner(thread), timestamps };
   }
 
   async function load(id) {
@@ -93,6 +115,40 @@
     document.querySelectorAll(contextSelector).forEach(node => node.remove());
   }
 
+  function renderTimestamps(context) {
+    if (!showMessageTimestamps) {
+      document.querySelectorAll(timestampSelector).forEach(node => node.remove());
+      return false;
+    }
+    let needsRefresh = false;
+    for (const row of document.querySelectorAll('[data-thread-transcript-scroll] [data-transcript-message-lookup-id]')) {
+      const message = row.querySelector(':scope > [data-transcript-entry-content] [data-transcript-message-role]');
+      let time = row.querySelector(`:scope > ${timestampSelector}`);
+      const stamp = message ? context?.timestamps.get(row.dataset.transcriptMessageLookupId) : null;
+      if (!stamp) {
+        time?.remove();
+        if (message && !context?.timestamps.has(row.dataset.transcriptMessageLookupId)) needsRefresh = true;
+        continue;
+      }
+      needsRefresh ||= stamp.streaming;
+      if (!time) {
+        time = document.createElement("time");
+        time.setAttribute("data-amp-message-timestamp", "");
+        row.querySelector(':scope > [data-transcript-entry-content]').before(time);
+      }
+      const iso = stamp.date.toISOString();
+      const title = `${stamp.label} ${fullDate.format(stamp.date)}`;
+      if (time.dateTime !== iso || time.title !== title) {
+        time.dateTime = iso;
+        time.textContent = `${calendarDate.format(stamp.date)} · ${clock.format(stamp.date)}`;
+        time.title = title;
+        time.setAttribute("aria-label", title);
+      }
+      time.dataset.side = message.dataset.transcriptMessageAlignment === "right" ? "right" : "left";
+    }
+    return needsRefresh;
+  }
+
   function item(kind, value, title) {
     const node = document.createElement("span");
     node.dataset.ampComposerContextItem = kind;
@@ -116,7 +172,8 @@
       node.setAttribute("aria-label", "Thread model and runner");
       trigger.after(node);
     }
-    const key = JSON.stringify(context);
+    const { timestamps, ...display } = context;
+    const key = JSON.stringify(display);
     if (node.dataset.ampComposerContextKey === key) return;
     node.dataset.ampComposerContextKey = key;
     const parts = [];
@@ -133,9 +190,10 @@
 
   function update() {
     pending = false;
-    // Both displays share the same request and derivation, independently of
+    clearTimeout(timestampRefresh);
+    // The displays share the same request and derivation, independently of
     // whether the composer label itself is enabled.
-    const id = enabled || infoOrb ? threadID() : null;
+    const id = enabled || infoOrb || showMessageTimestamps ? threadID() : null;
     const context = id && loaded.id === id ? loaded.context : null;
     const runner = context?.runner ?? null;
     const signature = JSON.stringify([id, runner]);
@@ -146,15 +204,25 @@
     }
     if (enabled) render(context);
     else remove();
+    const missingTimestamps = renderTimestamps(context);
     if (!id) {
       return;
     }
-    const stale = loaded.id !== id || Date.now() - loaded.at > refreshAfter;
+    // New/streaming messages may not have reached the route response yet. Retry
+    // while visible, throttled independently of DOM mutations during streaming.
+    const interval = showMessageTimestamps && missingTimestamps ? 5_000 : refreshAfter;
+    const age = Date.now() - loaded.at;
+    const stale = loaded.id !== id || age >= interval;
+    if (!stale && showMessageTimestamps && missingTimestamps && document.visibilityState !== "hidden") {
+      timestampRefresh = setTimeout(schedule, interval - age);
+    }
     if (!stale || loading?.id === id || document.visibilityState === "hidden") return;
     const request = { id };
     loading = request;
     load(id).catch(() => null).then(context => {
-      if (loading === request) loading = null;
+      if (loading !== request) return;
+      loading = null;
+      if (threadID() !== id) return;
       // A failed refresh keeps the last known values for the same thread.
       if (!context && loaded.id === id) context = loaded.context;
       loaded = { id, at: Date.now(), context };
@@ -169,22 +237,25 @@
   }
 
   new MutationObserver(records => {
-    if (records.some(record => !(record.target instanceof Element && record.target.closest(contextSelector)))) schedule();
-  }).observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-thread-id"] });
+    if (records.some(record => !(record.target instanceof Element && record.target.closest(`${contextSelector}, ${timestampSelector}`)))) schedule();
+  }).observe(document, { childList: true, subtree: true, attributes: true,
+    attributeFilter: ["data-thread-id", "data-transcript-message-lookup-id", "data-transcript-message-alignment"] });
   document.addEventListener("visibilitychange", schedule);
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "local" || (!changes.showComposerContext && !changes.infoOrb)) return;
-    for (const key of ["showComposerContext", "infoOrb"]) {
+    if (area !== "local" || (!changes.showComposerContext && !changes.infoOrb && !changes.showMessageTimestamps)) return;
+    for (const key of ["showComposerContext", "infoOrb", "showMessageTimestamps"]) {
       if (changes[key]) settings[key] = changes[key].newValue;
     }
     enabled = settings.showComposerContext !== false;
     infoOrb = settings.infoOrb !== false;
+    showMessageTimestamps = settings.showMessageTimestamps === true;
     schedule();
   });
-  chrome.storage.local.get(["showComposerContext", "infoOrb"]).then(initial => {
+  chrome.storage.local.get(["showComposerContext", "infoOrb", "showMessageTimestamps"]).then(initial => {
     settings = { ...initial, ...settings };
     enabled = settings.showComposerContext !== false;
     infoOrb = settings.infoOrb !== false;
+    showMessageTimestamps = settings.showMessageTimestamps === true;
     schedule();
   });
 })();

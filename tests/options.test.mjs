@@ -6,9 +6,10 @@ import { runInNewContext } from 'node:vm';
 const source = await readFile(new URL('../options.js', import.meta.url), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const features = ['right', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel', 'showComposerContext', 'infoOrb'];
+const optIns = ['hideSidebarFooter', 'showMessageTimestamps'];
 
 function options(search = '', openOptionsPage = async () => {}) {
-  const controls = Object.fromEntries(['enabled', ...features, 'hideSidebarFooter', 'status', 'open-options'].map(id => [id, {
+  const controls = Object.fromEntries(['enabled', ...features, ...optIns, 'status', 'open-options'].map(id => [id, {
     checked: id === 'enabled', disabled: true, textContent: '', hidden: true,
     addEventListener(type, fn) { this[type] = fn; },
   }]));
@@ -38,36 +39,40 @@ function options(search = '', openOptionsPage = async () => {}) {
   };
 }
 
-test('Options defaults footer visible, saves opt-in, and restores it independently of side', async () => {
+test('Options defaults opt-ins off, saves them, and restores them independently of side', async () => {
   const app = options();
   app.resolveRead({});
   await tick();
   assert.equal(app.controls['open-options'].hidden, true);
-  const { right, hideSidebarFooter: footer, status } = app.controls;
+  const { right, status } = app.controls;
   assert.equal(right.checked, true);
-  assert.equal(footer.checked, false);
-  assert.equal(footer.disabled, false);
-  footer.checked = true;
-  await footer.change();
-  assert.deepEqual(app.writes, [{ hideSidebarFooter: true }]);
-  assert.equal(status.textContent, 'Saved.');
-  app.external('right', false);
-  assert.equal(right.checked, false);
-  assert.equal(footer.checked, true);
-  assert.equal(footer.disabled, false);
-  footer.checked = false;
-  await footer.change();
-  assert.deepEqual(app.writes[1], { hideSidebarFooter: false });
+  for (const key of optIns) {
+    const toggle = app.controls[key];
+    assert.equal(toggle.checked, false);
+    assert.equal(toggle.disabled, false);
+    toggle.checked = true;
+    await toggle.change();
+    assert.deepEqual(app.writes.at(-1), { [key]: true });
+    assert.equal(status.textContent, 'Saved.');
+    app.external('right', false);
+    assert.equal(right.checked, false);
+    assert.equal(toggle.checked, true);
+    assert.equal(toggle.disabled, false);
+    app.external(key, undefined);
+    assert.equal(toggle.checked, false, 'removing an opt-in restores its default');
+  }
 });
 
 test('pending initial read merges storage changes per preference, including removal', async () => {
   const app = options();
   app.external('right', false);
   app.external('hideSidebarFooter', true, 'sync');
-  app.resolveRead({ right: true, hideSidebarFooter: true });
+  app.external('showMessageTimestamps', true);
+  app.resolveRead({ right: true, hideSidebarFooter: true, showMessageTimestamps: false });
   await tick();
   assert.equal(app.controls.right.checked, false);
   assert.equal(app.controls.hideSidebarFooter.checked, true);
+  assert.equal(app.controls.showMessageTimestamps.checked, true);
   app.external('hideSidebarFooter', undefined);
   assert.equal(app.controls.hideSidebarFooter.checked, false);
   app.external('right', undefined);
@@ -100,7 +105,7 @@ test('failed reads keep all controls disabled and announce recovery', async () =
   const app = options();
   app.rejectRead(new Error('unavailable'));
   await tick();
-  for (const key of ['enabled', ...features, 'hideSidebarFooter']) {
+  for (const key of ['enabled', ...features, ...optIns]) {
     assert.equal(app.controls[key].disabled, true, key);
   }
   assert.match(app.controls.status.textContent, /Reopen this page/);
@@ -134,7 +139,7 @@ test('popup saves every setting, receives external changes, and opens the full O
   await tick();
   assert.equal(app.controls.right.checked, false);
   assert.equal(app.controls.hideSidebarFooter.checked, true);
-  for (const key of [...features, 'hideSidebarFooter']) {
+  for (const key of [...features, ...optIns]) {
     const toggle = app.controls[key];
     const next = !toggle.checked;
     toggle.checked = next;

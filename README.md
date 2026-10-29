@@ -63,7 +63,8 @@ In the thread composer, to the right of the upload button, a compact label shows
 the model the thread is using and where it runs: the runner name for local
 threads, or **Orb** for cloud threads. Hover it for the mode and directory. The values come from the same thread data Amp's
 page loads, fetched from `ampcode.com` with your existing session. It refreshes
-on thread changes and at most once a minute while the tab is visible. Before
+on thread changes and at most once a minute while the tab is visible, or every
+five seconds while persistent timestamps need new message metadata. Before
 the first reply, it shows the thread's mode until a model is known. External
 agents show **Model unavailable** when the data does not identify a model,
 with the agent mode still available on hover. Their cloud executor is **Orb**.
@@ -91,9 +92,19 @@ These features have independent checkboxes in **Options**:
 | Indent child threads                      | On      | Native row spacing on either side                                 |
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
 | Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
-| Show model and runner in the composer     | On      | Composer unchanged; thread data still loads if the info orb is on |
+| Show model and runner in the composer     | On      | Composer unchanged; info orb and timestamps can still load data  |
 | Show thread info orb                      | On      | No floating orb; title-bar details stay in Amp's title bar        |
+| Always show message timestamps            | Off     | Native Option/Alt timestamp behavior                              |
 | Hide sidebar footer                       | Off     | Native footer visible                                             |
+
+**Always show message timestamps** keeps a compact, aligned date and time above
+each user and assistant message, including while you type. Hover for the
+timezone and whether the time marks sending, starting, or finishing a reply.
+Times use your browser's local timezone and Amp's message metadata. New and
+streaming messages refresh at most once every five seconds while the tab is
+visible. Missing timestamps are omitted, never guessed. This setting works on
+both sidebar sides and on mobile, independently of the composer label and info
+orb. Turning it off restores Amp's native Option/Alt behavior.
 
 Feature choices remain editable and active with either sidebar placement.
 Custom resizing applies only in right mode; left-side resizing stays native.
@@ -175,7 +186,7 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 
 Permissions: `storage` for local preferences, plus
 `declarativeNetRequestWithHostAccess` and access to `https://ampcode.com/*` for
-the embedded-thread security exception. The ten stored keys are listed in the
+the embedded-thread security exception. The eleven stored keys are listed in the
 privacy policy. The content script runs only on Amp. Network activity includes
 the optional same-origin thread data request and the embedded Amp page's normal
 requests. The extension does not collect analytics or submit thread data;

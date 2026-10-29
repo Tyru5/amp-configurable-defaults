@@ -489,6 +489,65 @@ try {
   browser('wait', '--fn', `!document.querySelector('${orb}')`);
   check(`!document.querySelector('${orb}')`, 'info orb is removed when disabled and on mobile');
   browser('set', 'viewport', '1280', '800', '2');
+
+  // Message markup and metadata from live Amp, inspected 2026-10-29. Deliberately
+  // give assistant creation and completion different times to catch mixups.
+  const setupTimestamps = `
+    fixtureThreadData['fixture-times'] = { type: 'result', thread: { id: 'fixture-times', messages: [
+      { protocolMessageID: 'M-sent', role: 'user', createdAt: '2026-10-28T23:59:58Z' },
+      { protocolMessageID: 'M-reply', role: 'assistant', createdAt: '2026-10-29T00:00:02Z', state: { type: 'complete' }, usage: { timestamp: '2026-10-29T00:01:09Z' } },
+      { protocolMessageID: 'M-invalid', role: 'user', createdAt: 'invalid' },
+      { protocolMessageID: 'M-child', role: 'assistant', parentToolUseId: 'child', createdAt: '2026-10-29T00:00:00Z' }
+    ] } };
+    fixtureAgents.navigate('fixture-times');
+    window.addTimestampRow = (id, role, text) => {
+      const row = document.createElement('div');
+      row.dataset.transcriptMessageLookupId = id;
+      row.innerHTML = '<div data-transcript-entry-content><div data-transcript-message-role="' + role + '" data-transcript-message-alignment="' + (role === 'user' ? 'right' : 'left') + '"></div></div>';
+      row.querySelector('[data-transcript-message-role]').textContent = text;
+      document.querySelector('#fixture-transcript').append(row);
+    };
+    addTimestampRow('M-sent', 'user', 'Keep message times visible.');
+    addTimestampRow('M-reply', 'assistant', 'Timestamps remain visible while you type.');
+    addTimestampRow('M-invalid', 'user', 'No usable timestamp.');
+    addTimestampRow('M-child', 'assistant', 'Nested agent, not a top-level message.');
+  `;
+  const times = '[data-amp-message-timestamp]';
+  browser('eval', `chrome.storage.local.set({ showComposerContext: false, infoOrb: false }); ${setupTimestamps}`);
+  check(`!document.querySelector('${times}')`, 'message timestamps are off by default');
+  browser('fill', '#message', 'Unsent timestamp test draft');
+  browser('eval', `window.timestampAltEvents = 0; addEventListener('keydown', e => { if (e.altKey) timestampAltEvents++; }); chrome.storage.local.set({ showMessageTimestamps: true })`);
+  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 2`);
+  check(`[...document.querySelectorAll('${times}')].map(t => t.dateTime).join(',') === '2026-10-28T23:59:58.000Z,2026-10-29T00:01:09.000Z'`, 'timestamps use the sent time and assistant completion, omitting invalid and nested messages');
+  check(`['2026-10-28T23:59:58Z', '2026-10-29T00:01:09Z'].every((value, i) => {
+    const [date, time] = document.querySelectorAll('${times}')[i].textContent.split(' · ');
+    return date === new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) && /^\\d{2}:\\d{2}:\\d{2}$/.test(time);
+  })`, 'each timestamp shows its local calendar date beside the time, including the year');
+  check(`document.querySelector('${times}').title.startsWith('Sent ') && document.querySelector('[data-transcript-message-lookup-id="M-reply"] ${times}').getAttribute('aria-label').startsWith('Finished ')`, 'full dates and timestamp meaning are available to hover and assistive technology');
+  check(`document.querySelector('#message').value === 'Unsent timestamp test draft' && document.activeElement.id === 'message' && timestampAltEvents === 0 && !document.querySelector('[data-amp-composer-context]')`, 'timestamps work with the composer focused, without synthesizing Alt or enabling the other displays');
+  browser('eval', `const native = document.createElement('time'); native.dataset.transcriptExactTimestamp = ''; native.textContent = 'Native Alt time'; document.querySelector('[data-transcript-message-lookup-id="M-sent"]').prepend(native)`);
+  check(`getComputedStyle(document.querySelector('[data-transcript-exact-timestamp]')).display === 'none'`, 'native Alt timestamps do not duplicate persistent times');
+  browser('eval', `fixtureThreadData['fixture-times'].thread.messages.push({ protocolMessageID: 'M-stream', role: 'assistant', createdAt: '2026-10-29T00:02:00Z', state: { type: 'streaming' } }); addTimestampRow('M-stream', 'assistant', 'Streaming reply');`);
+  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 3`);
+  browser('eval', `const reply = fixtureThreadData['fixture-times'].thread.messages.at(-1); reply.state.type = 'complete'; reply.usage = { timestamp: '2026-10-29T00:03:47Z' };`);
+  browser('wait', '--fn', `document.querySelector('[data-transcript-message-lookup-id="M-stream"] ${times}')?.dateTime === '2026-10-29T00:03:47.000Z'`);
+  check(`document.querySelector('[data-transcript-message-lookup-id="M-stream"] ${times}').title.startsWith('Finished ')`, 'new messages and streaming completion update without a reload');
+  browser('set', 'viewport', '390', '844');
+  check(`[...document.querySelectorAll('${times}')].every(t => { const b = t.getBoundingClientRect(); return b.width > 0 && b.left >= 0 && b.right <= innerWidth; })`, 'timestamps stay inside the message column on mobile');
+  browser('set', 'viewport', '1280', '800');
+  browser('eval', 'chrome.storage.local.set({ right: false })');
+  check(`document.querySelectorAll('${times}').length === 3`, 'timestamps are independent of sidebar placement');
+  browser('eval', 'chrome.storage.local.set({ showMessageTimestamps: false })');
+  browser('wait', '--fn', `!document.querySelector('${times}')`);
+  check(`getComputedStyle(document.querySelector('[data-transcript-exact-timestamp]')).display !== 'none'`, 'disabling restores native timestamp presentation');
+  browser('eval', 'chrome.storage.local.set({ showMessageTimestamps: true })');
+  browser('reload');
+  browser('eval', setupTimestamps);
+  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 2`);
+  check(`JSON.parse(localStorage.getItem('extension-settings')).showMessageTimestamps === true`, 'timestamp preference survives reload');
+  browser('eval', `document.querySelector('[data-thread-id]').dataset.threadId = 'fixture-missing'`);
+  browser('wait', '--fn', `!document.querySelector('${times}')`);
+  check(`!document.querySelector('${times}')`, 'failed navigation never displays timestamps from the previous thread');
   console.log('All browser checks passed.');
 } finally {
   browser('close');

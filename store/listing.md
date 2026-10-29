@@ -68,9 +68,9 @@ resize the right sidebar, optionally hide its footer, read subagent activity
 opposite it, and show the open thread's model, runner, and title-bar details.
 
 Storage permission justification:
-The storage permission saves ten preferences in chrome.storage.local:
+The storage permission saves eleven preferences in chrome.storage.local:
 right, rightWidth, hideSidebarFooter, resizeSidebar, moveViews, indentThreads,
-showHeaderToggle, subagentPanel, showComposerContext, and infoOrb. They apply to open Amp tabs and survive
+showHeaderToggle, subagentPanel, showComposerContext, infoOrb, and showMessageTimestamps. They apply to open Amp tabs and survive
 browser restarts. No page contents or personal data are persisted.
 
 Host access justification:
@@ -79,10 +79,11 @@ sidebar layout, handle its resize divider, and display rendered subagent
 activity in an optional reading panel. It needs automatic access on page load
 to restore the user's layout. Subagent prompts and results remain in memory
 for the current thread; they are not saved or transmitted. When the composer
-label is on, it requests the open thread's page data from
+label, info orb, or persistent timestamps are on, it requests the open thread's page data from
 https://ampcode.com/threads/<id>/__data, the same same-origin request Amp's
 page makes, and keeps only the mode, model, executor, runner, and working
-directory in memory. The info orb reads details already in Amp's title bar.
+directory, plus message IDs and timestamp metadata, in memory.
+The info orb reads details already in Amp's title bar.
 It does not run on other sites or read credentials or browsing history.
 
 Declarative net request permission justification:

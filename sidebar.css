@@ -1,6 +1,25 @@
 [data-amp-sidebar-toggle],
 [data-amp-subagents-ui] { display: none; }
 
+/* Keep times in the message column, not Amp's narrow absolute-positioned gutter.
+   Tabular numerals stay aligned; the full date/timezone is available on hover. */
+[data-amp-message-timestamp] {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-block: 6px 2px;
+  color: var(--muted-foreground, #666);
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: help;
+}
+[data-amp-message-timestamp][data-side="right"] { margin-inline-start: auto; }
+/* Holding Alt must not duplicate a time the extension already displays. */
+[data-transcript-message-lookup-id]:has(> [data-amp-message-timestamp]) > [data-transcript-exact-timestamp] {
+  display: none !important;
+}
+
 /* Inline disclosures never depend on the optional desktop reading panel. */
 [data-amp-subagent-inline]:not([data-amp-subagent-revealed]) { display: none !important; }
 [data-amp-subagents-ui="reference"] {
