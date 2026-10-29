@@ -108,8 +108,12 @@ review and certify Google's data-use declarations before submission.
 
 - Extension icon: `icons/icon-128.png`, transparent 128 × 128 PNG.
 - Small promotional tile: `store/promo-small.png`, opaque 440 × 280 PNG.
-  Both use original window/sidebar/arrow artwork, without an Amp logo or
-  wordmark. The promotional tile is artwork, not an app screenshot.
+- Marquee promotional tile: `store/promo-marquee.png`, opaque 1400 × 560 PNG.
+  Both promotional tiles are 24-bit RGB PNGs without an alpha channel, ready
+  for their respective dashboard upload fields. They pair the existing
+  Amp-derived slider mark with the headline "Your Amp. Your layout." and
+  abstract workspace panels in the project's cream, forest, and olive palette.
+  These are generated promotional illustrations, not screenshots of Amp.
 - Live screenshots: `store/screenshots/`, 1280 × 800 PNGs from signed-in Helium.
   They predate the composer label and info orb; the redacted live capture in
   `docs/assets/hero-live.webp` shows both but is not sized for the store.

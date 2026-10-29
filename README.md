@@ -315,6 +315,7 @@ private text masked after capture; see `docs/assets/README.md`.
 - [Listing copy, privacy declarations, and reviewer instructions](store/listing.md)
 - [Privacy policy](PRIVACY.md)
 - [440 × 280 promotional tile](store/promo-small.png)
+- [1400 × 560 marquee promotional tile](store/promo-marquee.png)
 - [Feature screenshots and suggested upload order](store/screenshots/README.md)
 
 Live, privacy-redacted 1280 × 800 captures are included. Finish the publisher
@@ -324,7 +325,9 @@ Do not substitute the supplemental fixture images for real app screenshots.
 The transparent icon integrates adjustment sliders into stylized Amp-derived
 lettering to represent configurable defaults, not just sidebar placement.
 `store/icon-master.png` is the raster master for the 48/128px icons,
-landing-page logo and favicon, and promotional tile. The 16/32px toolbar icons
+landing-page logo and favicon, and the reference for the promotional artwork.
+The small and marquee tiles are opaque 24-bit PNG illustrations, not app
+screenshots. The 16/32px toolbar icons
 use only the three slider strokes so their controls remain distinguishable.
 The Amp name and mark remain their owner's property; this artwork does not
 imply affiliation or endorsement.

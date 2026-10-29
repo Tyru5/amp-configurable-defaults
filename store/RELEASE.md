@@ -14,7 +14,7 @@
 
 - Manifest V3, storage and declarative net request permissions; host access limited to `https://ampcode.com/*`.
 - Toolbar and extension icons at 16, 32, 48, and 128 pixels.
-- Required 440 × 280 promotional tile.
+- 440 × 280 small and 1400 × 560 marquee promotional tiles, both opaque 24-bit PNGs.
 - Public privacy policy, support URL, listing copy, and permission explanations.
 - Reproducible upload ZIP with `manifest.json` at its root and SHA-256 checksum.
 - Syntax, toolbar behavior, packaging, and local browser fixture checks.
@@ -61,7 +61,8 @@ python3 scripts/package.py
 1. Open https://chrome.google.com/webstore/devconsole.
 2. Add a new item and upload `dist/amp-configurable-defaults-1.3.0.zip` directly.
    Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
-3. Copy the fields from `store/listing.md`. Upload the icon, promo tile, and
+3. Copy the fields from `store/listing.md`. Upload the icon, `store/promo-small.png`
+   and `store/promo-marquee.png` in their matching promotional tile fields, and
    the suggested real screenshots in `store/screenshots/README.md`. Never upload
    the `fixture-*.png` images as live app screenshots. Check the listing preview.
 4. Set privacy practices and link the public privacy policy. Verify all URLs.
