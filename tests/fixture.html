@@ -49,6 +49,19 @@
   [data-transcript-expandable-row] { cursor: pointer; }
   [data-transcript-expandable-row] > div { display: flex; gap: 8px; }
   [data-transcript-subagent-prompt], [data-transcript-subagent-response], [data-transcript-subagent-error] { white-space: pre-wrap; margin-top: 10px; }
+  /* Native transcript layout for the status-section fixture below. */
+  .transcript-entry-row { min-width: 0; margin-block: 8px; }
+  .transcript-entry-row.pl-5 { padding-left: 20px; }
+  .expandable-row-header { display: flex; align-items: baseline; gap: 4px; padding-block: 2px; line-height: 1.6; }
+  .expandable-row-header > :first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .expandable-row-header a { color: inherit; }
+  .expandable-row-header:has(> [data-transcript-status-row-id]) { padding: 6px 10px; border-radius: 8px; background: #80808015; }
+  .expandable-row-chevron { display: inline-block; }
+  .expandable-row-chevron.rotate-90 { transform: rotate(90deg); }
+  .font-mono { font-family: ui-monospace, monospace; }
+  .bash-label { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+  .bash-label > :nth-child(2) { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .bash-label > :nth-child(3) { color: GrayText; font-style: italic; }
   article { width: min(700px, 100%); padding: 42px 40px; margin: auto; line-height: 1.7; }
   article h1 { font-size: 27px; font-weight: 600; line-height: 1.3; }
   article small { color: #6d7568; }
@@ -345,6 +358,80 @@
 <script src="../subagents.js"></script>
 <script src="../composer.js"></script>
 <script src="../info-orb.js"></script>
+<script src="../tool-preview.js"></script>
+<script>
+  // Status sections use sibling .pl-5 rows, mounted on expansion. Contract from
+  // Amp's 120990c8.js and e0bcc27a.js, inspected 2026-10-29. No live thread data.
+  window.fixtureToolSection = (id, count = 9, initiallyOpen = false) => {
+    const transcript = document.querySelector('#fixture-transcript');
+    const status = document.createElement('div');
+    status.id = `fixture-status-${id}`;
+    status.className = 'transcript-entry-row';
+    status.innerHTML = `<div data-transcript-entry-content><div><div class="expandable-row-header" data-transcript-expandable-row tabindex="-1"><span data-transcript-status-row-id="${id}">Reviewing CI workflows and timings</span><span class="expandable-row-chevron">›</span></div></div></div>`;
+    const header = status.querySelector('.expandable-row-header');
+    const chevron = header.querySelector('.expandable-row-chevron');
+    const rows = [];
+    const labels = ['$ bash skills/iris-load.sh', 'Read git status', 'List .github/workflows', 'Read build-cache-manifest.yml L1–80', 'Grep "ci|cache|build|e2e"', '$ gh run list -R example/platform -w ci.yml', 'Created jobs.py +18', '$ python3 jobs.py', 'Read timing results'];
+    const add = () => {
+      const index = rows.length;
+      const row = document.createElement('div');
+      row.id = `fixture-tool-${id}-${index}`;
+      row.className = 'transcript-entry-row pl-5';
+      row.innerHTML = '<div data-transcript-entry-content><div><div class="expandable-row-header"><span></span></div></div></div>';
+      const tool = row.querySelector('.expandable-row-header');
+      tool.firstElementChild.textContent = labels[index % labels.length];
+      // Actual Bash label structure from Amp's 120990c8.js. The command
+      // remains a text node, including newlines, quotes and shell operators.
+      if ([0, 5, 7].includes(index)) {
+        const label = tool.firstElementChild;
+        label.className = 'font-mono bash-label';
+        const prompt = document.createElement('span');
+        prompt.textContent = '$';
+        const command = document.createElement('span');
+        command.textContent = labels[index].slice(2);
+        label.replaceChildren(prompt, command);
+      }
+      if (index === 0 || index >= 5) {
+        tool.parentElement.dataset.transcriptToolRowId = `${id}-${index}`;
+        tool.setAttribute('data-transcript-expandable-row', '');
+        tool.tabIndex = -1;
+        tool.onclick = () => {
+          const output = tool.nextElementSibling;
+          if (output) output.remove();
+          else {
+            const result = document.createElement('pre');
+            result.textContent = 'Fixture command output';
+            tool.after(result);
+          }
+        };
+      }
+      if (index === 1) {
+        const link = document.createElement('a');
+        link.href = '#fixture-file';
+        link.textContent = ' git status';
+        tool.firstElementChild.replaceChildren('Read', link);
+      }
+      if (chevron.classList.contains('rotate-90')) (rows.at(-1) || status).after(row);
+      rows.push(row);
+      return row;
+    };
+    for (let i = 0; i < count; i++) add();
+    header.onclick = () => {
+      if (chevron.classList.toggle('rotate-90')) status.after(...rows);
+      else rows.forEach(row => row.remove());
+    };
+    header.onkeydown = event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        // Match Amp: keyboard toggles native state directly, not via click().
+        header.onclick();
+      }
+    };
+    transcript.append(status);
+    if (initiallyOpen) header.click();
+    return { status, rows, add };
+  };
+</script>
 <script>
   // Native hover contract from Amp's b1575130.js, inspected 2026-10-24.
   // Fixture content only. In particular, preserve the native overflow-close guard.

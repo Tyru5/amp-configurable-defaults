@@ -31,7 +31,7 @@
     {
       "matches": ["https://ampcode.com/*"],
       "css": ["sidebar.css"],
-      "js": ["content.js", "thread-split.js", "subagents.js", "composer.js", "info-orb.js"],
+      "js": ["content.js", "thread-split.js", "subagents.js", "composer.js", "info-orb.js", "tool-preview.js"],
       "run_at": "document_start"
     }
   ]

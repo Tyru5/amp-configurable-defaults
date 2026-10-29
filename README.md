@@ -126,6 +126,16 @@ Running and delegated agents have a gently pulsing status dot; completed,
 failed, and cancelled agents do not. Reduced motion keeps the active dot static.
 Tool-call summaries and individual tool headers use tinted rows with a left
 border to distinguish execution activity from assistant prose.
+Loaded status sections with more than five tool-call rows start with a preview
+of the first five, fading from top to bottom. Click anywhere in the preview or
+on its status header to reveal the whole section. The preview button also works
+with Enter or Space. Individual output disclosures stay closed until opened.
+Bash commands render as code blocks in both previews and expanded sections,
+preserving line breaks and indentation and wrapping long lines without truncation.
+Sections with five or fewer rows remain fully visible. Expansion is remembered
+while viewing the thread, including when rows remount, and resets on navigation
+or reload. This applies on both sidebar sides and at mobile widths, without
+storing another preference or fetching unloaded thread history.
 On desktop, the **Subagents** header button opens an agent list opposite
 navigation. Hover or focus **Task** or **Output** to preview a wider reading
 sheet; click to keep it open. Escape closes the sheet first, then the panel.

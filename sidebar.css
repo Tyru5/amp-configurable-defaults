@@ -64,7 +64,9 @@
    Individual tool rows keep their native controls and expandable output. */
 [data-thread-transcript-scroll] :is(
   [data-transcript-message-lookup-id][id*="/w:work-group:"] [data-transcript-expandable-row],
-  [data-transcript-tool-row-id] > [data-transcript-expandable-row]
+  [data-transcript-tool-row-id] > [data-transcript-expandable-row],
+  [data-amp-tool-preview-calls] > [data-amp-tool-preview-expandable],
+  [data-amp-bash-header]
 ) {
   margin-block: 5px;
   padding: 7px 10px;
@@ -78,6 +80,78 @@
   [data-transcript-message-lookup-id][id*="/w:work-group:"],
   [data-transcript-tool-row-id]
 ) [data-transcript-expandable-row] > .expandable-row-chevron { opacity: .75; }
+
+/* Keep Amp's live prompt/status marker; show the command as a real code block.
+   Preserve line breaks and indentation; wrap long lines instead of truncating. */
+[data-amp-bash-header] > span.font-mono { display: contents; }
+[data-amp-bash-header] > span.font-mono > :nth-child(n + 2) { display: none; }
+.expandable-row-header > [data-amp-bash-block] { display: block; flex: 1; min-width: 0; }
+[data-amp-bash-block] > pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  font: .8125rem/1.6 var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  color: var(--foreground, CanvasText);
+}
+[data-amp-bash-block] > pre > code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: inherit;
+}
+[data-amp-bash-block] > small {
+  display: block;
+  margin-top: 4px;
+  font: .75rem/1.5 system-ui, sans-serif;
+  color: var(--muted-foreground, #666);
+}
+[data-amp-bash-block] > small:empty { display: none; }
+
+/* Preview copies are inert. The full-area button reveals the untouched native
+   rows, including their original links and individual output disclosures. */
+[data-amp-tool-preview-source] { display: none !important; }
+[data-amp-tool-preview] {
+  position: relative;
+  min-width: 0;
+  margin-block: 4px 12px;
+  padding: 0 8px 32px 28px;
+}
+[data-amp-tool-preview-calls] {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, #000 0%, #000c 45%, #0005 80%, transparent 100%);
+}
+[data-amp-tool-preview-calls] > * { min-width: 0; }
+[data-amp-tool-preview] > button {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  padding: 6px 8px 6px 28px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted-foreground, #666);
+  font: inherit;
+  font-size: .8125rem;
+  text-align: start;
+  cursor: pointer;
+}
+[data-amp-tool-preview] > button:hover {
+  background: transparent;
+  color: var(--foreground, CanvasText);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+[data-amp-tool-preview] > button:focus-visible {
+  outline: 2px solid var(--ring, currentColor);
+  outline-offset: 2px;
+}
 
 /* Only the desktop app shell, never marketing pages or mobile sidebar sheets. */
 @media (min-width: 768px) {
