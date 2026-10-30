@@ -155,8 +155,17 @@
 
 /* Only the desktop app shell, never marketing pages or mobile sidebar sheets. */
 @media (min-width: 768px) {
-  /* The native footer owns navigation, pinned shortcuts, and the account row. */
-  html[data-amp-sidebar-hide-footer] [data-slot="sidebar-container"] [data-slot="sidebar-footer"] {
+  /* Keep Amp's native update control and its ancestors, not the other footer rows.
+     Update test IDs verified in Amp's d3b45705.js on 2026-10-30. CSS also handles
+     notices arriving/removing dynamically without moving nodes or losing handlers. */
+  html[data-amp-sidebar-hide-footer] [data-slot="sidebar-container"] [data-slot="sidebar-footer"]:not(:has(
+    [data-testid="sidebar-reload-to-update"], [data-testid="sidebar-relaunch-to-update"]
+  )),
+  html[data-amp-sidebar-hide-footer] [data-slot="sidebar-container"] [data-slot="sidebar-footer"] :not(
+    :is([data-testid="sidebar-reload-to-update"], [data-testid="sidebar-relaunch-to-update"]),
+    :is([data-testid="sidebar-reload-to-update"], [data-testid="sidebar-relaunch-to-update"]) *,
+    :has([data-testid="sidebar-reload-to-update"], [data-testid="sidebar-relaunch-to-update"])
+  ) {
     display: none !important;
   }
 

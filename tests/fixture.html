@@ -94,6 +94,15 @@
   <button id="switch">Switch sidebar side</button>
 </div>
 <div id="mount"></div>
+<!-- Native update markers and menu wrappers from Amp's d3b45705.js, inspected
+     2026-10-30. Fixture click only records activation; it does not update Amp. -->
+<template id="update-notice">
+  <ul data-slot="sidebar-menu" style="list-style: none; padding: 0; margin: 0">
+    <li data-slot="sidebar-menu-item"><button type="button" data-testid="sidebar-reload-to-update" onclick="this.dataset.activated = 'true'; this.querySelector('span').textContent = 'Updating…'; this.disabled = true"><span>Reload to Update</span> <kbd>⌘R</kbd></button></li>
+    <li data-slot="sidebar-menu-item"><a href="#update-sibling">Unrelated footer shortcut</a></li>
+  </ul>
+  <hr>
+</template>
 <template id="shell">
   <div class="app-frame-stack app-frame-stack-rail">
     <nav class="app-primary-navigation" aria-label="App navigation"><strong>A</strong><span>Code</span><span>Feed</span></nav>

@@ -115,6 +115,9 @@ of auxiliary-view placement, and starts closed after being re-enabled.
 In **Options**, check **Hide sidebar footer** to hide the whole desktop bottom
 section: Puck, Activity, Projects, the app grid, pinned shortcuts, and the
 account row. The footer is visible by default in both left and right modes.
+When an update is available, Amp's native **Reload to Update** alert remains
+visible and usable in the sidebar; the other footer rows stay hidden. Once the
+update alert is removed, the footer is fully hidden again.
 Thread lists and header controls stay available. Uncheck the option to restore
 the footer. Options is always reachable by right-clicking the browser's extension
 toolbar icon, even while the footer is hidden. Changing sidebar placement does

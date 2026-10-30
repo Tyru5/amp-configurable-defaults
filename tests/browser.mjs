@@ -30,6 +30,23 @@ try {
   browser('eval', 'chrome.storage.local.set({ hideSidebarFooter: true })');
   check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none' && document.querySelector('.sidebar-body').getBoundingClientRect().bottom <= document.querySelector('[data-slot="sidebar-inner"]').getBoundingClientRect().bottom && document.querySelector('[data-amp-sidebar-toggle]').getBoundingClientRect().height > 0`, 'opt-in hides the whole footer without hiding threads or header controls');
   check(`document.querySelector('[data-slot="sidebar-footer"]').getBoundingClientRect().height === 0 && document.querySelector('.sidebar-body').getBoundingClientRect().height > ${listHeight}`, 'hidden footer gives its layout space to the thread list');
+  for (const right of [true, false]) {
+    browser('eval', `chrome.storage.local.set({ right: ${right} })`);
+    for (const kind of ['reload', 'relaunch']) {
+      const update = `[data-testid="sidebar-${kind}-to-update"]`;
+      browser('eval', `document.querySelector('[data-slot="sidebar-footer"]').append(document.querySelector('#update-notice').content.cloneNode(true)); document.querySelector('[data-testid="sidebar-reload-to-update"]').dataset.testid = 'sidebar-${kind}-to-update'`);
+      check(`document.querySelector('${update}').checkVisibility() && document.querySelector('${update} span').checkVisibility() && document.querySelector('${update} kbd').checkVisibility()`, `${kind} update and its contents remain visible with the footer hidden on the ${right ? 'right' : 'left'}`);
+      check(`[...document.querySelectorAll('[aria-label="Footer navigation"], [href="#pinned"], [aria-label="Account"], [href="#update-sibling"], [data-slot="sidebar-footer"] hr')].every(el => !el.checkVisibility())`, 'update does not reveal unrelated footer rows or siblings inside its wrapper');
+      browser('focus', update);
+      browser('press', 'Enter');
+      check(`document.querySelector('${update}').dataset.activated === 'true' && document.querySelector('${update}').disabled && document.querySelector('${update} span').checkVisibility()`, 'native update handler and updating state remain available');
+      browser('eval', `chrome.storage.local.set({ hideSidebarFooter: false })`);
+      check(`[...document.querySelectorAll('[aria-label="Footer navigation"], [href="#pinned"], [aria-label="Account"], [href="#update-sibling"]')].every(el => el.checkVisibility())`, 'turning footer hiding off restores all rows while an update is present');
+      browser('eval', `chrome.storage.local.set({ hideSidebarFooter: true }); document.querySelector('[data-slot="sidebar-footer"] [data-slot="sidebar-menu"]').remove(); document.querySelector('[data-slot="sidebar-footer"] hr').remove()`);
+      check(`document.querySelector('[data-slot="sidebar-footer"]').getBoundingClientRect().height === 0`, 'removing the update hides the footer again without leaving empty space');
+    }
+  }
+  browser('eval', 'chrome.storage.local.set({ right: true })');
   check(`(${bounds}).sidebar.x === 924 && (${bounds}).sidebar.width === 300`, 'right mode preserves native width and leaves the rail at the far right');
   check(`(${bounds}).main.x === 0 && (${bounds}).main.right === 924`, 'conversation fills remaining space without overlap');
   browser('wait', '--fn', `(${threadIndent('child')}) === 20`);
