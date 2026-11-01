@@ -316,7 +316,9 @@
             detail.textContent = model.output;
           } else if (model.status !== 'cancelled') {
             detail.dataset.transcriptSubagentResponse = '';
-            detail.textContent = model.output;
+            // Rendered markdown arrives as { html }; plain responses stay text.
+            if (model.output?.html) detail.innerHTML = model.output.html;
+            else detail.textContent = model.output;
           }
           wrapper.append(detail);
         } else wrapper.lastElementChild.remove();

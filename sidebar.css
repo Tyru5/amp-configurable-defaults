@@ -403,9 +403,73 @@
   [data-amp-subagents-ui="reader"] > header { gap: 8px; }
   [data-amp-subagents-ui="reader"] h4 { flex: 1; margin: 0; font-size: 14px; font-weight: 600; }
   [data-amp-subagents-reading] { padding: 24px 28px; overflow: auto; min-height: 0; }
-  [data-amp-subagents-reading] h3 { margin: 0 0 24px; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+  [data-amp-subagents-reading] > h3 { margin: 0 0 24px; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
   [data-amp-subagents-notice] { color: var(--muted-foreground, GrayText); font-size: 12px; }
-  [data-amp-subagents-task], [data-amp-subagents-output] { max-width: 72ch; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  /* Rendered task and output keep Amp's markdown structure with the reader's own typography. */
+  [data-amp-subagents-content] { max-width: 72ch; overflow-wrap: anywhere; }
+  [data-amp-subagents-content] :is(h1, h2, h3, h4, h5, h6):first-child { margin-top: 0; }
+  [data-amp-subagents-content] :is(p, ul, ol, pre, table, blockquote):last-child { margin-bottom: 0; }
+  [data-amp-subagents-content] p,
+  [data-amp-subagents-content] ul,
+  [data-amp-subagents-content] ol,
+  [data-amp-subagents-content] pre,
+  [data-amp-subagents-content] table,
+  [data-amp-subagents-content] blockquote { margin: 0 0 14px; }
+  [data-amp-subagents-content] h1,
+  [data-amp-subagents-content] h2,
+  [data-amp-subagents-content] h3,
+  [data-amp-subagents-content] h4,
+  [data-amp-subagents-content] h5,
+  [data-amp-subagents-content] h6 { margin: 22px 0 8px; font-weight: 600; line-height: 1.35; }
+  [data-amp-subagents-content] h1 { font-size: 17px; }
+  [data-amp-subagents-content] h2 { font-size: 16px; }
+  [data-amp-subagents-content] h3 { font-size: 15px; }
+  [data-amp-subagents-content] h4,
+  [data-amp-subagents-content] h5,
+  [data-amp-subagents-content] h6 { font-size: 14px; }
+  [data-amp-subagents-content] ul,
+  [data-amp-subagents-content] ol { padding-inline-start: 24px; }
+  [data-amp-subagents-content] ul { list-style: disc; }
+  [data-amp-subagents-content] ol { list-style: decimal; }
+  [data-amp-subagents-content] li { margin-block: 4px; }
+  [data-amp-subagents-content] li > p { margin: 0; }
+  [data-amp-subagents-content] li > ul,
+  [data-amp-subagents-content] li > ol { margin-bottom: 0; }
+  [data-amp-subagents-content] code,
+  [data-amp-subagents-content] kbd {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--accent, #80808020);
+    font: .9em/1.5 var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  }
+  [data-amp-subagents-content] pre {
+    padding: 12px 14px;
+    border: 1px solid var(--input-border, #80808040);
+    border-radius: 6px;
+    background: var(--accent, #80808012);
+    font: 12.5px/1.6 var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    white-space: pre-wrap;
+    overflow: auto;
+  }
+  [data-amp-subagents-content] pre code { padding: 0; border-radius: 0; background: none; font: inherit; }
+  [data-amp-subagents-content] blockquote {
+    padding: 2px 14px;
+    border-inline-start: 3px solid var(--input-border, #80808060);
+    color: var(--muted-foreground, GrayText);
+  }
+  [data-amp-subagents-content] a { color: var(--primary, LinkText); text-decoration: underline; text-underline-offset: 2px; }
+  [data-amp-subagents-content] hr { margin: 18px 0; border: 0; border-top: 1px solid var(--input-border, #80808040); }
+  [data-amp-subagents-content] table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  [data-amp-subagents-content] th,
+  [data-amp-subagents-content] td {
+    padding: 6px 10px;
+    border: 1px solid var(--input-border, #80808040);
+    text-align: start;
+    vertical-align: top;
+  }
+  [data-amp-subagents-content] th { font-weight: 600; background: var(--accent, #80808012); }
+  [data-amp-subagents-content] img { max-width: 100%; height: auto; border-radius: 6px; }
   @keyframes amp-reader-enter {
     from { opacity: 0; transform: translateX(var(--amp-reader-enter)); }
     to { opacity: 1; transform: translateX(0); }

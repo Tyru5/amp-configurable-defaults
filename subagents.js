@@ -9,17 +9,140 @@
   let state;
   let sequence = 0;
 
-  function text(node) {
+  const blockSelector = "p, pre, ul, ol, h1, h2, h3, h4, h5, h6, table, blockquote, hr, img";
+  const blockStart = /^(```|#{1,6}\s|\s*(?:[-*+]|\d+[.)])\s|>|(?:-{3,}|\*{3,})\s*$)/;
+  const listItem = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
+
+  function inline(text, parent) {
+    const pattern = /(`[^`\n]+`)|(\*\*(?=\S)[^*\n]+?(?<=\S)\*\*)|(\*(?=\S)[^*\n]+?(?<=\S)\*)|(\[[^\]\n]+\]\((?:https?:\/\/[^\s)]+|#[^\s)]*)\))/g;
+    let last = 0;
+    for (let match; (match = pattern.exec(text));) {
+      if (match.index > last) parent.append(text.slice(last, match.index));
+      const [token, code, strong, em] = match;
+      if (code) {
+        const node = document.createElement("code");
+        node.textContent = token.slice(1, -1);
+        parent.append(node);
+      } else if (strong || em) {
+        const node = document.createElement(strong ? "strong" : "em");
+        inline(token.slice(strong ? 2 : 1, strong ? -2 : -1), node);
+        parent.append(node);
+      } else {
+        const [, label, href] = /^\[([^\]]+)\]\((\S+)\)$/.exec(token);
+        const node = document.createElement("a");
+        node.textContent = label;
+        node.href = href;
+        node.target = "_blank";
+        node.rel = "noreferrer";
+        parent.append(node);
+      }
+      last = match.index + token.length;
+    }
+    if (last < text.length) parent.append(text.slice(last));
+  }
+
+  // Amp shows task prompts as plain text. Render their markdown so tasks read like outputs.
+  function markdown(text, root = document.createElement("div")) {
+    const lines = text.replace(/\r\n?/g, "\n").split("\n");
+    for (let i = 0; i < lines.length;) {
+      const line = lines[i];
+      let match;
+      if (!line.trim()) { i++; continue; }
+      if ((match = /^```(\w*)\s*$/.exec(line))) {
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
+        if (match[1]) code.className = `language-${match[1]}`;
+        const body = [];
+        for (i++; i < lines.length && !/^```\s*$/.test(lines[i]); i++) body.push(lines[i]);
+        i++;
+        code.textContent = body.join("\n");
+        pre.append(code);
+        root.append(pre);
+      } else if ((match = /^(#{1,6})\s+(.*)$/.exec(line))) {
+        const heading = document.createElement(`h${match[1].length}`);
+        inline(match[2].replace(/\s+#+\s*$/, ""), heading);
+        root.append(heading);
+        i++;
+      } else if (/^(?:-{3,}|\*{3,})\s*$/.test(line)) {
+        root.append(document.createElement("hr"));
+        i++;
+      } else if (/^>/.test(line)) {
+        const quoted = [];
+        while (i < lines.length && /^>/.test(lines[i])) quoted.push(lines[i++].replace(/^>\s?/, ""));
+        root.append(markdown(quoted.join("\n"), document.createElement("blockquote")));
+      } else if ((match = listItem.exec(line))) {
+        const indent = match[1].length;
+        const ordered = /\d/.test(match[2]);
+        const list = document.createElement(ordered ? "ol" : "ul");
+        if (ordered && parseInt(match[2], 10) !== 1) list.start = parseInt(match[2], 10);
+        while (i < lines.length) {
+          const start = listItem.exec(lines[i]);
+          if (!start || start[1].length !== indent || /\d/.test(start[2]) !== ordered) break;
+          const body = [start[3]];
+          const column = indent + start[2].length + 1;
+          for (i++; i < lines.length; i++) {
+            const next = lines[i];
+            const offset = next.search(/\S/);
+            if (offset < 0) {
+              // A blank line keeps the item open only when indented content follows.
+              if ((lines[i + 1] || "").search(/\S/) > indent) { body.push(""); continue; }
+              break;
+            }
+            if (offset > indent) { body.push(next.slice(Math.min(offset, column))); continue; }
+            if (listItem.test(next) || blockStart.test(next)) break;
+            body.push(next.trim());
+          }
+          const item = markdown(body.join("\n"), document.createElement("li"));
+          if (item.children.length === 1 && item.firstElementChild.tagName === "P") item.replaceChildren(...item.firstElementChild.childNodes);
+          list.append(item);
+          let next = i;
+          while (next < lines.length && !lines[next].trim()) next++;
+          if (listItem.exec(lines[next] || "")?.[1].length === indent) i = next;
+        }
+        root.append(list);
+      } else {
+        const paragraph = document.createElement("p");
+        const body = [];
+        while (i < lines.length && lines[i].trim() && (!body.length || !blockStart.test(lines[i]))) body.push(lines[i++].trim());
+        body.forEach((part, index) => {
+          if (index) paragraph.append(document.createElement("br"));
+          inline(part, paragraph);
+        });
+        root.append(paragraph);
+      }
+    }
+    return root;
+  }
+
+  function snapshot(node) {
     if (!node) return "";
-    // Block boundaries remain readable even when the native source is hidden.
+    // Keep Amp's rendered markdown structure; the reader supplies its own typography.
     const copy = node.cloneNode(true);
-    copy.querySelectorAll("button, svg, script, style").forEach(e => e.remove());
-    copy.querySelectorAll("p, div, pre, li, h1, h2, h3, h4, tr, br").forEach(e => e.append("\n"));
-    return copy.textContent.replace(/\n{3,}/g, "\n\n").trim();
+    copy.querySelectorAll("button, svg, script, style, input, textarea, select, iframe").forEach(e => e.remove());
+    for (const element of [copy, ...copy.querySelectorAll("*")]) {
+      // Syntax-highlight tokens inside code blocks keep their classes and inline colors.
+      const highlighted = !!element.parentElement?.closest("pre");
+      for (const name of element.getAttributeNames()) {
+        if (name === "id" || name === "tabindex" || name === "autofocus" || name.startsWith("data-") || name.startsWith("on") ||
+            (!highlighted && (name === "class" || name === "style"))) element.removeAttribute(name);
+      }
+    }
+    if (copy.querySelector(blockSelector)) return copy;
+    // Plain text: keep line boundaries between native wrappers, then render its markdown.
+    copy.querySelectorAll("div, li, tr, br").forEach(e => e.append("\n"));
+    return markdown(copy.textContent.trim());
   }
 
   function write(node, value) {
     if (node.textContent !== value) node.textContent = value;
+  }
+
+  function render(container, content, fallback) {
+    if (!content) {
+      if (container.firstElementChild || container.textContent !== fallback) container.replaceChildren(fallback);
+    } else if (container.childNodes.length !== 1 || container.firstElementChild?.outerHTML !== content.outerHTML) {
+      container.replaceChildren(content);
+    }
   }
 
   function button(label, action) {
@@ -190,8 +313,10 @@
     hint.textContent = "Hover to preview. Click to keep open.";
     const task = document.createElement("div");
     task.dataset.ampSubagentsTask = "";
+    task.dataset.ampSubagentsContent = "";
     const output = document.createElement("div");
     output.dataset.ampSubagentsOutput = "";
+    output.dataset.ampSubagentsContent = "";
     const original = button("View original ↗", () => {
       const item = state.items.get(state.selected);
       const source = item.event?.isConnected ? item.event : item.source;
@@ -308,9 +433,9 @@
       const prompt = source.querySelector("[data-transcript-subagent-prompt]");
       const response = source.querySelector("[data-transcript-subagent-response]");
       const error = source.querySelector("[data-transcript-subagent-error]");
-      if (prompt) entry.task = text(prompt);
+      if (prompt) entry.task = snapshot(prompt);
       if (response || error) {
-        entry.sourceOutput = text(error || response);
+        entry.sourceOutput = snapshot(error || response);
         entry.output = entry.sourceOutput;
       }
       if (source.querySelector('[data-transcript-tool-status="cancelled"]')) entry.status = "Cancelled";
@@ -345,7 +470,7 @@
       if (entry.invocation) entry.backgroundTitle = title;
       entry.status = /failed/i.test(event.querySelector("[data-transcript-automation-event-label]")?.textContent || "") ? "Failed" : "Finished";
       const output = event.querySelector("[data-transcript-automation-event-markdown], [data-transcript-automation-event-text]");
-      if (output) entry.output = text(output);
+      if (output) entry.output = snapshot(output);
     }
 
     if (!state.items.has(state.selected)) state.selected = state.items.keys().next().value;
@@ -397,8 +522,8 @@
     write(state.readerTitle, selected.title);
     write(state.status, selected.status);
     state.status.toggleAttribute("data-amp-subagent-active", selected.status === "Running" || selected.status === "Delegated");
-    write(state.task, selected.task || "Task details are not currently rendered by Amp. Open the original activity to load them.");
-    write(state.output, selected.output || "Output will appear here when Amp makes it available.");
+    render(state.task, selected.task, "Task details are not currently rendered by Amp. Open the original activity to load them.");
+    render(state.output, selected.output, "Output will appear here when Amp makes it available.");
     const connected = !!(selected.source || selected.event);
     write(state.notice, connected ? "" : "Showing the last visible content. Scroll the conversation to load this agent again.");
     state.notice.hidden = connected;

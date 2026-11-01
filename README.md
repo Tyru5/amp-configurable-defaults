@@ -142,7 +142,11 @@ or reload. This applies on both sidebar sides and at mobile widths, without
 storing another preference or fetching unloaded thread history.
 On desktop, the **Subagents** header button opens an agent list opposite
 navigation. Hover or focus **Task** or **Output** to preview a wider reading
-sheet; click to keep it open. Escape closes the sheet first, then the panel.
+sheet; click to keep it open. The sheet keeps Amp's rendered formatting, so
+headings, lists, links, inline code, highlighted code blocks, quotes, and
+tables read as they do in the conversation. Task prompts, which Amp shows as
+plain text, are rendered from their markdown with the same typography. Escape
+closes the sheet first, then the panel.
 **View original** reveals the selected activity inline. Files and Changes remain
 open alongside the list. Narrow desktop layouts use an overlay rather than
 squeeze the conversation.
