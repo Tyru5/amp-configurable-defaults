@@ -598,3 +598,92 @@
   border-style: solid;
   background: color-mix(in srgb, var(--ring, #426dba) 20%, var(--background, Canvas));
 }
+
+/* Thread correspondence is a teal inbox, not the subagent index/reading sheet. */
+@media (min-width: 768px) {
+  .thread-layout-panes:has(> [data-amp-thread-messages-ui]) { position: relative; }
+  [data-amp-thread-messages-ui] {
+    --amp-message-accent: light-dark(#09665e, #7dded0);
+    color-scheme: inherit;
+    color: var(--foreground, CanvasText);
+    font: 13px/1.5 system-ui, sans-serif;
+  }
+  [data-amp-thread-messages-ui="toggle"] {
+    flex-shrink: 0;
+    align-self: center;
+    margin-inline: 4px;
+    padding: 4px 10px;
+    border: 1px solid var(--amp-message-accent);
+    border-radius: 16px;
+    background: transparent;
+    color: var(--amp-message-accent);
+    cursor: pointer;
+    font-size: 12px;
+  }
+  [data-amp-thread-messages-ui="panel"]:not([hidden]) {
+    position: absolute;
+    z-index: 60;
+    inset-block: 52px 12px;
+    right: 12px;
+    width: min(480px, calc(100% - 24px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--background, Canvas);
+    box-shadow: 0 8px 32px #0004;
+  }
+  html[data-amp-sidebar-right] [data-amp-thread-messages-ui="panel"] { right: auto; left: 12px; }
+  [data-amp-thread-messages-ui="panel"] > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: color-mix(in srgb, var(--amp-message-accent) 12%, var(--background, Canvas));
+    color: var(--amp-message-accent);
+  }
+  [data-amp-thread-messages-ui="panel"] strong { font-size: 15px; }
+  [data-amp-thread-messages-ui="panel"] button {
+    padding: 6px 10px;
+    border: 1px solid var(--input-border, #80808050);
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  [data-amp-thread-messages-ui] button:hover,
+  [data-amp-thread-messages-ui="toggle"]:hover,
+  [data-amp-thread-messages-ui="toggle"][aria-expanded="true"],
+  [data-amp-thread-messages-list] button[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--amp-message-accent) 12%, var(--background, Canvas));
+  }
+  [data-amp-thread-messages-ui] :is(button, a):focus-visible,
+  [data-amp-thread-messages-ui="toggle"]:focus-visible {
+    outline: 2px solid var(--amp-message-accent);
+    outline-offset: -2px;
+  }
+  [data-amp-thread-messages-notice] { margin: 10px 16px; font-size: 12px; color: var(--muted-foreground, #596963); }
+  [data-amp-thread-messages-list] { flex: 0 1 auto; max-height: 35%; min-height: 0; overflow: auto; padding: 0 8px 8px; }
+  [data-amp-thread-messages-list] > button {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid var(--input-border, #80808040);
+    border-radius: 0;
+    padding: 10px 8px;
+    text-align: start;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  [data-amp-thread-messages-ui="panel"] > section { flex: 1; min-height: 0; overflow: auto; padding: 16px 20px 24px; border-top: 1px solid var(--input-border, #80808040); }
+  [data-amp-thread-messages-ui="panel"] section > p:first-child { margin: 0 0 4px; font-weight: 600; color: var(--amp-message-accent); }
+  [data-amp-thread-messages-ui="panel"] a { display: block; font-size: 12px; color: var(--amp-message-accent); overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 3px; }
+  [data-amp-thread-messages-body] { margin-block: 20px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+  [data-amp-thread-messages-ui="panel"] [data-delivery="failed"],
+  [data-amp-thread-messages-ui="panel"] section > p[data-delivery="failed"],
+  [data-amp-thread-messages-error] { color: light-dark(#a12622, #ffaaa3); }
+  [data-amp-thread-messages-error] { white-space: pre-wrap; overflow-wrap: anywhere; }
+  [data-amp-thread-messages-ui] button:disabled { opacity: .5; cursor: default; }
+}

@@ -1,16 +1,16 @@
 # Privacy policy
 
-Effective October 27, 2026. Applies to amp configurable defaults version 1.2.0.
+Effective October 31, 2026. Applies to amp configurable defaults version 1.3.0.
 
 ## What the extension does
 
-amp configurable defaults changes the desktop sidebar layout and provides an optional
-subagent reading panel and drag-to-split thread panes on `https://ampcode.com`. It is independent of Amp and
+amp configurable defaults changes the desktop sidebar layout and provides optional
+subagent and thread message reading panels and drag-to-split thread panes on `https://ampcode.com`. It is independent of Amp and
 is not affiliated with or endorsed by Amp.
 
 ## Information stored on your device
 
-The extension uses eleven preferences in `chrome.storage.local`:
+The extension uses twelve preferences in `chrome.storage.local`:
 
 - `right`: whether the sidebar should appear on the right.
 - `rightWidth`: the selected right-sidebar width, or no custom width.
@@ -20,6 +20,7 @@ The extension uses eleven preferences in `chrome.storage.local`:
 - `indentThreads`: indent child threads on either side.
 - `showHeaderToggle`: show the sidebar placement switch in the sidebar header.
 - `subagentPanel`: offer the subagent reading panel.
+- `threadMessagesPanel`: offer the read-only thread message drawer.
 - `showComposerContext`: show the thread's model and runner in the composer.
 - `infoOrb`: show the floating thread info orb beside the conversation.
 - `showMessageTimestamps`: keep message times visible without holding Option/Alt. Defaults to false.
@@ -62,10 +63,23 @@ This reading panel keeps a temporary, in-memory view for the current thread,
 including the last visible content when Amp unmounts an entry. It is discarded
 on thread navigation or page reload. Disabling the panel keeps inline summaries. Task
 prompts and output are never written to extension storage, browser storage,
-files, or a server. Only the eleven preferences above are persisted.
+files, or a server. Only the twelve preferences above are persisted.
 
-Apart from message IDs, timestamps, completion state, and the model name recorded
-on the latest assistant reply, the extension does not read ordinary conversation
+Opening **Thread messages** requests the current thread's same-origin page data
+using the existing Amp session. The drawer reads incoming thread-message text
+and sender thread IDs, outgoing `send_thread_message` arguments, matching tool
+results and errors, and attachment counts. Hidden text blocks are excluded.
+It displays plain text, delivery status, and links; it never sends messages.
+Only the returned message page is read, without fetching older pages or other
+threads. While the drawer is open and the tab visible, requests refresh every
+five seconds. Closing it stops its refresh requests. Disabling its setting or
+using a viewport below 768px removes the drawer and stops its requests.
+Its temporary cache is discarded on thread navigation, reload, disabling the
+setting, or switching to mobile. Message content never enters persistent storage.
+
+Apart from the thread communication described above, message IDs, timestamps,
+completion state, and the model name recorded on the latest assistant reply,
+the extension does not read ordinary conversation
 message contents, composer drafts,
 account details, passwords, authentication tokens, or browsing history. It
 does not alter or submit thread data. Closing the panel collapses disclosures

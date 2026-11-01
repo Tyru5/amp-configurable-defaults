@@ -92,6 +92,7 @@ These features have independent checkboxes in **Options**:
 | Indent child threads                      | On      | Native row spacing on either side                                 |
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
 | Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
+| Enable thread message panel               | On      | No thread-message drawer; native messages stay unchanged           |
 | Show model and runner in the composer     | On      | Composer unchanged; info orb and timestamps can still load data  |
 | Show thread info orb                      | On      | No floating orb; title-bar details stay in Amp's title bar        |
 | Always show message timestamps            | Off     | Native Option/Alt timestamp behavior                              |
@@ -153,6 +154,21 @@ as such. Background tasks remain labeled **Delegated** until Amp exposes a
 completion. Results with duplicate task descriptions appear separately rather
 than risk attaching them to the wrong agent.
 
+The separate **Thread messages** header button opens a teal correspondence drawer
+opposite navigation. Select an incoming or outgoing message to read its text,
+delivery status, attachment count, and link to the other thread. **View original**
+focuses the native entry when it is still rendered. Escape closes the drawer and
+returns focus to its button. Unlike the subagent panel, this drawer does not
+replace inline activity or expand native disclosures.
+
+Opening it requests the current thread's same-origin page data using your Amp
+session. While open and visible it refreshes every five seconds. Sends stay
+**Pending** until their matching tool result confirms **Sent** or **Failed**.
+Calls with identical text stay separate. Only the returned page of messages is
+read; older history and other threads are not fetched. Previously seen entries
+remain in memory until navigation, reload, disabling the feature, or switching
+to mobile. No messages are persisted or sent. Below 768px, communication stays native.
+
 Below 768px, navigation stays native and subagents use inline summaries only.
 Disable or remove the extension, then refresh open Amp tabs to restore the
 original page layout.
@@ -199,9 +215,9 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 
 Permissions: `storage` for local preferences, plus
 `declarativeNetRequestWithHostAccess` and access to `https://ampcode.com/*` for
-the embedded-thread security exception. The eleven stored keys are listed in the
+the embedded-thread security exception. The twelve stored keys are listed in the
 privacy policy. The content script runs only on Amp. Network activity includes
-the optional same-origin thread data request and the embedded Amp page's normal
+the optional same-origin thread data requests and the embedded Amp page's normal
 requests. The extension does not collect analytics or submit thread data;
 you can interact with Amp's native composer inside a split. This is an independent
 extension, not an official Amp extension.
@@ -241,9 +257,11 @@ node --check background.js
 node --check content.js
 node --check thread-split.js
 node --check subagents.js
+node --check thread-messages.js
 node --check options.js
 node --test tests/background.test.mjs
 node --test tests/options.test.mjs
+node tests/thread-messages.mjs # with the fixture server running on port 8765
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```

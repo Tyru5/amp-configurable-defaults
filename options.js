@@ -5,6 +5,7 @@ const toggles = {
   indentThreads: document.querySelector("#indentThreads"),
   showHeaderToggle: document.querySelector("#showHeaderToggle"),
   subagentPanel: document.querySelector("#subagentPanel"),
+  threadMessagesPanel: document.querySelector("#threadMessagesPanel"),
   showComposerContext: document.querySelector("#showComposerContext"),
   infoOrb: document.querySelector("#infoOrb"),
   showMessageTimestamps: document.querySelector("#showMessageTimestamps"),

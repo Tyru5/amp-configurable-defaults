@@ -71,7 +71,7 @@ try {
   check(`document.querySelector('${divider}').getAttribute('aria-valuenow')==='50'`, 'double click resets split width');
   browser('focus', '#thread-other a');
   browser('press', 'Alt+Shift+ArrowRight');
-  check(`${frame}===savedFrame && document.querySelector('[role=status]').textContent.includes('Close this split')`, 'another thread cannot replace an unsent split');
+  check(`${frame}===savedFrame && document.querySelector('[data-amp-thread-pane] [role=status]').textContent.includes('Close this split')`, 'another thread cannot replace an unsent split');
   browser('set', 'viewport', '600', '800');
   check(`${frame}===savedFrame && document.querySelector('${divider}').getAttribute('aria-orientation')==='horizontal' && ${frame}.getBoundingClientRect().bottom <= originalMain.getBoundingClientRect().top`, 'narrow window stacks the existing pane without reloading');
   browser('click', '[aria-label="Close thread split"]');
@@ -80,7 +80,7 @@ try {
   evaluate('window.rejectSplit=true');
   browser('focus', row);
   browser('press', 'Alt+Shift+ArrowLeft');
-  check(`document.querySelector('[role=status]').textContent==='Fixture permission denied' && !document.querySelector('[data-amp-thread-pane] > button').hidden`, 'permission failure offers retry');
+  check(`document.querySelector('[data-amp-thread-pane] [role=status]').textContent==='Fixture permission denied' && !document.querySelector('[data-amp-thread-pane] > button').hidden`, 'permission failure offers retry');
   evaluate('window.rejectSplit=false');
   browser('click', '[data-amp-thread-pane] > button');
   browser('wait', '--fn', `${frame} && !${frame}.hidden`);
