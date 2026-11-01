@@ -664,13 +664,16 @@
 }
 
 /* Thread correspondence is a teal messaging dock in the workspace's bottom-left
-   corner, like a social messaging tab. The tab opens the conversation list, and
-   choosing an entry slides to that message. */
+   corner. The tab opens the conversation list, and choosing an entry slides to
+   that message. The track is sized by script to the view being shown. */
 @media (min-width: 768px) {
   .thread-layout-panes:has(> [data-amp-thread-messages-ui]) { position: relative; }
   [data-amp-thread-messages-ui="dock"] {
-    --amp-message-accent: light-dark(#09665e, #7dded0);
+    --amp-message-accent: light-dark(#0b6b63, #7dded0);
     --amp-message-tint: color-mix(in srgb, var(--amp-message-accent) 10%, var(--background, Canvas));
+    --amp-message-line: var(--input-border, #80808040);
+    --amp-message-muted: var(--muted-foreground, #596963);
+    --amp-message-ease: cubic-bezier(.2, .7, .2, 1);
     position: absolute;
     z-index: 60;
     bottom: 12px;
@@ -679,182 +682,270 @@
     flex-direction: column;
     max-height: calc(100% - 24px);
     overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--amp-message-accent) 35%, transparent);
-    border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--amp-message-accent) 30%, transparent);
+    border-radius: 999px;
     background: var(--background, Canvas);
     color: var(--foreground, CanvasText);
     color-scheme: inherit;
-    box-shadow: 0 4px 16px #0003;
+    box-shadow: 0 2px 10px #0002;
     font: 13px/1.5 system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
   }
+  [data-amp-thread-messages-ui="dock"] ::selection { background: color-mix(in srgb, var(--amp-message-accent) 28%, transparent); }
   [data-amp-thread-messages-ui="dock"]:not([data-view="collapsed"]) {
     width: min(380px, calc(100% - 24px));
-    border-radius: 14px;
-    box-shadow: 0 12px 40px #0005;
+    border-radius: 16px;
+    border-color: color-mix(in srgb, var(--amp-message-accent) 20%, var(--amp-message-line));
+    box-shadow: 0 16px 48px #0004, 0 2px 8px #0002;
   }
   [data-amp-thread-messages-ui="toggle"] {
     display: flex;
     align-items: center;
-    gap: 8px;
-    min-height: 40px;
-    padding: 6px 14px 6px 12px;
+    gap: 10px;
+    height: 42px;
+    padding: 0 16px 0 14px;
     border: 0;
     background: var(--amp-message-tint);
     color: var(--amp-message-accent);
     font: inherit;
     text-align: start;
     cursor: pointer;
+    transition: background 120ms var(--amp-message-ease);
   }
-  [data-amp-thread-messages-ui="toggle"] strong { flex: 1; font-size: 14px; }
+  [data-amp-thread-messages-ui="toggle"] strong { flex: 1; font-weight: 600; letter-spacing: -.01em; }
   [data-amp-thread-messages-ui="toggle"]:hover,
   [data-amp-thread-messages-ui="toggle"][aria-expanded="true"] {
-    background: color-mix(in srgb, var(--amp-message-accent) 16%, var(--background, Canvas));
+    background: color-mix(in srgb, var(--amp-message-accent) 15%, var(--background, Canvas));
   }
   [data-amp-thread-messages-icon] {
+    flex: none;
     width: 16px;
-    height: 12px;
-    border: 1.5px solid currentColor;
-    border-radius: 3px;
-    background: linear-gradient(to bottom right, transparent 45%, currentColor 45% 55%, transparent 55%) left top / 50% 50% no-repeat,
-      linear-gradient(to bottom left, transparent 45%, currentColor 45% 55%, transparent 55%) right top / 50% 50% no-repeat;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
   [data-amp-thread-messages-count] {
-    min-width: 20px;
-    padding: 0 6px;
-    border-radius: 10px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
     background: var(--amp-message-accent);
     color: var(--background, Canvas);
     font-size: 11px;
     font-weight: 600;
-    line-height: 20px;
+    font-variant-numeric: tabular-nums;
+    line-height: 18px;
     text-align: center;
   }
-  [data-amp-thread-messages-chevron] {
-    width: 8px;
-    height: 8px;
-    margin: 0 2px 4px;
-    border-top: 2px solid currentColor;
-    border-right: 2px solid currentColor;
-    transform: rotate(-45deg);
-    transition: transform 160ms ease-out;
+  [data-amp-thread-messages-icon="chevronUp"] {
+    width: 14px;
+    height: 14px;
+    opacity: .7;
+    transition: transform 200ms var(--amp-message-ease);
   }
-  [aria-expanded="true"] > [data-amp-thread-messages-chevron] { transform: rotate(135deg); margin: 4px 2px 0; }
+  [aria-expanded="true"] > [data-amp-thread-messages-icon="chevronUp"] { transform: rotate(180deg); }
   [data-amp-thread-messages-ui="panel"]:not([hidden]) {
     display: flex;
     flex-direction: column;
-    min-height: 160px;
-    max-height: 460px;
+    min-height: 0;
+    max-height: min(480px, 72vh);
     overflow: hidden;
-    border-top: 1px solid var(--input-border, #80808040);
-    transition: opacity 160ms ease-out, translate 160ms ease-out;
+    border-top: 1px solid var(--amp-message-line);
+    transition: opacity 200ms var(--amp-message-ease), translate 200ms var(--amp-message-ease);
     @starting-style { opacity: 0; translate: 0 12px; }
   }
   [data-amp-thread-messages-track] {
     display: grid;
     grid-template-columns: 100% 100%;
-    flex: 1;
+    grid-template-rows: minmax(0, 1fr);
+    flex: 0 1 auto;
     min-height: 0;
-    transition: translate 220ms ease-out;
+    transition: translate 260ms var(--amp-message-ease), height 260ms var(--amp-message-ease);
   }
   [data-view="message"] [data-amp-thread-messages-track] { translate: -100% 0; }
-  [data-amp-thread-messages-view] { display: flex; flex-direction: column; min-height: 0; overflow: auto; }
+  [data-amp-thread-messages-view] {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--amp-message-accent) 35%, transparent) transparent;
+  }
+  /* flow-root keeps child margins inside the measured content block. */
+  [data-amp-thread-messages-view] > div { display: flow-root; }
   [data-amp-thread-messages-ui="panel"] button {
-    padding: 6px 10px;
-    border: 1px solid var(--input-border, #80808050);
-    border-radius: 6px;
+    padding: 0;
+    border: 0;
     background: transparent;
     color: inherit;
     font: inherit;
     cursor: pointer;
   }
-  [data-amp-thread-messages-ui="panel"] button:hover,
-  [data-amp-thread-messages-list] button[aria-pressed="true"] { background: var(--amp-message-tint); }
   [data-amp-thread-messages-ui="dock"] :is(button, a):focus-visible {
     outline: 2px solid var(--amp-message-accent);
     outline-offset: -2px;
   }
-  [data-amp-thread-messages-notice] { margin: 10px 16px 6px; font-size: 12px; color: var(--muted-foreground, #596963); }
-  [data-amp-thread-messages-list] { padding: 0 8px 8px; }
+  [data-amp-thread-messages-notice] { margin: 0; padding: 22px 24px; font-size: 12px; text-align: center; text-wrap: balance; color: var(--amp-message-muted); }
+  [data-amp-thread-messages-list]:empty + [data-amp-thread-messages-scope] { display: none; }
+  [data-amp-thread-messages-scope] {
+    margin: 0;
+    padding: 7px 16px 8px;
+    border-top: 1px solid var(--amp-message-line);
+    font-size: 11px;
+    color: var(--amp-message-muted);
+  }
+  [data-amp-thread-messages-list] { display: flex; flex-direction: column; gap: 1px; padding: 6px; }
+  [data-amp-thread-messages-list]:empty { display: none; }
   [data-amp-thread-messages-list] > button {
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr) auto;
-    grid-template-areas: "avatar who chip" "avatar preview preview";
-    column-gap: 10px;
-    width: 100%;
-    padding: 10px 8px;
-    border: 0;
-    border-bottom: 1px solid var(--input-border, #80808040);
-    border-radius: 8px;
+    grid-template-columns: 24px minmax(0, 1fr) auto auto;
+    grid-template-areas: "mark who chip time" "mark preview preview preview";
+    padding: 8px 10px;
+    border-radius: 10px;
     text-align: start;
   }
-  [data-amp-thread-messages-list] > button::before {
-    grid-area: avatar;
-    content: "↙";
-    width: 28px;
-    height: 28px;
+  [data-amp-thread-messages-list] > button { transition: background 120ms var(--amp-message-ease); }
+  [data-amp-thread-messages-list] > button:hover { background: color-mix(in srgb, var(--foreground, CanvasText) 5%, transparent); }
+  [data-amp-thread-messages-list] > button:active { background: color-mix(in srgb, var(--foreground, CanvasText) 8%, transparent); }
+  [data-amp-thread-messages-list] > button[aria-pressed="true"] { background: var(--amp-message-tint); }
+  /* Incoming messages wear a filled mark; this thread's own sends an outlined one. */
+  [data-amp-thread-messages-list] > button > :nth-child(5) {
+    grid-area: mark;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-top: 2px;
     border-radius: 50%;
-    background: var(--amp-message-tint);
-    color: var(--amp-message-accent);
-    font-size: 15px;
-    line-height: 28px;
-    text-align: center;
+    background: var(--amp-message-accent);
+    color: var(--background, Canvas);
   }
-  [data-amp-thread-messages-list] > button[data-direction="outgoing"]::before { content: "↗"; }
-  [data-amp-thread-messages-list] > button > :nth-child(1) { grid-area: who; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [data-amp-thread-messages-list] > button > :nth-child(5) > svg { width: 13px; height: 13px; stroke-width: 2.5; }
+  [data-amp-thread-messages-list] > button[data-direction="outgoing"] > :nth-child(5) {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amp-message-accent) 55%, transparent);
+    color: var(--amp-message-accent);
+  }
+  /* "From" / "To" is the quiet word; the thread ID carries the row. */
+  [data-amp-thread-messages-list] > button > :nth-child(1) { grid-area: who; margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--amp-message-muted); }
+  [data-amp-thread-messages-ui="dock"] code { font: 500 12.5px/1 var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); color: var(--foreground, CanvasText); }
   [data-amp-thread-messages-list] > button > :nth-child(2),
   [data-amp-thread-messages-ui="panel"] header > p {
     grid-area: chip;
-    align-self: start;
+    align-self: center;
+    margin-left: 10px;
     margin: 0;
-    padding: 0 8px;
-    border-radius: 10px;
+    padding: 0 7px;
+    border-radius: 999px;
     background: var(--amp-message-tint);
     color: var(--amp-message-accent);
     font-size: 11px;
     font-weight: 600;
-    line-height: 20px;
+    line-height: 18px;
     white-space: nowrap;
   }
   [data-amp-thread-messages-list] > button > :nth-child(3) {
+    grid-area: time;
+    align-self: center;
+    margin-left: 8px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--amp-message-muted);
+  }
+  [data-amp-thread-messages-list] > button > :nth-child(4) {
     grid-area: preview;
+    margin: 1px 0 0 10px;
     overflow: hidden;
-    color: var(--muted-foreground, #596963);
     font-size: 12px;
+    line-height: 1.45;
+    color: var(--amp-message-muted);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  [data-amp-thread-messages-ui="panel"] section { padding: 0 16px 20px; }
   [data-amp-thread-messages-ui="panel"] header {
     position: sticky;
     top: 0;
-    display: flex;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 10px;
-    margin: 0 -16px 12px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--input-border, #80808040);
+    padding: 7px 14px 7px 8px;
+    border-bottom: 1px solid var(--amp-message-line);
     background: var(--background, Canvas);
   }
-  [data-amp-thread-messages-back] { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0 !important; border-color: transparent !important; border-radius: 50% !important; }
-  [data-amp-thread-messages-back]::before { content: ""; width: 8px; height: 8px; margin-left: 4px; border-top: 2px solid currentColor; border-left: 2px solid currentColor; transform: rotate(-45deg); }
-  [data-amp-thread-messages-ui="panel"] a { display: block; font-size: 12px; color: var(--amp-message-accent); overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 3px; }
+  [data-amp-thread-messages-ui="panel"] header > p { grid-area: auto; margin: 0; }
+  [data-amp-thread-messages-ui="panel"] [data-amp-thread-messages-back] { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 50%; }
+  [data-amp-thread-messages-back] { transition: background 120ms var(--amp-message-ease); }
+  [data-amp-thread-messages-back]:hover { background: color-mix(in srgb, var(--foreground, CanvasText) 6%, transparent); }
+  [data-amp-thread-messages-back]:active { background: color-mix(in srgb, var(--foreground, CanvasText) 10%, transparent); }
+  [data-amp-thread-messages-back] > svg { width: 16px; height: 16px; }
+  [data-amp-thread-messages-peer] { display: flex; flex-direction: column; min-width: 0; }
+  [data-amp-thread-messages-peer] > span { font-size: 11px; line-height: 1.3; color: var(--amp-message-muted); }
+  [data-amp-thread-messages-peer] > a {
+    overflow: hidden;
+    font: 500 12px/1.5 var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    color: var(--amp-message-accent);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  [data-amp-thread-messages-peer] > a:hover { text-decoration: underline; text-underline-offset: 3px; }
   [data-amp-thread-messages-body] {
-    margin-block: 14px 18px;
-    padding: 12px 14px;
+    margin: 14px 16px 10px;
+    padding: 10px 14px;
     border-radius: 14px 14px 14px 4px;
     background: var(--amp-message-tint);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    line-height: 1.65;
+    line-height: 1.6;
   }
-  [data-amp-thread-messages-ui="panel"] :is(header > p[data-delivery="sent"], button[data-delivery="sent"] > :nth-child(2)) { background: light-dark(#dcefdf, #1f4a2b); color: light-dark(#1d5e2c, #a6e3b1); }
-  [data-amp-thread-messages-ui="panel"] :is(header > p[data-delivery="pending"], button[data-delivery="pending"] > :nth-child(2)) { background: color-mix(in srgb, var(--muted-foreground, #596963) 15%, transparent); color: var(--muted-foreground, #596963); }
+  [data-direction="outgoing"] [data-amp-thread-messages-body] {
+    margin-left: 40px;
+    border-radius: 14px 14px 4px 14px;
+    background: color-mix(in srgb, var(--foreground, CanvasText) 6%, transparent);
+  }
+  /* The chip already says Failed; the reason sits under the bubble as plain text. */
+  [data-amp-thread-messages-error] {
+    margin: -4px 30px 10px 30px;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  [data-direction="outgoing"] [data-amp-thread-messages-error] { margin-left: 54px; }
+  /* The footer stays pinned so a long message never scrolls its action away. */
+  [data-amp-thread-messages-ui="panel"] footer {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 32px;
+    padding: 4px 16px;
+    border-top: 1px solid var(--amp-message-line);
+    background: var(--background, Canvas);
+    font-size: 11px;
+    color: var(--amp-message-muted);
+  }
+  [data-amp-thread-messages-ui="panel"] footer time { font-variant-numeric: tabular-nums; }
+  [data-amp-thread-messages-ui="panel"] [data-amp-thread-messages-original] {
+    margin-left: auto;
+    padding: 4px 0;
+    border-radius: 4px;
+    color: var(--amp-message-accent);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  [data-amp-thread-messages-original]:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
+  [data-amp-thread-messages-ui="panel"] :is(header > p[data-delivery="pending"], button[data-delivery="pending"] > :nth-child(2)) { background: color-mix(in srgb, var(--amp-message-muted) 14%, transparent); color: var(--amp-message-muted); }
+  [data-amp-thread-messages-ui="panel"] :is(header > p[data-delivery="failed"], button[data-delivery="failed"] > :nth-child(2)) { background: light-dark(#fbe3e1, #432320); }
   [data-amp-thread-messages-ui="panel"] :is(header > p[data-delivery="failed"], button[data-delivery="failed"] > :nth-child(2)),
-  [data-amp-thread-messages-error] { background: light-dark(#fbe3e1, #4a1f1d); color: light-dark(#a12622, #ffaaa3); }
-  [data-amp-thread-messages-error] { margin: 0 0 14px; padding: 10px 12px; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
-  [data-amp-thread-messages-attachments] { margin: 0 0 14px; font-size: 12px; color: var(--muted-foreground, #596963); }
-  [data-amp-thread-messages-ui="dock"] button:disabled { opacity: .5; cursor: default; }
+  [data-amp-thread-messages-error] { color: light-dark(#a12622, #ffb3ac); }
+  [data-amp-thread-messages-ui="dock"] button:disabled { opacity: .45; cursor: default; }
   @media (prefers-reduced-motion: reduce) {
-    [data-amp-thread-messages-chevron], [data-amp-thread-messages-ui="panel"], [data-amp-thread-messages-track] { transition: none; }
+    [data-amp-thread-messages-ui="dock"] * { transition: none; }
   }
 }

@@ -159,11 +159,12 @@ completion. Results with duplicate task descriptions appear separately rather
 than risk attaching them to the wrong agent.
 
 A teal **Messages** tab sits in the workspace's bottom-left corner, like a social
-messaging dock. Clicking it opens the conversation list above the tab, with a
-count badge, direction glyph, and delivery chip per entry. Choosing an entry
-slides to that message: its text, delivery status, attachment count, and link to
-the other thread, with a back control to return to the list. **View original**
-focuses the native entry when it is still rendered. Escape collapses the dock and
+messaging dock. Clicking it opens the conversation list above the tab: each entry
+shows the other thread, a direction mark, how long ago it arrived, and a delivery
+chip on sends. Choosing an entry slides to that message: its text, delivery time,
+attachment count, and link to the other thread, with a back control to return to
+the list. The panel sizes itself to whichever view is showing. **Show in
+transcript** focuses the native entry when it is still rendered. Escape collapses the dock and
 returns focus to its tab; reopening resumes the message being read. Unlike the
 subagent panel, this dock does not replace inline activity or expand native
 disclosures. The slide respects reduced-motion preferences.
