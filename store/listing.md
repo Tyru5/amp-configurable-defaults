@@ -34,7 +34,7 @@ Features:
 - Read subagent tasks and results in optional Task and Output reading sheets.
 - Keep expandable inline subagent summaries, even with the panel disabled.
 - Identify active subagents by pulsing dots, with reduced-motion support.
-- Read incoming and outgoing thread messages in a separate drawer with delivery status and links to the original entries.
+- Read incoming and outgoing thread messages from a docked Messages tab with delivery status and links to the original entries.
 - Distinguish tool calls from prose with tinted disclosure rows.
 - See the thread's model and runner (or Orb) next to the composer's upload button.
 - Hover, focus, or pin a floating orb for the thread's title-bar details.
@@ -51,7 +51,7 @@ badge shows R for right or L for left.
 
 Privacy: only your feature choices, sidebar side, and width are stored locally.
 No analytics, tracking, advertising, or data collection. The optional composer
-label and thread message drawer fetch the open thread's data from ampcode.com
+label and thread message dock fetch the open thread's data from ampcode.com
 with your existing session, keep it in memory, and send it nowhere else.
 Source code is public under the MIT license.
 
@@ -85,12 +85,12 @@ https://ampcode.com/threads/<id>/__data, the same same-origin request Amp's
 page makes, and keeps only the mode, model, executor, runner, and working
 directory, plus message IDs and timestamp metadata, in memory.
 The info orb reads details already in Amp's title bar.
-Opening the thread message drawer separately requests the current thread's
+Opening the thread message dock separately requests the current thread's
 page data. It reads incoming thread-message text and sender IDs, outgoing
 send_thread_message arguments, matching delivery results and errors, and
 attachment counts. Hidden text is excluded. Only the returned page is read;
 older pages and peer threads are not fetched. Requests refresh every five
-seconds while the drawer is open and the tab visible. The cache stays in memory
+seconds while the dock is open and the tab visible. The cache stays in memory
 and is discarded on navigation, reload, disabling the feature, or switching to
 mobile. It does not send messages or persist message content.
 It does not run on other sites or read credentials or browsing history.

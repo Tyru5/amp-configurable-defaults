@@ -20,7 +20,7 @@ The extension uses twelve preferences in `chrome.storage.local`:
 - `indentThreads`: indent child threads on either side.
 - `showHeaderToggle`: show the sidebar placement switch in the sidebar header.
 - `subagentPanel`: offer the subagent reading panel.
-- `threadMessagesPanel`: offer the read-only thread message drawer.
+- `threadMessagesPanel`: offer the read-only thread message dock.
 - `showComposerContext`: show the thread's model and runner in the composer.
 - `infoOrb`: show the floating thread info orb beside the conversation.
 - `showMessageTimestamps`: keep message times visible without holding Option/Alt. Defaults to false.
@@ -65,15 +65,15 @@ on thread navigation or page reload. Disabling the panel keeps inline summaries.
 prompts and output are never written to extension storage, browser storage,
 files, or a server. Only the twelve preferences above are persisted.
 
-Opening **Thread messages** requests the current thread's same-origin page data
-using the existing Amp session. The drawer reads incoming thread-message text
+Opening the **Messages** dock requests the current thread's same-origin page data
+using the existing Amp session. The dock reads incoming thread-message text
 and sender thread IDs, outgoing `send_thread_message` arguments, matching tool
 results and errors, and attachment counts. Hidden text blocks are excluded.
 It displays plain text, delivery status, and links; it never sends messages.
 Only the returned message page is read, without fetching older pages or other
-threads. While the drawer is open and the tab visible, requests refresh every
+threads. While the dock is open and the tab visible, requests refresh every
 five seconds. Closing it stops its refresh requests. Disabling its setting or
-using a viewport below 768px removes the drawer and stops its requests.
+using a viewport below 768px removes the dock and stops its requests.
 Its temporary cache is discarded on thread navigation, reload, disabling the
 setting, or switching to mobile. Message content never enters persistent storage.
 

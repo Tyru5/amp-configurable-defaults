@@ -92,7 +92,7 @@ These features have independent checkboxes in **Options**:
 | Indent child threads                      | On      | Native row spacing on either side                                 |
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
 | Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
-| Enable thread message panel               | On      | No thread-message drawer; native messages stay unchanged           |
+| Enable thread message panel               | On      | No thread-message dock; native messages stay unchanged             |
 | Show model and runner in the composer     | On      | Composer unchanged; info orb and timestamps can still load data  |
 | Show thread info orb                      | On      | No floating orb; title-bar details stay in Amp's title bar        |
 | Always show message timestamps            | Off     | Native Option/Alt timestamp behavior                              |
@@ -158,12 +158,15 @@ as such. Background tasks remain labeled **Delegated** until Amp exposes a
 completion. Results with duplicate task descriptions appear separately rather
 than risk attaching them to the wrong agent.
 
-The separate **Thread messages** header button opens a teal correspondence drawer
-opposite navigation. Select an incoming or outgoing message to read its text,
-delivery status, attachment count, and link to the other thread. **View original**
-focuses the native entry when it is still rendered. Escape closes the drawer and
-returns focus to its button. Unlike the subagent panel, this drawer does not
-replace inline activity or expand native disclosures.
+A teal **Messages** tab sits in the workspace's bottom-left corner, like a social
+messaging dock. Clicking it opens the conversation list above the tab, with a
+count badge, direction glyph, and delivery chip per entry. Choosing an entry
+slides to that message: its text, delivery status, attachment count, and link to
+the other thread, with a back control to return to the list. **View original**
+focuses the native entry when it is still rendered. Escape collapses the dock and
+returns focus to its tab; reopening resumes the message being read. Unlike the
+subagent panel, this dock does not replace inline activity or expand native
+disclosures. The slide respects reduced-motion preferences.
 
 Opening it requests the current thread's same-origin page data using your Amp
 session. While open and visible it refreshes every five seconds. Sends stay

@@ -27,10 +27,27 @@
     return node;
   }
 
+  function show(view) {
+    const s = state;
+    s.view = view;
+    s.dock.dataset.view = view;
+    s.listView.inert = view !== "list";
+    s.detail.inert = view !== "message";
+  }
+
+  function open() {
+    const s = state;
+    s.panel.hidden = false;
+    s.toggle.setAttribute("aria-expanded", "true");
+    show(s.view);
+    refreshData();
+  }
+
   function close() {
     if (!state) return;
     clearTimeout(state.poll);
     state.panel.hidden = true;
+    state.dock.dataset.view = "collapsed";
     state.toggle.setAttribute("aria-expanded", "false");
   }
 
@@ -38,22 +55,41 @@
     if (!state) return;
     clearTimeout(state.poll);
     state.abort?.abort();
-    state.toggle.remove();
-    state.panel.remove();
+    state.dock.remove();
     state = undefined;
   }
 
-  function create(host, toolbar, id) {
-    const panel = document.createElement("aside");
+  function create(host, id) {
+    // A docked tab in the workspace's bottom-left corner. Opening it reveals the
+    // conversation list; choosing an entry slides to that message.
+    const dock = document.createElement("aside");
+    dock.dataset.ampThreadMessagesUi = "dock";
+    dock.dataset.view = "collapsed";
+    dock.setAttribute("aria-label", "Thread messages");
+    const panel = document.createElement("div");
     panel.id = `amp-thread-messages-${++sequence}`;
     panel.dataset.ampThreadMessagesUi = "panel";
-    panel.setAttribute("aria-label", "Thread messages");
     panel.hidden = true;
-    const heading = document.createElement("header");
-    const title = document.createElement("strong");
-    title.textContent = "Thread messages";
-    const dismiss = button("Close", () => { close(); state.toggle.focus(); });
-    heading.append(title, dismiss);
+    const toggle = button("", () => (panel.hidden ? open() : close()));
+    toggle.dataset.ampThreadMessagesUi = "toggle";
+    toggle.setAttribute("aria-controls", panel.id);
+    toggle.setAttribute("aria-expanded", "false");
+    const icon = document.createElement("span");
+    icon.dataset.ampThreadMessagesIcon = "";
+    icon.setAttribute("aria-hidden", "true");
+    const label = document.createElement("strong");
+    label.textContent = "Messages";
+    const count = document.createElement("span");
+    count.dataset.ampThreadMessagesCount = "";
+    count.hidden = true;
+    const chevron = document.createElement("span");
+    chevron.dataset.ampThreadMessagesChevron = "";
+    chevron.setAttribute("aria-hidden", "true");
+    toggle.append(icon, label, count, chevron);
+    const track = document.createElement("div");
+    track.dataset.ampThreadMessagesTrack = "";
+    const listView = document.createElement("div");
+    listView.dataset.ampThreadMessagesView = "list";
     const notice = document.createElement("p");
     notice.dataset.ampThreadMessagesNotice = "";
     notice.setAttribute("role", "status");
@@ -61,9 +97,19 @@
     list.dataset.ampThreadMessagesList = "";
     list.setAttribute("role", "group");
     list.setAttribute("aria-label", "Choose a thread message");
+    listView.append(notice, list);
     const detail = document.createElement("section");
+    detail.dataset.ampThreadMessagesView = "message";
     detail.setAttribute("aria-label", "Selected thread message");
+    const heading = document.createElement("header");
+    const back = button("", () => {
+      show("list");
+      state.items.get(state.selected)?.button.focus();
+    });
+    back.dataset.ampThreadMessagesBack = "";
+    back.setAttribute("aria-label", "Back to all messages");
     const status = document.createElement("p");
+    heading.append(back, status);
     const peer = document.createElement("a");
     peer.target = "_blank";
     peer.rel = "noopener noreferrer";
@@ -72,6 +118,7 @@
     const error = document.createElement("p");
     error.dataset.ampThreadMessagesError = "";
     const attachments = document.createElement("p");
+    attachments.dataset.ampThreadMessagesAttachments = "";
     const original = button("View original", () => {
       const entry = state.items.get(state.selected);
       const row = [...state.host.querySelectorAll("[data-transcript-message-lookup-id]")]
@@ -82,28 +129,19 @@
       row.tabIndex = -1;
       row.focus({ preventScroll: true });
     });
-    detail.append(status, peer, body, error, attachments, original);
-    panel.append(heading, notice, list, detail);
-    const toggle = button("Thread messages", () => {
-      const open = panel.hidden;
-      panel.hidden = !open;
-      toggle.setAttribute("aria-expanded", String(open));
-      if (open) { refreshData(); dismiss.focus(); }
-      else close();
-    });
-    toggle.dataset.ampThreadMessagesUi = "toggle";
-    toggle.setAttribute("aria-controls", panel.id);
-    toggle.setAttribute("aria-expanded", "false");
-    panel.addEventListener("keydown", event => {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
+    detail.append(heading, peer, body, error, attachments, original);
+    track.append(listView, detail);
+    panel.append(track);
+    dock.append(toggle, panel);
+    dock.addEventListener("keydown", event => {
+      if (event.key !== "Escape" || event.defaultPrevented || panel.hidden) return;
       event.stopPropagation();
       close();
       toggle.focus();
     });
-    toolbar.append(toggle);
-    host.append(panel);
-    return { host, id, panel, toggle, notice, list, detail, status, peer, body, error, attachments, original,
-      items: new Map(), selected: null, at: 0, loading: false, failed: false };
+    host.append(dock);
+    return { host, id, dock, panel, toggle, count, listView, notice, list, detail, back, status, peer, body, error, attachments, original,
+      view: "list", items: new Map(), selected: null, at: 0, loading: false, failed: false };
   }
 
   function collect(messages, items) {
@@ -146,8 +184,9 @@
   function render() {
     if (!state) return;
     const s = state;
-    write(s.toggle, `Thread messages${s.items.size ? ` ${s.items.size}` : ""}`);
-    write(s.notice, s.failed ? "Could not refresh messages. Reopen the panel to retry." : s.loading && !s.items.size ? "Loading thread messages…" :
+    write(s.count, String(s.items.size));
+    s.count.hidden = !s.items.size;
+    write(s.notice, s.failed ? "Could not refresh messages. Reopen Messages to retry." : s.loading && !s.items.size ? "Loading thread messages…" :
       "Messages from loaded page data only. Older history is not fetched.");
     for (const [key, entry] of s.items) {
       if (!entry.button) {
@@ -155,18 +194,26 @@
           if (s.selected !== key) s.detail.scrollTop = 0;
           s.selected = key;
           render();
+          show("message");
+          s.back.focus();
         });
+        entry.button.append(document.createElement("span"), document.createElement("span"), document.createElement("span"));
         s.list.append(entry.button);
       }
+      const [who, chip, preview] = entry.button.children;
       entry.button.dataset.delivery = entry.status.toLowerCase();
+      entry.button.dataset.direction = entry.direction.toLowerCase();
       entry.button.title = entry.peer;
-      const preview = entry.body.replace(/\s+/g, " ");
-      write(entry.button, `${entry.direction === "Incoming" ? "From" : "To"} thread …${entry.peer.slice(-8)}\n${entry.status} · ${preview.length > 60 ? `${preview.slice(0, 60).replace(/\s+\S*$/, "")}…` : preview || "No message text"}`);
+      write(who, `${entry.direction === "Incoming" ? "From" : "To"} thread …${entry.peer.slice(-8)}`);
+      write(chip, entry.status);
+      const compact = entry.body.replace(/\s+/g, " ");
+      write(preview, compact.length > 70 ? `${compact.slice(0, 70).replace(/\s+\S*$/, "")}…` : compact || "No message text");
       entry.button.setAttribute("aria-pressed", String(s.selected === key));
     }
     s.detail.hidden = !s.items.size;
     if (!s.items.size) {
       if (!s.loading && !s.failed) write(s.notice, "No thread messages in the loaded page data.");
+      if (s.view !== "list") show("list");
       return;
     }
     if (!s.items.has(s.selected)) {
@@ -228,11 +275,10 @@
     scheduled = false;
     const transcript = document.querySelector(".thread-layout-panes [data-thread-transcript-scroll][data-thread-id]");
     const host = transcript?.closest(".thread-layout-panes");
-    const toolbar = host?.querySelector(".thread-title-bar-container .app-title-bar");
-    if (!enabled || !desktop.matches || !toolbar) { teardown(); return; }
+    if (!enabled || !desktop.matches || !host) { teardown(); return; }
     if (state && (state.host !== host || state.id !== transcript.dataset.threadId)) teardown();
-    if (!state) state = create(host, toolbar, transcript.dataset.threadId);
-    if (state.toggle.parentElement !== toolbar) toolbar.append(state.toggle);
+    if (!state) state = create(host, transcript.dataset.threadId);
+    if (state.dock.parentElement !== host) host.append(state.dock);
     if (!state.panel.hidden && (!state.at || Date.now() - state.at >= 5000)) refreshData();
     else render();
   }
