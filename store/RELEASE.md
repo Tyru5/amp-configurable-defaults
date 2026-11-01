@@ -1,4 +1,18 @@
-# Version 1.3.0 submission checklist
+# Version 1.4.0 submission checklist
+
+## Changes since 1.3.0
+
+- Added a bottom-left Messages dock that lists incoming and outgoing thread
+  messages with delivery status, then slides into each message's full content
+  and a link to the original entry. It polls the open thread's page data every
+  five seconds only while open and visible, and can be turned off in Options.
+- Rendered subagent Task and Output sheets as formatted content (headings,
+  lists, code, links) instead of raw text.
+- Added expandable tool-call previews with Bash code blocks.
+- Added optional persistent message dates and times.
+- Kept Amp's native update alerts visible while the sidebar footer is hidden.
+- Added the marquee promotional tile and refreshed store artwork notes.
+- Fixed the manifest description length so packaging validates the 132-character limit.
 
 ## Changes since 1.2.0
 
@@ -28,7 +42,7 @@
 
 - [ ] Review the embedded-thread framing/CSP exception and iframe remote-code
       disclosures against current Web Store policy before submission.
-- [ ] Smoke-test the final 1.3.0 ZIP on real, signed-in Amp. Earlier live checks
+- [ ] Smoke-test the final 1.4.0 ZIP on real, signed-in Amp. Earlier live checks
       in README.md do not replace testing this packaged release.
 - [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep
       fixture previews separately identified. No private content is published.
@@ -49,17 +63,21 @@ node --check background.js
 node --check content.js
 node --check thread-split.js
 node --check subagents.js
+node --check thread-messages.js
 node --check composer.js
 node --check info-orb.js
+node --check tool-preview.js
 node --check options.js
 node --test tests/background.test.mjs
 node --test tests/options.test.mjs
+node tests/browser.mjs # with the fixture server running on port 8765
+node tests/thread-messages.mjs # with the fixture server running on port 8765
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
 
 1. Open https://chrome.google.com/webstore/devconsole.
-2. Add a new item and upload `dist/amp-configurable-defaults-1.3.0.zip` directly.
+2. Add a new item and upload `dist/amp-configurable-defaults-1.4.0.zip` directly.
    Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, `store/promo-small.png`
    and `store/promo-marquee.png` in their matching promotional tile fields, and
@@ -73,7 +91,7 @@ python3 scripts/package.py
 
 Store review, approval, and publication have not been performed by this project.
 Sidebar placement is independent of other Options; there is no master switch.
-The ten local preferences are documented in the privacy policy and listing.
+The twelve local preferences are documented in the privacy policy and listing.
 Existing defaults remain, including footer hiding off. Existing draft release
 screenshots have not been replaced. Review the footer states, individual opt-outs,
 cross-tab changes, and recovery with both footer and header switch hidden before

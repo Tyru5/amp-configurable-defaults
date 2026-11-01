@@ -1,6 +1,6 @@
 # Chrome Web Store listing
 
-Submission copy for version 1.3.0. This file is not a claim of store approval.
+Submission copy for version 1.4.0. This file is not a claim of store approval.
 
 ## Listing fields
 
@@ -38,12 +38,14 @@ Features:
 - Distinguish tool calls from prose with tinted disclosure rows.
 - See the thread's model and runner (or Orb) next to the composer's upload button.
 - Hover, focus, or pin a floating orb for the thread's title-bar details.
+- Optionally keep compact message dates and times always visible.
 - Keep mobile navigation native; inline summaries and tool styling remain available.
 
 Options has independent checkboxes for right-side placement, right-side
 resizing, auxiliary-view placement, child-thread indentation, header-switch
-visibility, subagent panel, thread messages, composer model and runner, thread info orb, and
-footer hiding. All default on except footer hiding. Turning off resizing restores native width without erasing the saved
+visibility, subagent panel, thread messages, composer model and runner, thread info orb,
+persistent message timestamps, and footer hiding. All default on except footer
+hiding and persistent timestamps. Turning off resizing restores native width without erasing the saved
 width. Collapse/expand stays native. Placement changes preserve every preference.
 
 After installing, pin the extension and refresh any open Amp tabs. The toolbar

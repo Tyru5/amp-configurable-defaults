@@ -1,6 +1,6 @@
 # Privacy policy
 
-Effective October 31, 2026. Applies to amp configurable defaults version 1.3.0.
+Effective November 1, 2026. Applies to amp configurable defaults version 1.4.0.
 
 ## What the extension does
 
