@@ -282,6 +282,11 @@ try {
   check(`document.querySelector('[data-amp-subagents-ui="panel"]').getBoundingClientRect().left >= document.querySelector('#view-pane').getBoundingClientRect().right && document.querySelector('#agent-pane').getBoundingClientRect().right <= document.querySelector('#view-pane').getBoundingClientRect().left`, 'side reversal keeps Changes accessible and places subagents at the opposite outer edge');
   browser('click', '[data-amp-subagents-detail] > button');
   check(`document.querySelector('[data-amp-subagents-ui="panel"]').hidden && document.querySelector('[data-transcript-automation-event][data-amp-subagent-revealed]') !== null`, 'View original reveals the selected completion inline');
+  const revealed = `document.querySelector('[data-transcript-automation-event][data-amp-subagent-revealed]')`;
+  browser('wait', '--fn', `${revealed}.hasAttribute('data-amp-transcript-highlight')`);
+  check(`${revealed}.getAnimations().some(a => a.animationName === 'amp-transcript-flash') && ${revealed}.querySelector('[data-transcript-expandable-row]') === document.activeElement && ${revealed}.querySelector('[data-transcript-automation-event-markdown]') !== null`, 'View original expands the completion, focuses its header, and highlights it');
+  browser('wait', '--fn', `!${revealed}.hasAttribute('data-amp-transcript-highlight')`);
+  check(`!document.querySelector('[data-amp-transcript-highlight]')`, 'the completion highlight fades out on its own');
   browser('click', '[data-amp-subagents-ui="toggle"]');
   browser('click', '[data-amp-sidebar-toggle]');
   check(`document.querySelector('[data-amp-subagents-ui="panel"]').hidden === false && document.querySelector('#message').value === 'Preserve the subagent-panel draft'`, 'changing placement preserves the open subagent panel and composer draft');

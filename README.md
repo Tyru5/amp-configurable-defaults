@@ -147,7 +147,8 @@ headings, lists, links, inline code, highlighted code blocks, quotes, and
 tables read as they do in the conversation. Task prompts, which Amp shows as
 plain text, are rendered from their markdown with the same typography. Escape
 closes the sheet first, then the panel.
-**View original** reveals the selected activity inline. Files and Changes remain
+**View original** reveals the selected activity inline, glides the transcript to
+it, and flashes a highlight on it so the eye lands in the right place. Files and Changes remain
 open alongside the list. Narrow desktop layouts use an overlay rather than
 squeeze the conversation.
 
@@ -164,10 +165,12 @@ shows the other thread, a direction mark, how long ago it arrived, and a deliver
 chip on sends. Choosing an entry slides to that message: its text, delivery time,
 attachment count, and link to the other thread, with a back control to return to
 the list. The panel sizes itself to whichever view is showing. **Show in
-transcript** focuses the native entry when it is still rendered. Escape collapses the dock and
+transcript** glides to the native entry when it is still rendered, focuses it, and
+flashes a highlight on it once it arrives. Escape collapses the dock and
 returns focus to its tab; reopening resumes the message being read. Unlike the
 subagent panel, this dock does not replace inline activity or expand native
-disclosures. The slide respects reduced-motion preferences.
+disclosures. The slide and the glide respect reduced-motion preferences; the
+highlight only changes color.
 
 Opening it requests the current thread's same-origin page data using your Amp
 session. While open and visible it refreshes every five seconds. Sends stay

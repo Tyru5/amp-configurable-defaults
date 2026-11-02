@@ -321,14 +321,12 @@
       const item = state.items.get(state.selected);
       const source = item.event?.isConnected ? item.event : item.source;
       close();
-      source?.setAttribute("data-amp-subagent-revealed", "");
+      if (!source) return;
+      source.setAttribute("data-amp-subagent-revealed", "");
       state.inline.get(source)?.setAttribute("aria-expanded", "true");
-      source?.scrollIntoView({ block: "center" });
-      const header = source?.querySelector("[data-transcript-expandable-row]");
-      if (header) {
-        if (!source.querySelector(detailSelector)) header.click();
-        header.focus({ preventScroll: true });
-      }
+      const header = source.querySelector("[data-transcript-expandable-row]");
+      if (header && !source.querySelector(detailSelector)) header.click();
+      globalThis.ampRevealInTranscript(source, header || source);
     });
     detail.append(title, status, sectionNav, hint, original);
     panel.append(heading, list, detail);

@@ -60,6 +60,26 @@
   [data-amp-subagent-active]::before { animation: none; }
 }
 
+/* Show in transcript / View original: flash the entry once it is in view, then
+   leave it as it was. Only color changes, so reduced motion needs no variant. */
+[data-amp-transcript-highlight] {
+  /* The Messages dock teal; the dock's own variable is scoped to the dock,
+     so declare it again here where the transcript row can see it. */
+  --amp-message-accent: light-dark(#0b6b63, #7dded0);
+  border-radius: 6px;
+  animation: amp-transcript-flash 1.8s ease-out both;
+}
+@keyframes amp-transcript-flash {
+  0%, 40% {
+    background-color: color-mix(in srgb, var(--amp-message-accent) 16%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--amp-message-accent) 60%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
 /* Native work-group IDs identify collapsed tool summaries, not assistant prose.
    Individual tool rows keep their native controls and expandable output. */
 [data-thread-transcript-scroll] :is(

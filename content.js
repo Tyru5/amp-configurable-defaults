@@ -1,6 +1,50 @@
 (() => {
   const root = document.documentElement;
   const desktop = matchMedia("(min-width: 768px)");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+  // Shared by the Messages dock and the Subagents panel: bring a transcript
+  // entry into view, focus it, and flash a highlight once it has arrived so the
+  // eye lands on the right place. The highlight restarts if the same entry is
+  // shown again. Reduced motion jumps instead of gliding; the flash only fades.
+  const highlight = "data-amp-transcript-highlight";
+  globalThis.ampRevealInTranscript = (target, focus = target) => {
+    let scroller = target.parentElement;
+    while (scroller && !(scroller.scrollHeight > scroller.clientHeight &&
+        /auto|scroll/.test(getComputedStyle(scroller).overflowY))) scroller = scroller.parentElement;
+    scroller ??= document.scrollingElement;
+    const from = scroller.scrollTop;
+    target.scrollIntoView({ block: "center", behavior: "instant" });
+    const to = scroller.scrollTop;
+    if (focus.tabIndex < 0 && !focus.hasAttribute("tabindex")) focus.tabIndex = -1;
+    focus.focus({ preventScroll: true });
+    const flash = () => {
+      target.removeAttribute(highlight);
+      void target.offsetWidth;
+      target.setAttribute(highlight, "");
+      target.addEventListener("animationend", function end(event) {
+        if (event.target !== target || event.animationName !== "amp-transcript-flash") return;
+        target.removeEventListener("animationend", end);
+        target.removeAttribute(highlight);
+      });
+    };
+    if (to === from || reducedMotion.matches) return flash();
+    scroller.scrollTop = from;
+    scroller.scrollTo({ top: to, behavior: "smooth" });
+    // Flash on arrival. scrollend is unreliable here (the instant measuring
+    // scroll above can fire a stale one), so watch the position each frame and
+    // give up waiting if the glide is interrupted or stalls.
+    const deadline = performance.now() + 1500;
+    let last = from, idle = 0;
+    const arrive = () => {
+      const now = scroller.scrollTop;
+      idle = now === last ? idle + 1 : 0;
+      last = now;
+      if (Math.abs(now - to) < 1 || idle > 8 || performance.now() > deadline) flash();
+      else requestAnimationFrame(arrive);
+    };
+    requestAnimationFrame(arrive);
+  };
   let right = true;
   let resize = null;
   let settingsReady = false;

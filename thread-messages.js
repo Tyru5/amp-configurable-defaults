@@ -189,9 +189,7 @@
         .find(row => row.dataset.transcriptMessageLookupId === entry.messageID);
       if (!row) return;
       close();
-      row.scrollIntoView({ block: "center" });
-      row.tabIndex = -1;
-      row.focus({ preventScroll: true });
+      globalThis.ampRevealInTranscript(row);
     });
     original.dataset.ampThreadMessagesOriginal = "";
     meta.append(time, attachments, original);

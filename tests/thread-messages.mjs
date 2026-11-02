@@ -111,8 +111,35 @@ try {
   browser('wait', '--fn', settled('list'));
   browser('click', `${list} > button:first-child`);
   browser('wait', '--fn', settled('message'));
+  // Amp's transcript scrolls inside [data-thread-transcript-scroll]; make the fixture's scroll too, with the entry out of view.
+  const scroller = `document.querySelector('[data-thread-transcript-scroll]')`;
+  const received = `document.querySelector('[data-transcript-message-lookup-id="received"]')`;
+  const highlighted = `${received}.hasAttribute('data-amp-transcript-highlight')`;
+  browser('eval', `${scroller}.style.cssText = 'max-height: 120px; overflow: auto';
+    for (let i = 0; i < 30; i++) { const spacer = document.createElement('p'); spacer.dataset.ampTestSpacer = ''; spacer.textContent = 'Later transcript content'; ${scroller}.firstElementChild.append(spacer); }
+    ${scroller}.scrollTop = ${scroller}.scrollHeight`);
+  check(`${received}.getBoundingClientRect().bottom < ${scroller}.getBoundingClientRect().top && ${scroller}.scrollTop > 400`, 'the entry starts well out of view');
+  // Sample every frame from the click until the highlight appears: it must glide over several frames and flash only on arrival.
+  const arrival = evaluate(`new Promise(resolve => { const s = ${scroller}, row = ${received}, tops = [];
+    document.querySelector('[data-amp-thread-messages-original]').click();
+    const tick = () => { tops.push(s.scrollTop);
+      if (tops.length < 120 && !${highlighted}) return requestAnimationFrame(tick);
+      const r = row.getBoundingClientRect(), b = s.getBoundingClientRect();
+      resolve({ moves: tops.filter((top, i) => i && top !== tops[i - 1]).length, highlighted: ${highlighted}, arrived: s.scrollTop === 0 && r.top >= b.top && r.bottom <= b.bottom,
+        flashing: row.getAnimations().some(a => a.animationName === 'amp-transcript-flash'), focused: document.activeElement === row, closed: document.querySelector('${panel}').hidden }); };
+    requestAnimationFrame(tick); })`);
+  assert.ok(arrival.focused && arrival.closed, 'Show in transcript collapses the dock and focuses the native entry');
+  console.log('PASS Show in transcript collapses the dock and focuses the native entry');
+  assert.ok(arrival.moves > 3 && arrival.highlighted && arrival.arrived && arrival.flashing, `the entry glides into view over several frames and flashes only on arrival (${JSON.stringify(arrival)})`);
+  console.log('PASS the entry glides into view over several frames and flashes only on arrival');
+  browser('wait', '--fn', `!${highlighted}`);
+  check(`${received}.getAnimations().length === 0 && getComputedStyle(${received}).boxShadow === 'none'`, 'the highlight is removed after it fades and leaves the entry as it was');
+  browser('click', toggle);
+  browser('wait', '--fn', settled('message'));
   browser('find', 'role', 'button', 'click', '--name', 'Show in transcript', '--exact');
-  check(`document.activeElement.dataset.transcriptMessageLookupId === 'received' && document.querySelector('${panel}').hidden`, 'Show in transcript focuses the native entry without hiding or moving its content');
+  browser('wait', '--fn', highlighted);
+  check(`${scroller}.scrollTop === 0 && document.activeElement.dataset.transcriptMessageLookupId === 'received'`, 'showing an entry already in view replays the highlight without scrolling');
+  browser('eval', `${scroller}.removeAttribute('style'); for (const spacer of document.querySelectorAll('[data-amp-test-spacer]')) spacer.remove()`);
   browser('eval', `chrome.storage.local.set({threadMessagesPanel:false})`);
   browser('wait', '--fn', `!document.querySelector('${dock}')`);
   check(`document.querySelectorAll('[data-transcript-message-lookup-id]').length === 9`, 'opt-out removes only the extension dock');
