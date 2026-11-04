@@ -1,28 +1,58 @@
 # Version 1.4.0 submission checklist
 
-## Changes since 1.3.0
+## Release status
+
+Checked November 4, 2026:
+
+- **Public release: 1.3.0**, updated October 30 on the
+  [Chrome Web Store](https://chromewebstore.google.com/detail/amp-configurable-defaults/hpobhiphbifcjhplkegebmpiehkcpjod).
+  All 15 files in the downloaded store package match commit
+  [a535824](https://github.com/Tyru5/amp-configurable-defaults/commit/a5358243491143f77ccc6e7d0744756f2d97f18f),
+  after ignoring Google's added `update_url` manifest field.
+- **Next package: 1.4.0**, from `main`. It is not available from the public
+  store listing. The private dashboard's submission/review state has not been checked.
+- GitHub has an old, unpublished 1.0.0 draft, not a current public release.
+  Use the Web Store package as the released baseline, not that draft or the
+  version in `main`.
+
+Building or testing the package does not upload, submit, or publish it.
+
+## Unreleased changes in 1.4.0
 
 - Added a bottom-left Messages dock that lists incoming and outgoing thread
-  messages with delivery status, then slides into each message's full content
-  and a link to the original entry. It polls the open thread's page data every
-  five seconds only while open and visible, and can be turned off in Options.
+  messages with delivery status, relative times, attachment counts, and links.
+  Its redesigned list and message views resize to their content. The tab stays
+  hidden until messages exist. While the browser tab is visible, it checks the
+  current thread on load and transcript changes, at most once every five
+  seconds, even with the dock closed. While open, it also polls every five
+  seconds. Options can disable it.
 - Rendered subagent Task and Output sheets as formatted content (headings,
-  lists, code, links) instead of raw text.
-- Added expandable tool-call previews with Bash code blocks.
+  lists, code, links, tables) instead of raw text.
+- Added expandable first-five-row tool-call previews with Bash code blocks.
 - Added optional persistent message dates and times.
+- Added smooth scrolling and a temporary highlight when either reading panel
+  reveals the original transcript entry, with reduced-motion support.
 - Removed the **Hide sidebar footer** option. Amp's new sidebar layout moves
   navigation and the account menu to an icon rail and hides the footer itself.
 - Added the marquee promotional tile and refreshed store artwork notes.
-- Fixed the manifest description length so packaging validates the 132-character limit.
 
-## Changes since 1.2.0
+## Already released in 1.3.0
 
+- Sidebar placement, remembered right-side width, auxiliary views opposite
+  navigation, child-thread indentation, and native thread hover cards.
+- Independent feature switches, subagent lists and Task/Output reading sheets,
+  inline summaries, active-agent dots, tinted tool rows, and optional footer hiding.
 - Renamed the extension to amp configurable defaults and added a compact toolbar
   settings popup alongside the full Options page.
 - Added composer labels for the thread's model, runner or Orb, and explicit effort.
 - Added a floating, pinnable thread info orb with runner and working-directory details.
 - Added in-page thread split panes with drag-and-drop, keyboard shortcuts, and
   resizable dividers. Embedding uses a scoped, session-only framing/CSP exception.
+- Fixed the manifest description length and added packaging validation for its
+  132-character limit. This fix is already in the released baseline.
+
+Supporting website work already present when 1.3.0 shipped:
+
 - Added the landing page, theme choices, and privacy-redacted live screenshots.
 
 ## Prepared in this repository
@@ -37,25 +67,49 @@
   sheets on both sides, narrow layouts, thread hover cards, and tool disclosures.
 - Fixture checks of active-agent pulses, terminal states, and reduced motion.
 - Privacy-redacted live 1280 × 800 screenshots. See `screenshots/README.md`
-  for coverage, suggested uploads, and supplemental images that are fixtures.
+  for historical coverage and supplemental images that are fixtures.
+
+## Package verification on November 4, 2026
+
+- Built `dist/amp-configurable-defaults-1.4.0.zip`, 50,266 bytes, from the
+  runtime at [c8a5609](https://github.com/Tyru5/amp-configurable-defaults/commit/c8a5609ad9a79646c3c22d12ce3e4fd063d2d05c).
+  This preparation changes documentation and test synchronization only, not
+  packaged runtime files.
+- SHA-256: `0a743734bea25a468e730b921935e23cd157285334e41e515f733dcb77ec8ec1`.
+  The companion `.zip.sha256` file contains the same digest.
+- ZIP integrity, root manifest version, and all 17 packaged files match source.
+  The packaging tests confirm byte-for-byte reproducible builds.
+- JavaScript syntax, 13 Node tests, and 2 Python packaging tests passed.
+- Landing-page, main browser, and thread-message fixture suites passed.
+  Desktop and mobile release labels, installation copy, and the expanded
+  privacy FAQ were rendered and inspected.
+- The split-pane suite passed five consecutive runs after adding condition-based
+  waits for fixture readiness and the divider's horizontal orientation after
+  resizing. Its layout, frame identity, draft preservation, and other assertions
+  are unchanged. No fixed delays or runtime changes were needed.
+- These checks use local fixtures, not signed-in Amp. The live release checks
+  below remain open. No store upload or submission was performed in this preparation.
 
 ## Before uploading
 
+- [x] Fix the split-pane test's readiness waits and rerun the full release checks.
 - [ ] Review the embedded-thread framing/CSP exception and iframe remote-code
       disclosures against current Web Store policy before submission.
 - [ ] Smoke-test the final 1.4.0 ZIP on real, signed-in Amp. Earlier live checks
       in README.md do not replace testing this packaged release.
 - [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep
       fixture previews separately identified. No private content is published.
+- [ ] Refresh the historical screenshots for 1.4.0, including Messages and
+      formatted reading sheets. Do not advertise the removed master switch.
 - [ ] Repeat the final smoke test in current Google Chrome. Helium and fixture
       checks do not prove every Chrome/Amp layout combination. In particular,
       live Changes and Portal remain unchecked; Changes was disabled by Amp in
       the available release threads. Both are covered by fixture checks.
-- [ ] Confirm permission to use the new Amp-derived mark before submitting
+- [ ] Confirm permission to use the Amp-derived mark before submitting
       the extension icon and promo tile to the Web Store.
-- [ ] Confirm the publisher's Chrome Web Store developer account, registration,
-      required identity/contact verification, and 2-step verification are ready.
-- [ ] Read and accept the developer agreement and privacy certifications yourself.
+- [ ] Confirm access to the existing store item and resolve any account warnings.
+- [ ] Review the existing privacy declarations against 1.4.0's message and
+      timestamp access, and personally accept any required certifications.
 
 ## Build and upload
 
@@ -78,19 +132,23 @@ python3 scripts/package.py
 ```
 
 1. Open https://chrome.google.com/webstore/devconsole.
-2. Add a new item and upload `dist/amp-configurable-defaults-1.4.0.zip` directly.
-   Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
+2. Select the existing **amp configurable defaults** item,
+   `hpobhiphbifcjhplkegebmpiehkcpjod`, and upload
+   `dist/amp-configurable-defaults-1.4.0.zip` as an update. Do not create a second
+   listing. Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, `store/promo-small.png`
    and `store/promo-marquee.png` in their matching promotional tile fields, and
-   the suggested real screenshots in `store/screenshots/README.md`. Never upload
+   refreshed real screenshots following `store/screenshots/README.md`. Never upload
    the `fixture-*.png` images as live app screenshots. Check the listing preview.
-4. Set privacy practices and link the public privacy policy. Verify all URLs.
-5. Choose the countries and visibility you want. Resolve any dashboard warnings.
+4. Review privacy practices and link the public privacy policy. Verify all URLs.
+5. Preserve the existing countries and visibility unless intentionally changing
+   them. Resolve any dashboard warnings.
 6. Submit for review only after the live compatibility and screenshot checks
    above are complete. Prefer deferred/manual publishing if the dashboard offers
    it and you want to review approval before making the listing public.
+7. After 1.4.0 is publicly available, verify the store version and downloaded
+   package, then update the release status in this file, README, and landing page.
 
-Store review, approval, and publication have not been performed by this project.
 Sidebar placement is independent of other Options; there is no master switch.
 The eleven local preferences are documented in the privacy policy and listing.
 Existing defaults remain. Existing draft release screenshots have not been

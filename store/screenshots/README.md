@@ -6,7 +6,13 @@ and account details; task/output text is hidden. Pane positions are unchanged.
 These are layout evidence, not claims that every pictured auxiliary tool works
 end to end. No credentials or private thread content should be published.
 
-## Suggested five store uploads
+These are historical captures, not current 1.4.0 screenshots. The master switch
+shown in several images was removed before 1.3.0. Refresh the store set before
+submitting 1.4.0, including its Messages dock, formatted reading sheets, and
+current settings. Do not use the master-off or master-checkbox images to
+advertise the current release.
+
+## Historical store captures
 
 1. [Right sidebar and child hierarchy](right-sidebar.png). Native parent/child
    rows remain in their order; children are indented. The header master icon

@@ -6,7 +6,12 @@ to open a compact settings popup. The R/L badge shows the saved side. The
 choice applies to all open Amp tabs and survives browser restarts.
 
 Independent project, not affiliated with or endorsed by Amp. The code is MIT licensed.
-The Chrome Web Store release is in preparation, not published or approved.
+
+**Current public release: 1.3.0**, updated October 30, 2026 on the
+[Chrome Web Store](https://chromewebstore.google.com/detail/amp-configurable-defaults/hpobhiphbifcjhplkegebmpiehkcpjod).
+**Source and next package: 1.4.0**, not yet publicly released. This README
+describes the source version, including changes not in the store package.
+See the [release status, changes, and submission checklist](store/RELEASE.md).
 
 ![Live Amp with the sidebar on the right, the thread info orb pinned, and the model and runner in the composer. Private text redacted.](docs/assets/hero-live.webp)
 
@@ -20,6 +25,9 @@ See [GitHub Pages deployment](#github-pages-deployment) to publish the existing
 site directly from `docs/`. Hosting is not enabled by these files alone.
 
 ## Install locally
+
+These steps install the unreleased 1.4.0 source. For the current public 1.3.0
+release, use the Chrome Web Store link above.
 
 1. [Download the source ZIP](https://github.com/Tyru5/amp-configurable-defaults/archive/refs/heads/main.zip),
    clone this repository, or build a packaged ZIP below.
@@ -345,11 +353,13 @@ private text masked after capture; see `docs/assets/README.md`.
 - [Privacy policy](PRIVACY.md)
 - [440 × 280 promotional tile](store/promo-small.png)
 - [1400 × 560 marquee promotional tile](store/promo-marquee.png)
-- [Feature screenshots and suggested upload order](store/screenshots/README.md)
+- [Historical screenshots and refresh requirements](store/screenshots/README.md)
 
-Live, privacy-redacted 1280 × 800 captures are included. Finish the publisher
-account requirements and privacy certifications in the Web Store dashboard.
-Do not substitute the supplemental fixture images for real app screenshots.
+Upload 1.4.0 as an update to the existing store item, after completing its
+release checklist and reviewing the privacy declarations. Building the ZIP
+does not submit or publish it. Existing live, privacy-redacted 1280 × 800
+captures show older versions; refresh outdated images before submission.
+Do not substitute fixture images for real app screenshots.
 
 The transparent icon integrates adjustment sliders into stylized Amp-derived
 lettering to represent configurable defaults, not just sidebar placement.

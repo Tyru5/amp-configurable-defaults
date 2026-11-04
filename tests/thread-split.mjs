@@ -18,6 +18,8 @@ let tab;
 try {
   browser('tab', 'new', url);
   tab = browser('tab').tabs.find(t => t.active).tabId;
+  // The new tab's initial about:blank document is also complete, but has no fixture API.
+  browser('wait', '--fn', 'document.readyState === "complete" && Boolean(window.chrome?.storage?.local)');
   browser('set', 'viewport', '1280', '800');
   evaluate(`(async () => {
     await chrome.storage.local.set({right:true});
@@ -73,6 +75,8 @@ try {
   browser('press', 'Alt+Shift+ArrowRight');
   check(`${frame}===savedFrame && document.querySelector('[data-amp-thread-pane] [role=status]').textContent.includes('Close this split')`, 'another thread cannot replace an unsent split');
   browser('set', 'viewport', '600', '800');
+  // The media-query change event updates the divider after viewport emulation returns.
+  browser('wait', '--fn', `document.querySelector('${divider}').getAttribute('aria-orientation')==='horizontal'`);
   check(`${frame}===savedFrame && document.querySelector('${divider}').getAttribute('aria-orientation')==='horizontal' && ${frame}.getBoundingClientRect().bottom <= originalMain.getBoundingClientRect().top`, 'narrow window stacks the existing pane without reloading');
   browser('click', '[aria-label="Close thread split"]');
   check(`!${frame} && !window.ruleActive && document.querySelector('#message').value==='Primary draft stays here'`, 'close restores the primary pane and releases its rule');

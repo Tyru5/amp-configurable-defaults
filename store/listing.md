@@ -1,6 +1,8 @@
 # Chrome Web Store listing
 
-Submission copy for version 1.4.0. This file is not a claim of store approval.
+Draft update copy for unreleased version 1.4.0. The public store release is
+1.3.0 as of November 4, 2026. Apply this copy to the existing item when submitting
+the update; this file is not the live listing or a claim of store approval.
 
 ## Listing fields
 
@@ -30,11 +32,12 @@ Features:
 - Keep Files, Changes, Terminal, Desktop, and Portal opposite navigation.
 - Drag a sidebar thread to either edge to open a live second conversation in the same page.
 - Change sidebar placement without disabling other features.
-- Read subagent tasks and results in optional Task and Output reading sheets.
+- Read formatted subagent tasks and results in optional Task and Output reading sheets.
 - Keep expandable inline subagent summaries, even with the panel disabled.
 - Identify active subagents by pulsing dots, with reduced-motion support.
-- Read incoming and outgoing thread messages from a docked Messages tab with delivery status and links to the original entries.
-- Distinguish tool calls from prose with tinted disclosure rows.
+- Read incoming and outgoing thread messages from a docked Messages tab with delivery status and links to the original entries. The tab appears only when messages exist.
+- Jump from either reading panel to the original transcript entry with smooth scrolling and a highlight.
+- Preview long tool-call sections with five expandable rows and Bash code blocks.
 - See the thread's model and runner (or Orb) next to the composer's upload button.
 - Hover, focus, or pin a floating orb for the thread's title-bar details.
 - Optionally keep compact message dates and times always visible.
@@ -85,12 +88,16 @@ https://ampcode.com/threads/<id>/__data, the same same-origin request Amp's
 page makes, and keeps only the mode, model, executor, runner, and working
 directory, plus message IDs and timestamp metadata, in memory.
 The info orb reads details already in Amp's title bar.
-Opening the thread message dock separately requests the current thread's
-page data. It reads incoming thread-message text and sender IDs, outgoing
+The enabled thread message dock separately requests the current thread's page
+data, even while collapsed, to decide whether its tab should appear. While the
+browser tab is visible, it checks on thread load and transcript changes, at
+most once every five seconds. Opening the dock also refreshes the data.
+It reads incoming thread-message text and sender IDs, outgoing
 send_thread_message arguments, matching delivery results and errors, and
 attachment counts. Hidden text is excluded. Only the returned page is read;
 older pages and peer threads are not fetched. Requests refresh every five
-seconds while the dock is open and the tab visible. The cache stays in memory
+seconds while the dock is open and the tab visible. Closing it stops periodic
+polling, not checks triggered by transcript changes. The cache stays in memory
 and is discarded on navigation, reload, disabling the feature, or switching to
 mobile. It does not send messages or persist message content.
 It does not run on other sites or read credentials or browsing history.
@@ -109,9 +116,12 @@ website loads its own application code. Review this iframe behavior and the
 security exception against current store policy before certifying this field.
 
 Data usage:
-No user data is collected or transmitted. Leave collection-category checkboxes
-unchecked if these practices remain unchanged. The publisher must personally
-review and certify Google's data-use declarations before submission.
+No user data is sent to the developer or external collection services.
+The live 1.3.0 listing declares Personal communications and Website content.
+Review those existing declarations against the local processing and same-origin
+requests described above, including 1.4.0's thread messages and timestamps.
+Do not clear categories solely because there is no external collection.
+The publisher must personally review and certify Google's data-use declarations.
 
 ## Images
 
@@ -127,7 +137,8 @@ review and certify Google's data-use declarations before submission.
   They predate the composer label and info orb; the redacted live capture in
   `docs/assets/hero-live.webp` shows both but is not sized for the store.
   Conversation content, task/output content, thread titles, and account details
-  are hidden for privacy. See `screenshots/README.md` for the suggested five.
+  are hidden for privacy. Refresh outdated captures for 1.4.0, especially those
+  showing the removed master switch. See `screenshots/README.md` for coverage.
 - `fixture-*.png` and `docs/previews/` are labeled compatibility demonstrations,
   not real Amp screenshots. Do not use them as live app store screenshots.
 

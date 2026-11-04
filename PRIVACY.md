@@ -1,6 +1,9 @@
 # Privacy policy
 
-Effective November 1, 2026. Applies to amp configurable defaults version 1.4.0.
+Updated November 4, 2026 for the unreleased amp configurable defaults 1.4.0
+source and package. The current public Chrome Web Store release is 1.3.0;
+its [version-specific policy](https://github.com/Tyru5/amp-configurable-defaults/blob/a5358243491143f77ccc6e7d0744756f2d97f18f/PRIVACY.md)
+remains available. This page describes 1.4.0's behavior, not a claim of publication.
 
 ## What the extension does
 
@@ -40,7 +43,8 @@ sidebar resize gestures to apply the layout. It also reads subagent titles,
 statuses, and content already rendered by Amp to provide compact inline summaries.
 When a summary is expanded or the subagent panel is open, it expands
 native subagent disclosures as needed and displays their rendered task prompts,
-results, and errors (plain text in the reading sheet, native content inline).
+results, and errors. Reading sheets preserve Amp's rendered formatting and
+render plain-text task prompts as Markdown; native content remains inline.
 When **Show model and runner in the composer**, **Show thread info orb**, or
 **Always show message timestamps** is on, the extension requests
 the open thread's page data from `https://ampcode.com/threads/<id>/__data`, the
@@ -64,15 +68,20 @@ on thread navigation or page reload. Disabling the panel keeps inline summaries.
 prompts and output are never written to extension storage, browser storage,
 files, or a server. Only the eleven preferences above are persisted.
 
-Opening the **Messages** dock requests the current thread's same-origin page data
-using the existing Amp session. The dock reads incoming thread-message text
+When the **Messages** dock is enabled on desktop, it requests the current
+thread's same-origin page data using the existing Amp session, including while
+collapsed, to decide whether its tab should appear. While the browser tab is
+visible, checks run on thread load and transcript changes, at most once every
+five seconds. Opening the dock also requests fresh data.
+The dock reads incoming thread-message text
 and sender thread IDs, outgoing `send_thread_message` arguments, matching tool
 results and errors, and attachment counts. Hidden text blocks are excluded.
 It displays plain text, delivery status, and links; it never sends messages.
 Only the returned message page is read, without fetching older pages or other
 threads. While the dock is open and the tab visible, requests refresh every
-five seconds. Closing it stops its refresh requests. Disabling its setting or
-using a viewport below 768px removes the dock and stops its requests.
+five seconds. Closing it stops periodic polling, but transcript changes can
+still trigger checks. Disabling its setting or using a viewport below 768px
+removes the dock and stops its requests.
 Its temporary cache is discarded on thread navigation, reload, disabling the
 setting, or switching to mobile. Message content never enters persistent storage.
 
