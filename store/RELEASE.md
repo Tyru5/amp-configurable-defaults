@@ -10,7 +10,8 @@
   lists, code, links) instead of raw text.
 - Added expandable tool-call previews with Bash code blocks.
 - Added optional persistent message dates and times.
-- Kept Amp's native update alerts visible while the sidebar footer is hidden.
+- Removed the **Hide sidebar footer** option. Amp's new sidebar layout moves
+  navigation and the account menu to an icon rail and hides the footer itself.
 - Added the marquee promotional tile and refreshed store artwork notes.
 - Fixed the manifest description length so packaging validates the 132-character limit.
 
@@ -91,11 +92,10 @@ python3 scripts/package.py
 
 Store review, approval, and publication have not been performed by this project.
 Sidebar placement is independent of other Options; there is no master switch.
-The twelve local preferences are documented in the privacy policy and listing.
-Existing defaults remain, including footer hiding off. Existing draft release
-screenshots have not been replaced. Review the footer states, individual opt-outs,
-cross-tab changes, and recovery with both footer and header switch hidden before
-submission. Fixture checks do not prove signed-in Amp or native mobile-sheet behavior.
+The eleven local preferences are documented in the privacy policy and listing.
+Existing defaults remain. Existing draft release screenshots have not been
+replaced. Review individual opt-outs, cross-tab changes, and recovery with the
+header switch hidden before submission. Fixture checks do not prove signed-in Amp or native mobile-sheet behavior.
 Do not reuse a version number for a later store upload after it has been accepted;
 increment `manifest.json` and rebuild for subsequent updates.
 

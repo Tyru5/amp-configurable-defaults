@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm';
 const source = await readFile(new URL('../options.js', import.meta.url), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const features = ['right', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel', 'threadMessagesPanel', 'showComposerContext', 'infoOrb'];
-const optIns = ['hideSidebarFooter', 'showMessageTimestamps'];
+const optIns = ['showMessageTimestamps'];
 
 function options(search = '', openOptionsPage = async () => {}) {
   const controls = Object.fromEntries(['enabled', ...features, ...optIns, 'status', 'open-options'].map(id => [id, {
@@ -66,15 +66,14 @@ test('Options defaults opt-ins off, saves them, and restores them independently 
 test('pending initial read merges storage changes per preference, including removal', async () => {
   const app = options();
   app.external('right', false);
-  app.external('hideSidebarFooter', true, 'sync');
   app.external('showMessageTimestamps', true);
-  app.resolveRead({ right: true, hideSidebarFooter: true, showMessageTimestamps: false });
+  app.external('showMessageTimestamps', false, 'sync');
+  app.resolveRead({ right: true, showMessageTimestamps: false });
   await tick();
   assert.equal(app.controls.right.checked, false);
-  assert.equal(app.controls.hideSidebarFooter.checked, true);
   assert.equal(app.controls.showMessageTimestamps.checked, true);
-  app.external('hideSidebarFooter', undefined);
-  assert.equal(app.controls.hideSidebarFooter.checked, false);
+  app.external('showMessageTimestamps', undefined);
+  assert.equal(app.controls.showMessageTimestamps.checked, false);
   app.external('right', undefined);
   assert.equal(app.controls.right.checked, true);
 });
@@ -83,22 +82,22 @@ test('failed saves restore the prior checkbox unless another tab changed that pr
   const app = options();
   app.resolveRead({});
   await tick();
-  const footer = app.controls.hideSidebarFooter;
+  const timestamps = app.controls.showMessageTimestamps;
   app.setSave(() => Promise.reject(new Error('unavailable')));
-  footer.checked = true;
-  await footer.change();
-  assert.equal(footer.checked, false);
-  assert.equal(footer.disabled, false);
+  timestamps.checked = true;
+  await timestamps.change();
+  assert.equal(timestamps.checked, false);
+  assert.equal(timestamps.disabled, false);
   assert.match(app.controls.status.textContent, /Could not save/);
   let reject;
   app.setSave(() => new Promise((_, fail) => { reject = fail; }));
-  footer.checked = true;
-  const saving = footer.change();
-  assert.equal(footer.disabled, true);
-  app.external('hideSidebarFooter', true);
+  timestamps.checked = true;
+  const saving = timestamps.change();
+  assert.equal(timestamps.disabled, true);
+  app.external('showMessageTimestamps', true);
   reject(new Error('unavailable'));
   await saving;
-  assert.equal(footer.checked, true);
+  assert.equal(timestamps.checked, true);
 });
 
 test('failed reads keep all controls disabled and announce recovery', async () => {
@@ -135,10 +134,10 @@ test('every feature saves with right placement off, ignoring the legacy master s
 test('popup saves every setting, receives external changes, and opens the full Options page', async () => {
   let opened = false;
   const app = options('?popup', async () => { opened = true; });
-  app.resolveRead({ right: false, hideSidebarFooter: true });
+  app.resolveRead({ right: false, showMessageTimestamps: true });
   await tick();
   assert.equal(app.controls.right.checked, false);
-  assert.equal(app.controls.hideSidebarFooter.checked, true);
+  assert.equal(app.controls.showMessageTimestamps.checked, true);
   for (const key of [...features, ...optIns]) {
     const toggle = app.controls[key];
     const next = !toggle.checked;

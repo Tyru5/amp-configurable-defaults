@@ -25,27 +25,6 @@ try {
   browser('set', 'viewport', '1280', '800', '2');
   browser('eval', "localStorage.clear(); location.reload()");
   browser('wait', '--fn', "document.documentElement.hasAttribute('data-amp-sidebar-right')");
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display !== 'none'`, 'footer is visible by default');
-  const listHeight = evaluate(`document.querySelector('.sidebar-body').getBoundingClientRect().height`);
-  browser('eval', 'chrome.storage.local.set({ hideSidebarFooter: true })');
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none' && document.querySelector('.sidebar-body').getBoundingClientRect().bottom <= document.querySelector('[data-slot="sidebar-inner"]').getBoundingClientRect().bottom && document.querySelector('[data-amp-sidebar-toggle]').getBoundingClientRect().height > 0`, 'opt-in hides the whole footer without hiding threads or header controls');
-  check(`document.querySelector('[data-slot="sidebar-footer"]').getBoundingClientRect().height === 0 && document.querySelector('.sidebar-body').getBoundingClientRect().height > ${listHeight}`, 'hidden footer gives its layout space to the thread list');
-  for (const right of [true, false]) {
-    browser('eval', `chrome.storage.local.set({ right: ${right} })`);
-    for (const kind of ['reload', 'relaunch']) {
-      const update = `[data-testid="sidebar-${kind}-to-update"]`;
-      browser('eval', `document.querySelector('[data-slot="sidebar-footer"]').append(document.querySelector('#update-notice').content.cloneNode(true)); document.querySelector('[data-testid="sidebar-reload-to-update"]').dataset.testid = 'sidebar-${kind}-to-update'`);
-      check(`document.querySelector('${update}').checkVisibility() && document.querySelector('${update} span').checkVisibility() && document.querySelector('${update} kbd').checkVisibility()`, `${kind} update and its contents remain visible with the footer hidden on the ${right ? 'right' : 'left'}`);
-      check(`[...document.querySelectorAll('[aria-label="Footer navigation"], [href="#pinned"], [aria-label="Account"], [href="#update-sibling"], [data-slot="sidebar-footer"] hr')].every(el => !el.checkVisibility())`, 'update does not reveal unrelated footer rows or siblings inside its wrapper');
-      browser('focus', update);
-      browser('press', 'Enter');
-      check(`document.querySelector('${update}').dataset.activated === 'true' && document.querySelector('${update}').disabled && document.querySelector('${update} span').checkVisibility()`, 'native update handler and updating state remain available');
-      browser('eval', `chrome.storage.local.set({ hideSidebarFooter: false })`);
-      check(`[...document.querySelectorAll('[aria-label="Footer navigation"], [href="#pinned"], [aria-label="Account"], [href="#update-sibling"]')].every(el => el.checkVisibility())`, 'turning footer hiding off restores all rows while an update is present');
-      browser('eval', `chrome.storage.local.set({ hideSidebarFooter: true }); document.querySelector('[data-slot="sidebar-footer"] [data-slot="sidebar-menu"]').remove(); document.querySelector('[data-slot="sidebar-footer"] hr').remove()`);
-      check(`document.querySelector('[data-slot="sidebar-footer"]').getBoundingClientRect().height === 0`, 'removing the update hides the footer again without leaving empty space');
-    }
-  }
   browser('eval', 'chrome.storage.local.set({ right: true })');
   check(`(${bounds}).sidebar.x === 924 && (${bounds}).sidebar.width === 300`, 'right mode preserves native width and leaves the rail at the far right');
   check(`(${bounds}).main.x === 0 && (${bounds}).main.right === 924`, 'conversation fills remaining space without overlap');
@@ -85,7 +64,6 @@ try {
   check(`document.querySelector('#message').value === 'Keep this unsent draft' && getComputedStyle(document.querySelector('#view-pane')).direction === 'ltr'`, 'views retain text direction and the unsent draft');
   browser('click', '#switch');
   check(`(${bounds}).sidebar.x === 56 && (${bounds}).main.x === 356`, 'placement preference restores left layout');
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'footer preference works independently of sidebar side');
   check(`(${threadIndent('child')}) === 20`, 'left mode retains the independent indentation preference');
   check(`document.querySelector('#agent-pane').getBoundingClientRect().right <= document.querySelector('#view-pane').getBoundingClientRect().left`, 'left-sidebar mode restores views on the right');
   check(`document.querySelector('#message').value === 'Keep this unsent draft'`, 'switching preserves the composer draft');
@@ -102,12 +80,10 @@ try {
   browser('reload');
   browser('wait', '--fn', "document.documentElement.style.getPropertyValue('--amp-sidebar-right-width') === '380px'");
   check(`(${bounds}).sidebar.width === 380`, 'resized width survives reload');
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'footer preference survives reload');
   browser('select', '#view', 'Files');
   browser('click', '[data-amp-sidebar-toggle]');
   check(`document.querySelector('[role="switch"][aria-label="Move sidebar to the right"]').getAttribute('aria-checked') === 'false' && document.querySelector('[data-amp-sidebar-toggle]').title === 'Move sidebar to the right'`, 'header switch exposes left placement');
   check(`(${bounds}).sidebar.x === 56 && (${bounds}).sidebar.width === 300 && (${threadIndent('child')}) === 20`, 'header switch changes placement without disabling indentation');
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'header switch does not disable footer hiding');
   check(`document.querySelector('#agent-pane').getBoundingClientRect().right <= document.querySelector('#view-pane').getBoundingClientRect().left`, 'auxiliary views remain opposite left navigation');
   browser('click', '#switch');
   check(`JSON.parse(localStorage.getItem('extension-settings')).right === true && document.querySelector('[data-amp-sidebar-toggle]').getAttribute('aria-checked') === 'true'`, 'settings changes and header control the same placement preference');
@@ -131,13 +107,11 @@ try {
   browser('wait', '--fn', `(${threadIndent('grandchild')}) === 60`);
   check(`document.querySelector('[data-amp-sidebar-toggle]').getAttribute('aria-checked') === 'true' && document.querySelector('[data-amp-sidebar-toggle]').title === 'Move sidebar to the left'`, 'keyboard activation moves the sidebar right');
   check(`(${bounds}).sidebar.width === 380 && (${bounds}).sidebar.x === 844`, 'moving right restores saved width and keeps the hierarchy');
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'footer remains hidden after switching right');
   browser('select', '#view', 'Files');
   check(viewsOnLeft, 'moving right restores left-opening auxiliary views');
   browser('select', '#view', '');
   browser('click', '#replace');
   check(`(${bounds}).sidebar.x === 844`, 'new SPA shell inherits right position and saved width');
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'new SPA footer inherits hidden preference');
   browser('wait', '--fn', `(${threadIndent('grandchild')}) === 40`);
   check(`(${threadIndent('child')}) === 20`, 'replaced sidebar retains child indentation');
   for (const [distance, expected] of [[-300, 480], [400, 200]]) {
@@ -152,15 +126,6 @@ try {
   check(`(${bounds}).sidebar.width === 300`, 'double-click restores native width');
   browser('tab', 'new', url);
   browser('wait', '--fn', "document.documentElement.hasAttribute('data-amp-sidebar-right')");
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'new tabs restore the saved footer preference');
-  browser('eval', 'chrome.storage.local.set({ hideSidebarFooter: false })');
-  browser('tab', 't1');
-  browser('wait', '--fn', `getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display !== 'none'`);
-  check(`!document.documentElement.hasAttribute('data-amp-sidebar-hide-footer')`, 'restoring the footer propagates to an already open tab');
-  browser('eval', 'chrome.storage.local.set({ hideSidebarFooter: true })');
-  browser('tab', 't2');
-  browser('wait', '--fn', `getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`);
-  check(`document.documentElement.hasAttribute('data-amp-sidebar-hide-footer')`, 'hiding the footer propagates to an already open tab');
   browser('click', '#switch');
   browser('tab', 't1');
   check(`!document.documentElement.hasAttribute('data-amp-sidebar-right')`, 'side changes propagate to an already open tab');
@@ -168,7 +133,7 @@ try {
   browser('eval', 'chrome.storage.local.set({ enabled: false })');
   browser('tab', 't2');
   browser('wait', '--fn', "document.querySelector('[data-amp-sidebar-toggle]').getAttribute('aria-checked') === 'false'");
-  check(`(${threadIndent('child')}) === 20 && getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'legacy master preference cannot disable independent features');
+  check(`(${threadIndent('child')}) === 20`, 'legacy master preference cannot disable independent features');
   browser('click', '[data-amp-sidebar-toggle]');
   browser('tab', 't1');
   browser('wait', '--fn', "document.querySelector('[data-amp-sidebar-toggle]').getAttribute('aria-checked') === 'true'");
@@ -184,11 +149,9 @@ try {
   check(`getComputedStyle(document.querySelector('#thread-child')).marginInlineStart === '0px'`, 'mobile retains native row spacing');
   check(`getComputedStyle(document.querySelector('.thread-file-tab-pane-group')).flexDirection === 'row'`, 'mobile views retain their native layout');
   check(`getComputedStyle(document.querySelector('[data-amp-sidebar-toggle]')).display === 'none'`, 'desktop header switch leaves mobile sheets unchanged');
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display !== 'none'`, 'mobile footer remains native despite the saved hide preference');
   browser('set', 'viewport', '768', '800', '2');
   check(`getComputedStyle(document.querySelector('.app-content-frame')).flexDirection === 'row-reverse'`, 'desktop breakpoint applies at exactly 768px');
   check(viewsOnLeft, 'desktop view placement applies at exactly 768px');
-  check(`getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none'`, 'footer hiding starts at exactly 768px');
   browser('eval', `const group = document.querySelector('.thread-file-tab-pane-group'); group.dataset.direction = 'vertical'; group.style.flexDirection = 'column'`);
   check(`getComputedStyle(document.querySelector('.thread-file-tab-pane-group')).flexDirection === 'column'`, 'vertical view splits are not reversed');
 
@@ -324,7 +287,7 @@ try {
   browser('press', 'Escape');
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="panel"]').hidden === true`);
   check(`document.querySelector('[data-amp-subagents-ui="panel"]').hidden && document.activeElement.matches('[data-amp-subagents-ui="toggle"]')`, 'Escape closes the reading panel and returns focus to its toggle');
-  check(`Object.keys(JSON.parse(localStorage.getItem('extension-settings'))).every(key => ['enabled', 'right', 'rightWidth', 'hideSidebarFooter', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel', 'showComposerContext'].includes(key)) && !JSON.stringify({ ...localStorage, ...sessionStorage }).includes('THREAD_B_OUTPUT')`, 'agent tasks and output never enter browser storage');
+  check(`Object.keys(JSON.parse(localStorage.getItem('extension-settings'))).every(key => ['enabled', 'right', 'rightWidth', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel', 'showComposerContext'].includes(key)) && !JSON.stringify({ ...localStorage, ...sessionStorage }).includes('THREAD_B_OUTPUT')`, 'agent tasks and output never enter browser storage');
   browser('eval', `fixtureAgents.navigate('fixture-c'); fixtureAgents.add('visible', 'Same task', 'VISIBLE_TASK', 'delegated'); fixtureAgents.complete('visible', 'FIRST_RESULT'); fixtureAgents.add('unloaded', 'Same task', 'UNLOADED_TASK', 'delegated'); fixtureAgents.complete('unloaded', 'SECOND_RESULT'); document.querySelector('#fixture-agent-unloaded').remove()`);
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-list] > button')?.textContent.includes('Same task')`);
   check(`document.querySelectorAll('[data-amp-subagents-list] > button').length === 3`, 'distinct completion IDs stay separate when a same-title invocation is unloaded');
@@ -332,7 +295,7 @@ try {
   browser('wait', '--fn', `!document.querySelector('[data-amp-subagents-ui="toggle"]')`);
   check(`!document.querySelector('.thread-layout-panes').hasAttribute('data-amp-subagents-open')`, 'removing the last rendered agent releases the panel space');
 
-  browser('eval', `chrome.storage.local.set({ right: true, rightWidth: 380, hideSidebarFooter: true }); fixtureAgents.add('options', 'Settings test', 'Fixture task')`);
+  browser('eval', `chrome.storage.local.set({ right: true, rightWidth: 380 }); fixtureAgents.add('options', 'Settings test', 'Fixture task')`);
   browser('select', '#view', 'Files');
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="toggle"]') !== null`);
   browser('click', '[data-amp-subagents-ui="toggle"]');
@@ -373,10 +336,10 @@ try {
   browser('eval', 'chrome.storage.local.set({ showHeaderToggle: false, subagentPanel: false, moveViews: false, indentThreads: false })');
   browser('wait', '--fn', `!document.querySelector('[data-amp-sidebar-toggle]') && !document.querySelector('[data-amp-subagents-ui="toggle"]')`);
   browser('reload');
-  browser('wait', '--fn', `document.documentElement.hasAttribute('data-amp-sidebar-hide-footer')`);
-  check(`!document.querySelector('[data-amp-sidebar-toggle]') && (${threadIndent('child')}) === 0 && (${bounds}).sidebar.width === 300`, 'feature opt-outs persist after reload even with both footer and header switch hidden');
+  browser('wait', '--fn', `document.documentElement.hasAttribute('data-amp-sidebar-right')`);
+  check(`!document.querySelector('[data-amp-sidebar-toggle]') && (${threadIndent('child')}) === 0 && (${bounds}).sidebar.width === 300`, 'feature opt-outs persist after reload even with the header switch hidden');
   browser('eval', 'chrome.storage.local.set({ right: false })');
-  check(`(${bounds}).sidebar.x === 56 && getComputedStyle(document.querySelector('[data-slot="sidebar-footer"]')).display === 'none' && !document.querySelector('[data-amp-sidebar-toggle]')`, 'moving left preserves footer and header visibility preferences');
+  check(`(${bounds}).sidebar.x === 56 && !document.querySelector('[data-amp-sidebar-toggle]')`, 'moving left preserves the header switch preference');
   browser('eval', 'chrome.storage.local.set({ right: true })');
   check(`(${bounds}).sidebar.width === 300 && (${threadIndent('child')}) === 0 && !document.querySelector('[data-amp-sidebar-toggle]') && JSON.parse(localStorage.getItem('extension-settings')).rightWidth === 410`, 'moving right preserves all feature opt-outs and saved width');
   browser('tab', 't2');

@@ -9,11 +9,10 @@ const toggles = {
   showComposerContext: document.querySelector("#showComposerContext"),
   infoOrb: document.querySelector("#infoOrb"),
   showMessageTimestamps: document.querySelector("#showMessageTimestamps"),
-  hideSidebarFooter: document.querySelector("#hideSidebarFooter"),
 };
 const status = document.querySelector("#status");
 const changed = new Set();
-const checked = (key, value) => ["hideSidebarFooter", "showMessageTimestamps"].includes(key) ? value === true : value !== false;
+const checked = (key, value) => key === "showMessageTimestamps" ? value === true : value !== false;
 
 if (new URLSearchParams(location.search).has("popup")) {
   document.documentElement.classList.add("popup");

@@ -49,7 +49,7 @@
   let resize = null;
   let settingsReady = false;
   let settings = {};
-  const settingKeys = ["right", "rightWidth", "hideSidebarFooter",
+  const settingKeys = ["right", "rightWidth",
     "resizeSidebar", "moveViews", "indentThreads", "showHeaderToggle"];
 
   const sidebarSelector = '[data-slot="sidebar-container"]';
@@ -260,7 +260,6 @@
     updateHeader();
     indentThreads();
     if (!right || settings.moveViews === false) viewDrag = null;
-    root.toggleAttribute("data-amp-sidebar-hide-footer", settings.hideSidebarFooter === true);
     root.toggleAttribute("data-amp-sidebar-right", right);
     root.toggleAttribute("data-amp-sidebar-move-views", right && settings.moveViews !== false);
     root.toggleAttribute("data-amp-sidebar-indent", settings.indentThreads !== false);

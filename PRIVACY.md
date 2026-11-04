@@ -10,11 +10,10 @@ is not affiliated with or endorsed by Amp.
 
 ## Information stored on your device
 
-The extension uses twelve preferences in `chrome.storage.local`:
+The extension uses eleven preferences in `chrome.storage.local`:
 
 - `right`: whether the sidebar should appear on the right.
 - `rightWidth`: the selected right-sidebar width, or no custom width.
-- `hideSidebarFooter`: whether to hide the desktop footer. Defaults to false.
 - `resizeSidebar`: enable resizing and saved width in right-sidebar mode.
 - `moveViews`: keep auxiliary views opposite navigation.
 - `indentThreads`: indent child threads on either side.
@@ -25,11 +24,11 @@ The extension uses twelve preferences in `chrome.storage.local`:
 - `infoOrb`: show the floating thread info orb beside the conversation.
 - `showMessageTimestamps`: keep message times visible without holding Option/Alt. Defaults to false.
 
-All boolean preferences except `hideSidebarFooter` and `showMessageTimestamps` default to true. Each feature
+All boolean preferences except `showMessageTimestamps` default to true. Each feature
 can be turned off independently in Options. Changing sidebar placement preserves
 these choices and the saved width. Options remains reachable from the extension
-toolbar menu. Older installs may retain an unused `enabled` preference; it is no
-longer read or written.
+toolbar menu. Older installs may retain unused `enabled` and `hideSidebarFooter`
+preferences; they are no longer read or written.
 
 These preferences remain in your local Chrome profile. The extension does not
 use Chrome's sync storage or transmit these preferences to the developer.
@@ -63,7 +62,7 @@ This reading panel keeps a temporary, in-memory view for the current thread,
 including the last visible content when Amp unmounts an entry. It is discarded
 on thread navigation or page reload. Disabling the panel keeps inline summaries. Task
 prompts and output are never written to extension storage, browser storage,
-files, or a server. Only the twelve preferences above are persisted.
+files, or a server. Only the eleven preferences above are persisted.
 
 Opening the **Messages** dock requests the current thread's same-origin page data
 using the existing Amp session. The dock reads incoming thread-message text
@@ -84,9 +83,6 @@ message contents, composer drafts,
 account details, passwords, authentication tokens, or browsing history. It
 does not alter or submit thread data. Closing the panel collapses disclosures
 it expanded, except those the user chose to reveal inline.
-The optional footer setting hides the existing footer wrapper with CSS. It
-does not read the account row or pinned shortcut contents. Uncheck **Hide sidebar
-footer** in extension Options to restore it. Mobile footers are unchanged.
 
 ## Embedded-thread security exception
 

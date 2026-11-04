@@ -96,7 +96,6 @@ These features have independent checkboxes in **Options**:
 | Show model and runner in the composer     | On      | Composer unchanged; info orb and timestamps can still load data  |
 | Show thread info orb                      | On      | No floating orb; title-bar details stay in Amp's title bar        |
 | Always show message timestamps            | Off     | Native Option/Alt timestamp behavior                              |
-| Hide sidebar footer                       | Off     | Native footer visible                                             |
 
 **Always show message timestamps** keeps a compact, aligned date and time above
 each user and assistant message, including while you type. Hover for the
@@ -113,17 +112,6 @@ Amp's existing collapse/expand controls remain available
 and follow sidebar placement. The subagent panel works on either side, independently
 of auxiliary-view placement, and starts closed after being re-enabled.
 
-In **Options**, check **Hide sidebar footer** to hide the whole desktop bottom
-section: Puck, Activity, Projects, the app grid, pinned shortcuts, and the
-account row. The footer is visible by default in both left and right modes.
-When an update is available, Amp's native **Reload to Update** alert remains
-visible and usable in the sidebar; the other footer rows stay hidden. Once the
-update alert is removed, the footer is fully hidden again.
-Thread lists and header controls stay available. Uncheck the option to restore
-the footer. Options is always reachable by right-clicking the browser's extension
-toolbar icon, even while the footer is hidden. Changing sidebar placement does
-not change footer visibility. The choice applies across open Amp tabs and
-survives browser restarts. Mobile below 768px keeps its native footer.
 Subagent activity always has a compact inline summary. Click it to expand the
 original Amp content, including when the optional panel is disabled or on mobile.
 Running and delegated agents have a gently pulsing status dot; completed,
@@ -229,7 +217,7 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 
 Permissions: `storage` for local preferences, plus
 `declarativeNetRequestWithHostAccess` and access to `https://ampcode.com/*` for
-the embedded-thread security exception. The twelve stored keys are listed in the
+the embedded-thread security exception. The eleven stored keys are listed in the
 privacy policy. The content script runs only on Amp. Network activity includes
 the optional same-origin thread data requests and the embedded Amp page's normal
 requests. The extension does not collect analytics or submit thread data;
@@ -320,13 +308,9 @@ Selectors were checked against Amp's publicly served app assets on 2026-10-23.
 Amp's layout is not a public API, so a future site update may require adjusting
 `sidebar.css` or the divider selector in `content.js`.
 
-The footer selector was inspected in signed-in Helium on 2026-10-24:
-`[data-slot="sidebar-container"] [data-slot="sidebar-footer"]` contains all
-three footer rows. Hiding it uses desktop-only CSS without moving app nodes.
-
 Automated browser verification uses a local fixture based on the current app
 markup. It covers switching sides, storage changes, resizing, collapse/reopen,
-dynamic shell replacement, footer visibility and cross-tab preferences, the
+dynamic shell replacement, cross-tab preferences, the
 mobile breakpoint, independent feature opt-outs, and subagent selection,
 streaming text, completion, duplicate descriptions, and inline restoration.
 Hover checks reproduce Amp's native overflow-close guard and cover mouse and

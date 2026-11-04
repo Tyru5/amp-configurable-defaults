@@ -30,7 +30,6 @@ Features:
 - Keep Files, Changes, Terminal, Desktop, and Portal opposite navigation.
 - Drag a sidebar thread to either edge to open a live second conversation in the same page.
 - Change sidebar placement without disabling other features.
-- Optionally hide the whole desktop sidebar footer from Options, visible by default.
 - Read subagent tasks and results in optional Task and Output reading sheets.
 - Keep expandable inline subagent summaries, even with the panel disabled.
 - Identify active subagents by pulsing dots, with reduced-motion support.
@@ -44,8 +43,7 @@ Features:
 Options has independent checkboxes for right-side placement, right-side
 resizing, auxiliary-view placement, child-thread indentation, header-switch
 visibility, subagent panel, thread messages, composer model and runner, thread info orb,
-persistent message timestamps, and footer hiding. All default on except footer
-hiding and persistent timestamps. Turning off resizing restores native width without erasing the saved
+and persistent message timestamps. All default on except persistent timestamps. Turning off resizing restores native width without erasing the saved
 width. Collapse/expand stays native. Placement changes preserve every preference.
 
 After installing, pin the extension and refresh any open Amp tabs. The toolbar
@@ -67,12 +65,12 @@ Independent project. Not affiliated with or endorsed by Amp.
 
 Single purpose:
 Customize Amp's desktop reading layout: position navigation on either side,
-resize the right sidebar, optionally hide its footer, read subagent activity
+resize the right sidebar, read subagent activity
 opposite it, read thread communication, and show the open thread's model, runner, and title-bar details.
 
 Storage permission justification:
-The storage permission saves twelve preferences in chrome.storage.local:
-right, rightWidth, hideSidebarFooter, resizeSidebar, moveViews, indentThreads,
+The storage permission saves eleven preferences in chrome.storage.local:
+right, rightWidth, resizeSidebar, moveViews, indentThreads,
 showHeaderToggle, subagentPanel, threadMessagesPanel, showComposerContext, infoOrb, and showMessageTimestamps. They apply to open Amp tabs and survive
 browser restarts. No page contents or personal data are persisted.
 
@@ -144,13 +142,9 @@ the divider, or double-click it to reset width. On a thread with subagent
 activity, click Subagents in the conversation header to open its reading
 panel. Hover or focus Task/Output to preview, click to pin, or choose View original
 to reveal native content. Inline summaries remain available with the panel closed.
-Right-click the extension toolbar icon and choose Options for **Hide sidebar
-footer**. It hides bottom navigation, pinned shortcuts, and the account row on
-desktop, independently of sidebar side. Uncheck it in Options to restore them.
-Mobile footers are unchanged. No account or shortcut contents are read by this setting.
-Options also controls each other feature independently. To test recovery, turn
-off the header-switch setting while hiding the footer, then use the extension's
-right-click Options menu to restore either. Feature choices remain editable
+Options controls each feature independently. To test recovery, turn
+off the header-switch setting, then use the extension's right-click Options
+menu to restore it. Feature choices remain editable
 with right placement off. Left-side resizing stays native; indentation is independent.
 
 If the dashboard requests access instructions, provide the normal Amp sign-in
