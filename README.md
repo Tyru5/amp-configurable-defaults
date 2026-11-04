@@ -160,7 +160,8 @@ completion. Results with duplicate task descriptions appear separately rather
 than risk attaching them to the wrong agent.
 
 A teal **Messages** tab sits in the workspace's bottom-left corner, like a social
-messaging dock. Clicking it opens the conversation list above the tab: each entry
+messaging dock. It appears only once the thread has a message to or from another
+thread; threads without one show no tab. Clicking it opens the conversation list above the tab: each entry
 shows the other thread, a direction mark, how long ago it arrived, and a delivery
 chip on sends. Choosing an entry slides to that message: its text, delivery time,
 attachment count, and link to the other thread, with a back control to return to
@@ -172,8 +173,10 @@ subagent panel, this dock does not replace inline activity or expand native
 disclosures. The slide and the glide respect reduced-motion preferences; the
 highlight only changes color.
 
-Opening it requests the current thread's same-origin page data using your Amp
-session. While open and visible it refreshes every five seconds. Sends stay
+To decide whether to show the tab, the extension requests the current thread's
+same-origin page data using your Amp session, at most once every five seconds
+while the transcript changes and the tab is visible. While open it refreshes every
+five seconds. Sends stay
 **Pending** until their matching tool result confirms **Sent** or **Failed**.
 Calls with identical text stay separate. Only the returned page of messages is
 read; older history and other threads are not fetched. Previously seen entries

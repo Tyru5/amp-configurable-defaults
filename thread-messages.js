@@ -110,6 +110,7 @@
   function teardown() {
     if (!state) return;
     clearTimeout(state.poll);
+    clearTimeout(state.next);
     state.abort?.abort();
     state.dock.remove();
     state = undefined;
@@ -120,6 +121,8 @@
     // conversation list; choosing an entry slides to that message.
     const dock = document.createElement("aside");
     dock.dataset.ampThreadMessagesUi = "dock";
+    // Stays hidden until the thread has a message with another thread.
+    dock.hidden = true;
     dock.dataset.view = "collapsed";
     dock.setAttribute("aria-label", "Thread messages");
     const panel = document.createElement("div");
@@ -249,9 +252,10 @@
   function render() {
     if (!state) return;
     const s = state;
+    s.dock.hidden = !s.items.size;
     write(s.count, String(s.items.size));
     s.count.hidden = !s.items.size;
-    write(s.notice, s.failed ? "Couldn't load messages. Close and reopen to retry." : s.loading && !s.items.size ? "Loading messages…" : "");
+    write(s.notice, s.failed ? "Couldn't load messages. Close and reopen to retry." : "");
     s.notice.hidden = !s.notice.textContent;
     for (const [key, entry] of s.items) {
       if (!entry.button) {
@@ -285,16 +289,7 @@
       write(preview, compact.length > 70 ? `${compact.slice(0, 70).replace(/\s+\S*$/, "")}…` : compact || "No message text");
       entry.button.setAttribute("aria-pressed", String(s.selected === key));
     }
-    s.detail.hidden = !s.items.size;
-    if (!s.items.size) {
-      if (!s.loading && !s.failed) {
-        write(s.notice, "No messages with other threads on this page.");
-        s.notice.hidden = false;
-      }
-      if (s.view !== "list") show("list");
-      fit();
-      return;
-    }
+    if (!s.items.size) return;
     if (!s.items.has(s.selected)) {
       s.selected = s.items.keys().next().value;
       s.items.get(s.selected).button.setAttribute("aria-pressed", "true");
@@ -366,8 +361,19 @@
     if (state && (state.host !== host || state.id !== transcript.dataset.threadId)) teardown();
     if (!state) state = create(host, transcript.dataset.threadId);
     if (state.dock.parentElement !== host) host.append(state.dock);
-    if (!state.panel.hidden && (!state.at || Date.now() - state.at >= 5000)) refreshData();
-    else render();
+    // The page is checked even while collapsed, so the tab appears once a message
+    // exists. Transcript changes refresh at most every five seconds, with a
+    // trailing check so the last change in a burst is not missed.
+    const wait = state.loading ? 5000 : 5000 - (Date.now() - state.at);
+    if (wait <= 0) refreshData();
+    else {
+      render();
+      const s = state;
+      s.next ??= setTimeout(() => {
+        s.next = null;
+        schedule();
+      }, wait);
+    }
   }
 
   function schedule() {

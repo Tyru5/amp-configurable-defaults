@@ -422,7 +422,7 @@ try {
   check(`!document.querySelector('[data-sidebar-touch-preview]') && !document.querySelector('${card}')`, 'mobile breakpoint restores native hover behavior');
   browser('set', 'viewport', '1280', '800');
   // Let desktop controls finish remounting before starting a native hover timer.
-  browser('wait', '[data-amp-thread-messages-ui="toggle"]');
+  browser('wait', '--fn', `document.querySelector('[data-amp-thread-messages-ui="dock"]') !== null`);
   browser('hover', '#thread-parent a');
   browser('wait', '--fn', `document.querySelector('${card}') !== null`);
   browser('eval', `document.querySelector('#thread-parent a').dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, pointerType:'touch'}))`);
@@ -492,6 +492,8 @@ try {
   browser('set', 'viewport', '1280', '800', '2');
   const context = `[data-message-composer-root] [aria-label="Attachments"] > span:has(> input[type="file"]) + [data-amp-composer-context]`;
   const contextText = `[...document.querySelectorAll('${context} [data-amp-composer-context-item]')].map(e => e.textContent).join(' | ')`;
+  // The Messages dock also reads thread data; turn it off so request counts measure the composer and orb only.
+  browser('eval', 'chrome.storage.local.set({ threadMessagesPanel: false })');
   browser('eval', `fixtureAgents.navigate('fixture-a')`);
   browser('wait', '--fn', `(${contextText}).includes('tiru5-macbook-pro')`);
   check(`(${contextText}) === 'claude-opus-5-5 | tiru5-macbook-pro'`, 'composer shows the latest top-level model, not a subagent or older reply, and the runner name beside the upload button');

@@ -34,8 +34,7 @@ const setup = String.raw`(() => {
       message: 'Restart now keeps the signed-in window open. The bridge shuts down cleanly.\n\nRegression checks pass. Windows and Linux remain untested.', media_paths: ['evidence.png'] } },
   ] });
   const result = (id, run) => ({ role: 'user', messageId: id + '-result', content: [{ type: 'tool_result', toolUseID: id, run }] });
-  window.messageFixture = { parent, child, result };
-  fixtureThreadData['fixture-a'].transcriptPage.messages = [incoming,
+  const messages = [incoming,
     { role: 'user', messageId: 'human', content: [{ type: 'text', text: 'This human message mentions send_thread_message and ' + child }] },
     { ...incoming, messageId: 'nested', parentToolUseId: 'subagent' },
     { ...incoming, messageId: 'puck', meta: { fromExecutorThreadID: parent, fromPuck: true } },
@@ -43,7 +42,9 @@ const setup = String.raw`(() => {
     result('sent', { status: 'done', result: { threadID: parent } }),
     result('failed', { status: 'error', error: 'File too large to upload. The message was not sent.' }),
   ];
-  for (const message of fixtureThreadData['fixture-a'].transcriptPage.messages) {
+  window.messageFixture = { parent, child, result, messages };
+  fixtureThreadData['fixture-a'].transcriptPage.messages = messages;
+  for (const message of messages) {
     const row = document.createElement('div');
     row.dataset.transcriptMessageLookupId = message.messageId;
     row.textContent = 'Native transcript entry: ' + message.messageId;
@@ -55,15 +56,17 @@ try {
   browser('open', url);
   browser('set', 'viewport', '1280', '800', '2');
   browser('eval', 'localStorage.clear(); location.reload()');
-  browser('wait', toggle);
+  browser('wait', '--fn', `document.querySelector('${dock}') && fixtureThreadRequests.length > 0`);
+  check(`document.querySelector('${dock}').hidden && !document.querySelector('${dock}').checkVisibility()`, 'a thread without messages to other threads shows no tab');
   browser('eval', setup);
-  const before = evaluate('fixtureThreadRequests.length');
-  check(`document.querySelector('${panel}').hidden && ${view} === 'collapsed' && !document.querySelector('.app-title-bar [data-amp-thread-messages-ui]')`, 'starts as a collapsed tab without fetching message content');
+  browser('wait', '--fn', `document.querySelector('${toggle}').checkVisibility()`);
+  check(`document.querySelector('${panel}').hidden && ${view} === 'collapsed' && !document.querySelector('.app-title-bar [data-amp-thread-messages-ui]')`, 'the tab appears collapsed once the thread has messages');
   check(`(() => { const d = document.querySelector('${dock}').getBoundingClientRect(), p = document.querySelector('.thread-layout-panes').getBoundingClientRect();
     return Math.abs(d.left - p.left - 12) < 1 && Math.abs(p.bottom - d.bottom - 12) < 1 && d.width < 200 && d.height < 56; })()`, 'the tab is docked in the workspace bottom-left corner');
+  const before = evaluate('fixtureThreadRequests.length');
   browser('click', toggle);
   browser('wait', '--fn', `document.querySelectorAll('${list} > button').length === 4`);
-  check(`fixtureThreadRequests.length === ${before + 1} && ${view} === 'list'`, 'opening reads only the current thread page and shows the conversation list');
+  check(`fixtureThreadRequests.length > ${before} && fixtureThreadRequests.slice(${before}).every(r => r.id === 'fixture-a') && ${view} === 'list'`, 'opening reads only the current thread page and shows the conversation list');
   check(`document.querySelector('${toggle}').textContent.includes('4') && document.querySelector('[data-amp-thread-messages-view="message"]').inert`, 'the tab counts loaded messages and the message view is inert behind the list');
   // The track animates its height; wait for it to land on the shown view's content height.
   const fitted = name => `Math.abs(document.querySelector('${track}').getBoundingClientRect().height - document.querySelector('[data-amp-thread-messages-view="${name}"] > div').offsetHeight) < 1`;
@@ -100,6 +103,7 @@ try {
   browser('eval', `fixtureThreadData['fixture-a'].transcriptPage.messages = [messageFixture.result('pending', {status:'done'})]`);
   browser('wait', '--fn', `document.querySelector('${panel} header > p').textContent === 'Sent'`);
   check(`document.querySelectorAll('${list} > button').length === 4`, 'late results update cached calls after they leave the data page');
+  browser('eval', `fixtureThreadData['fixture-a'].transcriptPage.messages = messageFixture.messages`);
   browser('press', 'Escape');
   check(`document.querySelector('${panel}').hidden && ${view} === 'collapsed' && document.activeElement.matches('${toggle}')`, 'Escape collapses the dock and restores keyboard focus');
   browser('eval', `chrome.storage.local.set({right:false})`);
@@ -147,16 +151,14 @@ try {
   browser('wait', toggle);
   check(`document.querySelector('${panel}').hidden`, 're-enabling starts collapsed');
   browser('eval', `document.querySelector('[data-thread-id]').dataset.threadId = 'fixture-b'`);
-  browser('wait', '--fn', `${view} === 'collapsed'`);
-  browser('click', toggle);
-  browser('wait', '--fn', `document.querySelector('${panel}').textContent.includes('No messages with other threads')`);
-  check(`!document.querySelector('${panel}').textContent.includes('Regression checks') && ${view} === 'list' && document.querySelector('[data-amp-thread-messages-count]').hidden`, 'navigation clears cached thread message content and the count');
-  if (process.env.CAPTURE_DIR) browser('screenshot', process.env.CAPTURE_DIR + '/thread-messages-empty.png');
+  const requested = id => `fixtureThreadRequests.some(r => r.id === '${id}') && !document.querySelector('${dock}').checkVisibility()`;
+  browser('wait', '--fn', requested('fixture-b'));
+  check(`!document.querySelector('${panel}').textContent.includes('Regression checks') && document.querySelector('[data-amp-thread-messages-count]').hidden`, 'navigating to a thread without messages hides the tab and clears cached content');
   browser('eval', `document.querySelector('[data-thread-id]').dataset.threadId = 'fixture-missing'`);
-  browser('wait', '--fn', `${view} === 'collapsed'`);
-  browser('click', toggle);
-  browser('wait', '--fn', `document.querySelector('${panel}').textContent.includes("Couldn't load")`);
-  check(`document.querySelector('${panel} section').hidden`, 'failed page load does not show stale messages');
+  browser('wait', '--fn', requested('fixture-missing'));
+  check(`document.querySelector('${dock}').hidden && !document.querySelector('${panel}').textContent.includes('Regression checks')`, 'failed page load shows no tab and no stale messages');
+  browser('eval', `document.querySelector('[data-thread-id]').dataset.threadId = 'fixture-a'`);
+  browser('wait', toggle);
   browser('set', 'viewport', '767', '800', '2');
   browser('wait', '--fn', `!document.querySelector('${dock}')`);
   browser('set', 'viewport', '768', '800', '2');
@@ -164,8 +166,6 @@ try {
   check(`document.querySelector('${panel}').hidden`, 'mobile remains native and the desktop boundary restores a collapsed tab');
   check(`Object.keys(JSON.parse(localStorage.getItem('extension-settings'))).every(key => ['right','threadMessagesPanel'].includes(key))`, 'only preferences are persisted, never thread content');
   browser('eval', `(() => {
-    document.querySelector('[data-thread-id]').dataset.threadId = 'fixture-a';
-    fixtureThreadData['fixture-a'].transcriptPage.messages = [];
     window.pollRequests = [];
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {

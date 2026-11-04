@@ -711,6 +711,7 @@
     font: 13px/1.5 system-ui, sans-serif;
     font-variant-numeric: tabular-nums;
   }
+  [data-amp-thread-messages-ui="dock"][hidden] { display: none; }
   [data-amp-thread-messages-ui="dock"] ::selection { background: color-mix(in srgb, var(--amp-message-accent) 28%, transparent); }
   [data-amp-thread-messages-ui="dock"]:not([data-view="collapsed"]) {
     width: min(380px, calc(100% - 24px));
