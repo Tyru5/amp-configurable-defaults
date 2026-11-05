@@ -385,7 +385,7 @@ try {
   check(`!document.querySelector('[data-sidebar-touch-preview]') && !document.querySelector('${card}')`, 'mobile breakpoint restores native hover behavior');
   browser('set', 'viewport', '1280', '800');
   // Let desktop controls finish remounting before starting a native hover timer.
-  browser('wait', '--fn', `document.querySelector('[data-amp-thread-messages-ui="dock"]') !== null`);
+  browser('wait', '--fn', `document.querySelector('[data-amp-thread-messages-ui="toggle"]') !== null`);
   browser('hover', '#thread-parent a');
   browser('wait', '--fn', `document.querySelector('${card}') !== null`);
   browser('eval', `document.querySelector('#thread-parent a').dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, pointerType:'touch'}))`);

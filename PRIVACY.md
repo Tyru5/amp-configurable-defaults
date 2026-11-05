@@ -22,7 +22,7 @@ The extension uses eleven preferences in `chrome.storage.local`:
 - `indentThreads`: indent child threads on either side.
 - `showHeaderToggle`: show the sidebar placement switch in the sidebar header.
 - `subagentPanel`: offer the subagent reading panel.
-- `threadMessagesPanel`: offer the read-only thread message dock.
+- `threadMessagesPanel`: offer the read-only thread message control.
 - `showComposerContext`: show the thread's model and runner in the composer.
 - `infoOrb`: show the floating thread info orb beside the conversation.
 - `showMessageTimestamps`: keep message times visible without holding Option/Alt. Defaults to false.
@@ -68,20 +68,21 @@ on thread navigation or page reload. Disabling the panel keeps inline summaries.
 prompts and output are never written to extension storage, browser storage,
 files, or a server. Only the eleven preferences above are persisted.
 
-When the **Messages** dock is enabled on desktop, it requests the current
+When the thread message control is enabled on desktop, it requests the current
 thread's same-origin page data using the existing Amp session, including while
-collapsed, to decide whether its tab should appear. While the browser tab is
+closed, to decide whether it should appear. While the browser tab is
 visible, checks run on thread load and transcript changes, at most once every
-five seconds. Opening the dock also requests fresh data.
-The dock reads incoming thread-message text
+five seconds. Opening its popover also requests fresh data.
+It reads incoming thread-message text
 and sender thread IDs, outgoing `send_thread_message` arguments, matching tool
 results and errors, and attachment counts. Hidden text blocks are excluded.
 It displays plain text, delivery status, and links; it never sends messages.
-Only the returned message page is read, without fetching older pages or other
-threads. While the dock is open and the tab visible, requests refresh every
+Only the returned message page is read, without fetching older pages. After
+the popover is first opened, it reads each other thread's page data once to
+show that thread's title; nothing else from it is used or kept. While the popover is open and the tab visible, requests refresh every
 five seconds. Closing it stops periodic polling, but transcript changes can
 still trigger checks. Disabling its setting or using a viewport below 768px
-removes the dock and stops its requests.
+removes the control and stops its requests.
 Its temporary cache is discarded on thread navigation, reload, disabling the
 setting, or switching to mobile. Message content never enters persistent storage.
 

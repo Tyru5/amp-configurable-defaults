@@ -74,9 +74,23 @@
 
   // The list and the message sit side by side in a sliding track, so the track
   // takes the height of the view being shown rather than the taller of the two.
+  function isOpen() {
+    return !!state?.panel.matches(":popover-open");
+  }
+
+  // The popover opens upward from its composer control, left-aligned with it and
+  // kept inside the window.
+  function place() {
+    const s = state;
+    const anchor = s.toggle.getBoundingClientRect();
+    const left = Math.max(8, Math.min(anchor.left - 4, innerWidth - s.panel.offsetWidth - 8));
+    s.panel.style.left = `${Math.round(left)}px`;
+    s.panel.style.bottom = `${Math.round(innerHeight - anchor.top + 6)}px`;
+  }
+
   function fit() {
     const s = state;
-    if (!s || s.panel.hidden) return;
+    if (!s || !isOpen()) return;
     const content = (s.view === "message" ? s.detail : s.listView).firstElementChild;
     const height = `${content.offsetHeight}px`;
     if (s.track.style.height !== height) s.track.style.height = height;
@@ -85,26 +99,33 @@
   function show(view) {
     const s = state;
     s.view = view;
-    s.dock.dataset.view = view;
+    s.panel.dataset.view = view;
     s.listView.inert = view !== "list";
     s.detail.inert = view !== "message";
     fit();
   }
 
-  function open() {
+  // The popover's toggle event drives both states, so the control, Escape, and
+  // clicks elsewhere (light dismiss) all open and close it the same way.
+  function opened() {
     const s = state;
-    s.panel.hidden = false;
     s.toggle.setAttribute("aria-expanded", "true");
+    s.wasOpened = true;
+    loadTitles(s);
+    place();
     show(s.view);
     refreshData();
   }
 
+  function closed() {
+    const s = state;
+    clearTimeout(s.poll);
+    s.toggle.setAttribute("aria-expanded", "false");
+    if (s.panel.contains(document.activeElement) || document.activeElement === document.body) s.toggle.focus({ preventScroll: true });
+  }
+
   function close() {
-    if (!state) return;
-    clearTimeout(state.poll);
-    state.panel.hidden = true;
-    state.dock.dataset.view = "collapsed";
-    state.toggle.setAttribute("aria-expanded", "false");
+    if (isOpen()) state.panel.hidePopover();
   }
 
   function teardown() {
@@ -112,33 +133,41 @@
     clearTimeout(state.poll);
     clearTimeout(state.next);
     state.abort?.abort();
-    state.dock.remove();
+    state.titleAbort.abort();
+    state.toggle.remove();
+    state.panel.remove();
     state = undefined;
   }
 
   function create(host, id) {
-    // A docked tab in the workspace's bottom-left corner. Opening it reveals the
-    // conversation list; choosing an entry slides to that message.
-    const dock = document.createElement("aside");
-    dock.dataset.ampThreadMessagesUi = "dock";
-    // Stays hidden until the thread has a message with another thread.
-    dock.hidden = true;
-    dock.dataset.view = "collapsed";
-    dock.setAttribute("aria-label", "Thread messages");
-    const panel = document.createElement("div");
+    // A quiet control in the composer toolbar, beside the model and runner. It
+    // opens a popover above the composer with the conversation list; choosing an
+    // entry slides to that message.
+    const panel = document.createElement("section");
     panel.id = `amp-thread-messages-${++sequence}`;
     panel.dataset.ampThreadMessagesUi = "panel";
-    panel.hidden = true;
-    const toggle = button("", () => (panel.hidden ? open() : close()));
+    panel.dataset.view = "list";
+    panel.popover = "auto";
+    panel.setAttribute("aria-label", "Thread messages");
+    const toggle = button("", () => {});
     toggle.dataset.ampThreadMessagesUi = "toggle";
+    // Stays hidden until the thread has a message with another thread.
+    toggle.hidden = true;
+    toggle.popoverTargetElement = panel;
     toggle.setAttribute("aria-controls", panel.id);
     toggle.setAttribute("aria-expanded", "false");
-    const label = document.createElement("strong");
-    label.textContent = "Messages";
+    toggle.title = "Messages with other threads";
     const count = document.createElement("span");
     count.dataset.ampThreadMessagesCount = "";
-    count.hidden = true;
-    toggle.append(icon("bubble"), label, count, icon("chevronUp"));
+    toggle.append(icon("bubble"), count);
+    const title = document.createElement("header");
+    title.dataset.ampThreadMessagesTitle = "";
+    const titleText = document.createElement("strong");
+    titleText.textContent = "Thread messages";
+    const scope = document.createElement("span");
+    scope.dataset.ampThreadMessagesScope = "";
+    scope.textContent = "Loaded on this page";
+    title.append(titleText, scope);
     const track = document.createElement("div");
     track.dataset.ampThreadMessagesTrack = "";
     // Each view scrolls its own content block; the block's height sizes the track.
@@ -152,10 +181,7 @@
     list.dataset.ampThreadMessagesList = "";
     list.setAttribute("role", "group");
     list.setAttribute("aria-label", "Choose a thread message");
-    const scope = document.createElement("p");
-    scope.dataset.ampThreadMessagesScope = "";
-    scope.textContent = "Only messages loaded on this page are shown.";
-    listContent.append(notice, list, scope);
+    listContent.append(title, notice, list);
     listView.append(listContent);
     const detail = document.createElement("section");
     detail.dataset.ampThreadMessagesView = "message";
@@ -200,16 +226,14 @@
     detail.append(detailContent);
     track.append(listView, detail);
     panel.append(track);
-    dock.append(toggle, panel);
-    dock.addEventListener("keydown", event => {
-      if (event.key !== "Escape" || event.defaultPrevented || panel.hidden) return;
-      event.stopPropagation();
-      close();
-      toggle.focus();
+    panel.addEventListener("toggle", event => {
+      if (state?.panel !== panel) return;
+      if (event.newState === "open") opened();
+      else closed();
     });
-    host.append(dock);
-    return { host, id, dock, panel, toggle, count, track, listView, notice, list, detail, back, direction, status, peer, body, error, time, attachments, original,
-      view: "list", items: new Map(), selected: null, at: 0, loading: false, failed: false };
+    host.append(panel);
+    return { host, id, panel, toggle, count, track, listView, notice, list, detail, back, direction, status, peer, body, error, time, attachments, original,
+      view: "list", items: new Map(), titles: new Map(), titleAbort: new AbortController(), selected: null, at: 0, loading: false, failed: false };
   }
 
   function collect(messages, items) {
@@ -252,9 +276,12 @@
   function render() {
     if (!state) return;
     const s = state;
-    s.dock.hidden = !s.items.size;
+    s.toggle.hidden = !s.items.size;
     write(s.count, String(s.items.size));
-    s.count.hidden = !s.items.size;
+    s.toggle.setAttribute("aria-label", `Thread messages, ${s.items.size}`);
+    const peers = [...new Set([...s.items.values()].map(entry => entry.peer))]
+      .map(peer => s.titles.get(peer) ?? `T-…${peer.slice(-8)}`);
+    s.toggle.title = peers.length ? `Messages with ${peers.slice(0, 3).join(", ")}${peers.length > 3 ? `, and ${peers.length - 3} more` : ""}` : "Messages with other threads";
     write(s.notice, s.failed ? "Couldn't load messages. Close and reopen to retry." : "");
     s.notice.hidden = !s.notice.textContent;
     for (const [key, entry] of s.items) {
@@ -267,7 +294,9 @@
           s.back.focus();
         });
         const who = document.createElement("span");
-        who.append("", document.createElement("code"));
+        const name = document.createElement("span");
+        name.dataset.ampThreadMessagesName = "";
+        who.append("", name);
         const mark = document.createElement("span");
         mark.append(icon(entry.direction === "Incoming" ? "arrowDownLeft" : "arrowUpRight"));
         entry.button.append(who, document.createElement("span"), document.createElement("time"), document.createElement("span"), mark);
@@ -279,7 +308,9 @@
       entry.button.dataset.direction = entry.direction.toLowerCase();
       entry.button.title = `${incoming ? "From" : "To"} thread ${entry.peer}`;
       if (who.firstChild.data !== (incoming ? "From " : "To ")) who.firstChild.data = incoming ? "From " : "To ";
-      write(who.lastChild, `T-…${entry.peer.slice(-8)}`);
+      const title = s.titles.get(entry.peer);
+      write(who.lastChild, title ?? `T-…${entry.peer.slice(-8)}`);
+      who.lastChild.dataset.kind = title ? "title" : "id";
       // Incoming messages are always received; only sends have a delivery state worth a chip.
       write(chip, incoming ? "" : entry.status);
       chip.hidden = incoming;
@@ -300,7 +331,10 @@
     s.detail.dataset.delivery = entry.status.toLowerCase();
     write(s.direction, incoming ? "From thread" : "To thread");
     s.peer.href = `https://ampcode.com/threads/${entry.peer}`;
-    write(s.peer, entry.peer);
+    const title = s.titles.get(entry.peer);
+    write(s.peer, title ?? entry.peer);
+    s.peer.dataset.kind = title ? "title" : "id";
+    s.peer.title = entry.peer;
     write(s.status, incoming ? "" : entry.status);
     s.status.hidden = incoming;
     s.status.dataset.delivery = entry.status.toLowerCase();
@@ -314,6 +348,24 @@
     s.original.disabled = ![...s.host.querySelectorAll("[data-transcript-message-lookup-id]")]
       .some(row => row.dataset.transcriptMessageLookupId === entry.messageID);
     fit();
+  }
+
+  // Names come from each other thread's own page data, read once per thread and
+  // only after the popover first opens, so a closed control adds no requests.
+  // Threads the user cannot read keep their ID.
+  function loadTitles(s) {
+    if (!s.wasOpened) return;
+    for (const peer of new Set([...s.items.values()].map(entry => entry.peer))) {
+      if (s.titles.has(peer)) continue;
+      s.titles.set(peer, null);
+      fetch(`/threads/${encodeURIComponent(peer)}/__data`, {
+        credentials: "same-origin", headers: { accept: "application/json" }, signal: s.titleAbort.signal,
+      }).then(response => response.ok ? response.json() : null).then(data => {
+        if (state !== s || data?.type !== "result" || data.thread?.id !== peer) return;
+        s.titles.set(peer, data.thread.title?.trim() || "Untitled thread");
+        render();
+      }).catch(() => {});
+    }
   }
 
   async function refreshData() {
@@ -339,6 +391,7 @@
         s.items.set(key, { ...entry, button: previous?.button });
       }
       s.failed = false;
+      loadTitles(s);
     } catch (error) {
       if (state === s && error.name !== "AbortError") s.failed = true;
     } finally {
@@ -346,7 +399,7 @@
         s.loading = false;
         s.at = Date.now();
         render();
-        if (!s.panel.hidden) s.poll = setTimeout(() => {
+        if (isOpen()) s.poll = setTimeout(() => {
           if (state === s) refreshData();
         }, 5000);
       }
@@ -357,11 +410,16 @@
     scheduled = false;
     const transcript = document.querySelector(".thread-layout-panes [data-thread-transcript-scroll][data-thread-id]");
     const host = transcript?.closest(".thread-layout-panes");
-    if (!enabled || !desktop.matches || !host) { teardown(); return; }
+    // The control joins the composer toolbar after the upload button and the
+    // model and runner label.
+    const toolbar = host?.querySelector('[data-thread-composer-footer] [data-message-composer-root] [role="region"][aria-label="Attachments"]');
+    if (!enabled || !desktop.matches || !toolbar) { teardown(); return; }
     if (state && (state.host !== host || state.id !== transcript.dataset.threadId)) teardown();
     if (!state) state = create(host, transcript.dataset.threadId);
-    if (state.dock.parentElement !== host) host.append(state.dock);
-    // The page is checked even while collapsed, so the tab appears once a message
+    if (state.panel.parentElement !== host) host.append(state.panel);
+    if (state.toggle.parentElement !== toolbar || state.toggle.nextElementSibling) toolbar.append(state.toggle);
+    if (isOpen()) place();
+    // The page is checked even while collapsed, so the control appears once a message
     // exists. Transcript changes refresh at most every five seconds, with a
     // trailing check so the last change in a burst is not missed.
     const wait = state.loading ? 5000 : 5000 - (Date.now() - state.at);

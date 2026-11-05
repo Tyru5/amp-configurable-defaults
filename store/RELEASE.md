@@ -19,12 +19,13 @@ Building or testing the package does not upload, submit, or publish it.
 
 ## Unreleased changes in 1.4.0
 
-- Added a bottom-left Messages dock that lists incoming and outgoing thread
-  messages with delivery status, relative times, attachment counts, and links.
-  Its redesigned list and message views resize to their content. The tab stays
+- Added a thread message control in the composer toolbar that lists incoming and outgoing thread
+  messages by the other thread's title, with delivery status, relative times,
+  attachment counts, and links.
+  Its popover's list and message views resize to their content. The control stays
   hidden until messages exist. While the browser tab is visible, it checks the
   current thread on load and transcript changes, at most once every five
-  seconds, even with the dock closed. While open, it also polls every five
+  seconds, even with the popover closed. While open, it also polls every five
   seconds. Options can disable it.
 - Rendered subagent Task and Output sheets as formatted content (headings,
   lists, code, links, tables) instead of raw text.

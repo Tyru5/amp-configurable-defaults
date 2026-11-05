@@ -495,11 +495,12 @@
             </p>
             <p>
               The 1.4.0 source also reads message timestamp metadata when enabled.
-              Its optional Messages dock reads incoming and outgoing thread
-              messages and delivery results from the current thread's page data.
-              It checks for messages even while collapsed and refreshes every
+              Its optional thread message control reads incoming and outgoing thread
+              messages and delivery results from the current thread's page data,
+              and the titles of the threads they were exchanged with.
+              It checks for messages even while closed and refreshes every
               five seconds while open and the browser tab is visible. Message
-              content stays in memory; the dock does not send messages.
+              content stays in memory; it does not send messages.
             </p>
             <a
               href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md"

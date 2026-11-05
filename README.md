@@ -100,7 +100,7 @@ These features have independent checkboxes in **Options**:
 | Indent child threads                      | On      | Native row spacing on either side                                 |
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
 | Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
-| Enable thread message panel               | On      | No thread-message dock; native messages stay unchanged             |
+| Enable thread message panel               | On      | No thread-message control; native messages stay unchanged          |
 | Show model and runner in the composer     | On      | Composer unchanged; info orb and timestamps can still load data  |
 | Show thread info orb                      | On      | No floating orb; title-bar details stay in Amp's title bar        |
 | Always show message timestamps            | Off     | Native Option/Alt timestamp behavior                              |
@@ -155,27 +155,31 @@ as such. Background tasks remain labeled **Delegated** until Amp exposes a
 completion. Results with duplicate task descriptions appear separately rather
 than risk attaching them to the wrong agent.
 
-A teal **Messages** tab sits in the workspace's bottom-left corner, like a social
-messaging dock. It appears only once the thread has a message to or from another
-thread; threads without one show no tab. Clicking it opens the conversation list above the tab: each entry
-shows the other thread, a direction mark, how long ago it arrived, and a delivery
-chip on sends. Choosing an entry slides to that message: its text, delivery time,
+A muted message icon and count sit in the composer toolbar, after the model and
+runner label. It appears only once the thread has a message to or from another
+thread; threads without one show nothing. Clicking it opens a small popover above
+the composer with the conversation list: each entry shows the other thread, a
+direction arrow, how long ago it arrived, and a delivery status on sends.
+Choosing an entry slides to that message: its text, delivery time,
 attachment count, and link to the other thread, with a back control to return to
 the list. The panel sizes itself to whichever view is showing. **Show in
 transcript** glides to the native entry when it is still rendered, focuses it, and
-flashes a highlight on it once it arrives. Escape collapses the dock and
-returns focus to its tab; reopening resumes the message being read. Unlike the
-subagent panel, this dock does not replace inline activity or expand native
+flashes a highlight on it once it arrives. Escape or a click elsewhere closes the
+popover, and Escape returns focus to the control; reopening resumes the message
+being read. Unlike the subagent panel, it does not replace inline activity or expand native
 disclosures. The slide and the glide respect reduced-motion preferences; the
 highlight only changes color.
 
-To decide whether to show the tab, the extension requests the current thread's
+To decide whether to show the control, the extension requests the current thread's
 same-origin page data using your Amp session, at most once every five seconds
-while the transcript changes and the tab is visible. While open it refreshes every
+while the transcript changes and the browser tab is visible. While open it refreshes every
 five seconds. Sends stay
 **Pending** until their matching tool result confirms **Sent** or **Failed**.
 Calls with identical text stay separate. Only the returned page of messages is
-read; older history and other threads are not fetched. Previously seen entries
+read; older history is not fetched. To show each other thread by name, in the
+list and in the control's tooltip, the extension reads that thread's page data
+once, for its title only, starting when you first open the popover. Until then,
+and for threads you cannot read, the short ID is shown. Previously seen entries
 remain in memory until navigation, reload, disabling the feature, or switching
 to mobile. No messages are persisted or sent. Below 768px, communication stays native.
 

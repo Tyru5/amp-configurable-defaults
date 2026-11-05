@@ -35,7 +35,7 @@ Features:
 - Read formatted subagent tasks and results in optional Task and Output reading sheets.
 - Keep expandable inline subagent summaries, even with the panel disabled.
 - Identify active subagents by pulsing dots, with reduced-motion support.
-- Read incoming and outgoing thread messages from a docked Messages tab with delivery status and links to the original entries. The tab appears only when messages exist.
+- Read incoming and outgoing thread messages from a small control in the composer toolbar, with delivery status and links to the original entries. The control appears only when messages exist.
 - Jump from either reading panel to the original transcript entry with smooth scrolling and a highlight.
 - Preview long tool-call sections with five expandable rows and Bash code blocks.
 - See the thread's model and runner (or Orb) next to the composer's upload button.
@@ -54,7 +54,7 @@ badge shows R for right or L for left.
 
 Privacy: only your feature choices, sidebar side, and width are stored locally.
 No analytics, tracking, advertising, or data collection. The optional composer
-label and thread message dock fetch the open thread's data from ampcode.com
+label and thread message control fetch the open thread's data from ampcode.com
 with your existing session, keep it in memory, and send it nowhere else.
 Source code is public under the MIT license.
 
@@ -88,15 +88,16 @@ https://ampcode.com/threads/<id>/__data, the same same-origin request Amp's
 page makes, and keeps only the mode, model, executor, runner, and working
 directory, plus message IDs and timestamp metadata, in memory.
 The info orb reads details already in Amp's title bar.
-The enabled thread message dock separately requests the current thread's page
-data, even while collapsed, to decide whether its tab should appear. While the
+The enabled thread message control separately requests the current thread's page
+data, even while closed, to decide whether it should appear. While the
 browser tab is visible, it checks on thread load and transcript changes, at
-most once every five seconds. Opening the dock also refreshes the data.
+most once every five seconds. Opening the popover also refreshes the data.
 It reads incoming thread-message text and sender IDs, outgoing
 send_thread_message arguments, matching delivery results and errors, and
 attachment counts. Hidden text is excluded. Only the returned page is read;
-older pages and peer threads are not fetched. Requests refresh every five
-seconds while the dock is open and the tab visible. Closing it stops periodic
+older pages are not fetched. After it is first opened, it reads each peer
+thread's page data once to show its title. Requests refresh every five
+seconds while the popover is open and the tab visible. Closing it stops periodic
 polling, not checks triggered by transcript changes. The cache stays in memory
 and is discarded on navigation, reload, disabling the feature, or switching to
 mobile. It does not send messages or persist message content.
