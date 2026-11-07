@@ -1,7 +1,7 @@
 # Chrome Web Store listing
 
-Draft update copy for unreleased version 1.4.0. The public store release is
-1.3.0 as of November 4, 2026. Apply this copy to the existing item when submitting
+Draft update copy for unreleased version 1.4.2. The public store release is
+1.4.1 as of November 7, 2026. Apply this copy to the existing item when submitting
 the update; this file is not the live listing or a claim of store approval.
 
 ## Listing fields
@@ -41,6 +41,8 @@ Features:
 - See the thread's model and runner (or Orb) next to the composer's upload button.
 - Hover, focus, or pin a floating orb for the thread's title-bar details.
 - Optionally keep compact message dates and times always visible.
+- Keep labels, info cards, timestamps, and worker reading controls scoped to
+  their own conversation when Space chat and workers are shown together.
 - Keep mobile navigation native; inline summaries and tool styling remain available.
 
 Options has independent checkboxes for right-side placement, right-side
@@ -85,9 +87,12 @@ to restore the user's layout. Subagent prompts and results remain in memory
 for the current thread; they are not saved or transmitted. When the composer
 label, info orb, or persistent timestamps are on, it requests the open thread's page data from
 https://ampcode.com/threads/<id>/__data, the same same-origin request Amp's
-page makes, and keeps only the mode, model, executor, runner, and working
+page makes, and keeps only the title, mode, model, executor, runner, and working
 directory, plus message IDs and timestamp metadata, in memory.
 The info orb reads details already in Amp's title bar.
+In Spaces, each visible coordinator or worker uses its own same-origin page
+data and in-memory state. Space chat timestamps use message IDs and creation
+times from `spaceChat`; parked and hidden conversations are excluded.
 The enabled thread message control separately requests the current thread's page
 data, even while closed, to decide whether it should appear. While the
 browser tab is visible, it checks on thread load and transcript changes, at
@@ -118,9 +123,9 @@ security exception against current store policy before certifying this field.
 
 Data usage:
 No user data is sent to the developer or external collection services.
-The live 1.3.0 listing declares Personal communications and Website content.
+The live 1.4.1 listing declares Personal communications and Website content.
 Review those existing declarations against the local processing and same-origin
-requests described above, including 1.4.0's thread messages and timestamps.
+requests described above, including 1.4.2's thread messages and timestamps.
 Do not clear categories solely because there is no external collection.
 The publisher must personally review and certify Google's data-use declarations.
 
@@ -138,7 +143,7 @@ The publisher must personally review and certify Google's data-use declarations.
   They predate the composer label and info orb; the redacted live capture in
   `docs/assets/hero-live.webp` shows both but is not sized for the store.
   Conversation content, task/output content, thread titles, and account details
-  are hidden for privacy. Refresh outdated captures for 1.4.0, especially those
+  are hidden for privacy. Refresh outdated captures for 1.4.2, especially those
   showing the removed master switch. See `screenshots/README.md` for coverage.
 - `fixture-*.png` and `docs/previews/` are labeled compatibility demonstrations,
   not real Amp screenshots. Do not use them as live app store screenshots.

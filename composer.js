@@ -8,9 +8,8 @@
   let showMessageTimestamps = false;
   let settings = {};
   let pending = false;
-  let loaded = { id: null, at: 0, context: null };
-  let loading = null;
-  let runnerSignature;
+  const loaded = new Map();
+  let contextSignature;
   let timestampRefresh;
   const timestampSelector = "[data-amp-message-timestamp]";
   const clock = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
@@ -18,11 +17,6 @@
   const fullDate = new Intl.DateTimeFormat(undefined, {
     year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short",
   });
-
-  function threadID() {
-    const scroll = document.querySelector("[data-thread-transcript-scroll][data-thread-id]");
-    return scroll?.dataset.threadId ?? location.pathname.match(/^\/threads\/(T-[\w-]+)/)?.[1] ?? null;
-  }
 
   function feature(meta, prefix) {
     return meta?.features?.find(value => typeof value === "string" && value.startsWith(prefix))?.slice(prefix.length) ?? null;
@@ -88,8 +82,16 @@
       timestamps.set(String(id), { date, label: message.role === "user" ? "Sent" : finished ? "Finished" : "Started",
         streaming: message.role === "assistant" && !complete });
     }
+    const chatTimestamps = new Map();
+    for (const message of data.spaceChat ?? []) {
+      if (message.messageId == null) continue;
+      const date = message.createdAt == null ? null : new Date(message.createdAt);
+      chatTimestamps.set(String(message.messageId), date && Number.isFinite(date.getTime()) ?
+        { date, label: "Sent", streaming: false } : null);
+    }
     // A generic external-agent usage marker does not identify the model.
-    return { model: model === "external-agent" ? null : model, mode, effort: feature(thread.meta, "effort:"), runner: runner(thread), timestamps };
+    return { title: thread.title, model: model === "external-agent" ? null : model, mode,
+      effort: feature(thread.meta, "effort:"), runner: runner(thread), timestamps, chatTimestamps };
   }
 
   async function load(id) {
@@ -105,36 +107,25 @@
   // file input, inside the composer's Attachments region.
   const triggerSelector = '[role="region"][aria-label="Attachments"] span:has(> input[type="file"][tabindex="-1"])';
 
-  function uploadTrigger() {
-    const composer = document.querySelector("[data-thread-composer-footer] [data-message-composer-root]") ??
-      document.querySelector("[data-message-composer-root]");
-    return composer?.querySelector(triggerSelector) ?? null;
-  }
-
-  function remove() {
-    document.querySelectorAll(contextSelector).forEach(node => node.remove());
-  }
-
-  function renderTimestamps(context) {
-    if (!showMessageTimestamps) {
-      document.querySelectorAll(timestampSelector).forEach(node => node.remove());
-      return false;
-    }
+  function renderTimestamps(view, context) {
     let needsRefresh = false;
-    for (const row of document.querySelectorAll('[data-thread-transcript-scroll] [data-transcript-message-lookup-id]')) {
-      const message = row.querySelector(':scope > [data-transcript-entry-content] [data-transcript-message-role]');
+    const chat = view.transcript.hasAttribute("data-thread-transcript-override");
+    const timestamps = chat ? context?.chatTimestamps : context?.timestamps;
+    for (const row of view.transcript.querySelectorAll('[data-transcript-message-lookup-id]')) {
+      const message = chat ? row.matches('[data-transcript-message-role]') && row :
+        row.querySelector(':scope > [data-transcript-entry-content] [data-transcript-message-role]');
       let time = row.querySelector(`:scope > ${timestampSelector}`);
-      const stamp = message ? context?.timestamps.get(row.dataset.transcriptMessageLookupId) : null;
+      const stamp = message ? timestamps?.get(row.dataset.transcriptMessageLookupId) : null;
       if (!stamp) {
         time?.remove();
-        if (message && !context?.timestamps.has(row.dataset.transcriptMessageLookupId)) needsRefresh = true;
+        if (message && !timestamps?.has(row.dataset.transcriptMessageLookupId)) needsRefresh = true;
         continue;
       }
       needsRefresh ||= stamp.streaming;
       if (!time) {
         time = document.createElement("time");
         time.setAttribute("data-amp-message-timestamp", "");
-        row.querySelector(':scope > [data-transcript-entry-content]').before(time);
+        row.prepend(time);
       }
       const iso = stamp.date.toISOString();
       const title = `${stamp.label} ${fullDate.format(stamp.date)}`;
@@ -157,22 +148,22 @@
     return node;
   }
 
-  function render(context) {
-    const trigger = uploadTrigger();
+  function render(view, context) {
+    const trigger = view.composer?.querySelector(triggerSelector);
     if (!trigger || !context || (!context.model && !context.mode && !context.runner)) {
-      remove();
+      view.composer?.querySelectorAll(contextSelector).forEach(node => node.remove());
       return;
     }
     let node = trigger.nextElementSibling?.matches(contextSelector) ? trigger.nextElementSibling : null;
+    view.composer.querySelectorAll(contextSelector).forEach(other => { if (other !== node) other.remove(); });
     if (!node) {
-      remove();
       node = document.createElement("span");
       node.setAttribute("data-amp-composer-context", "");
       node.setAttribute("role", "note");
       node.setAttribute("aria-label", "Thread model and runner");
       trigger.after(node);
     }
-    const { timestamps, ...display } = context;
+    const { timestamps, chatTimestamps, ...display } = context;
     const key = JSON.stringify(display);
     if (node.dataset.ampComposerContextKey === key) return;
     node.dataset.ampComposerContextKey = key;
@@ -191,43 +182,55 @@
   function update() {
     pending = false;
     clearTimeout(timestampRefresh);
-    // The displays share the same request and derivation, independently of
-    // whether the composer label itself is enabled.
-    const id = enabled || infoOrb || showMessageTimestamps ? threadID() : null;
-    const context = id && loaded.id === id ? loaded.context : null;
-    const runner = context?.runner ?? null;
-    const signature = JSON.stringify([id, runner]);
-    if (signature !== runnerSignature) {
-      runnerSignature = signature;
-      globalThis.ampThreadRunner = runner;
-      dispatchEvent(new Event("amp-thread-runner-change"));
-    }
-    if (enabled) render(context);
-    else remove();
-    const missingTimestamps = renderTimestamps(context);
-    if (!id) {
-      return;
-    }
-    // New/streaming messages may not have reached the route response yet. Retry
-    // while visible, throttled independently of DOM mutations during streaming.
-    const interval = showMessageTimestamps && missingTimestamps ? 5_000 : refreshAfter;
-    const age = Date.now() - loaded.at;
-    const stale = loaded.id !== id || age >= interval;
-    if (!stale && showMessageTimestamps && missingTimestamps && document.visibilityState !== "hidden") {
-      timestampRefresh = setTimeout(schedule, interval - age);
-    }
-    if (!stale || loading?.id === id || document.visibilityState === "hidden") return;
-    const request = { id };
-    loading = request;
-    load(id).catch(() => null).then(context => {
-      if (loading !== request) return;
-      loading = null;
-      if (threadID() !== id) return;
-      // A failed refresh keeps the last known values for the same thread.
-      if (!context && loaded.id === id) context = loaded.context;
-      loaded = { id, at: Date.now(), context };
-      schedule();
+    const views = globalThis.ampThreadViews();
+    const active = new Set(views.map(view => view.id));
+    for (const id of loaded.keys()) if (!active.has(id)) loaded.delete(id);
+    const composers = new Set(enabled ? views.map(view => view.composer) : []);
+    document.querySelectorAll(contextSelector).forEach(node => {
+      if (!composers.has(node.closest('[data-message-composer-root]'))) node.remove();
     });
+    const transcripts = new Set(showMessageTimestamps ? views.map(view => view.transcript) : []);
+    document.querySelectorAll(timestampSelector).forEach(node => {
+      if (!transcripts.has(node.closest('[data-thread-transcript-scroll], [data-thread-transcript-override]'))) node.remove();
+    });
+    const contexts = new Map();
+    let nextRefresh = Infinity;
+    for (const view of views) {
+      const id = view.id;
+      let entry = loaded.get(id);
+      const context = entry?.context ?? null;
+      contexts.set(id, context);
+      if (enabled) render(view, context);
+      const missing = showMessageTimestamps && renderTimestamps(view, context);
+      if (!enabled && !infoOrb && !showMessageTimestamps) continue;
+      const interval = missing ? 5_000 : refreshAfter;
+      const age = entry ? Date.now() - entry.at : Infinity;
+      if (age < interval) {
+        if (missing) nextRefresh = Math.min(nextRefresh, interval - age);
+        continue;
+      }
+      if (entry?.loading || document.hidden) continue;
+      if (!entry) {
+        entry = { at: 0, context: null };
+        loaded.set(id, entry);
+      }
+      entry.loading = true;
+      const request = entry;
+      load(id).catch(() => null).then(context => {
+        if (loaded.get(id) !== request) return;
+        request.loading = false;
+        request.context = context ?? request.context;
+        request.at = Date.now();
+        schedule();
+      });
+    }
+    globalThis.ampThreadContexts = contexts;
+    const signature = JSON.stringify([...contexts].map(([id, context]) => [id, context?.title, context?.mode, context?.runner]));
+    if (signature !== contextSignature) {
+      contextSignature = signature;
+      dispatchEvent(new Event("amp-thread-context-change"));
+    }
+    if (nextRefresh < Infinity && !document.hidden) timestampRefresh = setTimeout(schedule, nextRefresh);
   }
 
   function schedule() {
@@ -239,7 +242,7 @@
   new MutationObserver(records => {
     if (records.some(record => !(record.target instanceof Element && record.target.closest(`${contextSelector}, ${timestampSelector}`)))) schedule();
   }).observe(document, { childList: true, subtree: true, attributes: true,
-    attributeFilter: ["data-thread-id", "data-transcript-message-lookup-id", "data-transcript-message-alignment"] });
+    attributeFilter: ["data-thread-id", "data-transcript-message-lookup-id", "data-transcript-message-alignment", "class", "style", "hidden"] });
   document.addEventListener("visibilitychange", schedule);
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local" || (!changes.showComposerContext && !changes.infoOrb && !changes.showMessageTimestamps)) return;

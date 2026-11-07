@@ -7,9 +7,9 @@ choice applies to all open Amp tabs and survives browser restarts.
 
 Independent project, not affiliated with or endorsed by Amp. The code is MIT licensed.
 
-**Current public release: 1.3.0**, updated October 30, 2026 on the
+**Current public release: 1.4.1**, updated November 6, 2026 on the
 [Chrome Web Store](https://chromewebstore.google.com/detail/amp-configurable-defaults/hpobhiphbifcjhplkegebmpiehkcpjod).
-**Source and next package: 1.4.0**, not yet publicly released. This README
+**Source and next package: 1.4.2**, not yet publicly released. This README
 describes the source version, including changes not in the store package.
 See the [release status, changes, and submission checklist](store/RELEASE.md).
 
@@ -26,7 +26,7 @@ site directly from `docs/`. Hosting is not enabled by these files alone.
 
 ## Install locally
 
-These steps install the unreleased 1.4.0 source. For the current public 1.3.0
+These steps install the unreleased 1.4.2 source. For the current public 1.4.1
 release, use the Chrome Web Store link above.
 
 1. [Download the source ZIP](https://github.com/Tyru5/amp-configurable-defaults/archive/refs/heads/main.zip),
@@ -276,11 +276,13 @@ node --check options.js
 node --test tests/background.test.mjs
 node --test tests/options.test.mjs
 node tests/thread-messages.mjs # with the fixture server running on port 8765
+node tests/spaces.mjs # with the same fixture server running
+node tests/spaces-layout.mjs # native and opposite layouts, expanded and collapsed
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
 
-The build writes `dist/amp-configurable-defaults-1.4.0.zip` and a SHA-256 checksum.
+The build writes `dist/amp-configurable-defaults-1.4.2.zip` and a SHA-256 checksum.
 The manifest is at the ZIP root as required by the Web Store. Only runtime
 files, icons, and the license are included, never tests or developer previews.
 GitHub Actions runs syntax, toolbar behavior, and packaging checks on pushes
@@ -315,6 +317,33 @@ FAQ, installation link, asset loading, and responsive overflow. Its demo does
 not change the extension's settings or access an Amp account.
 
 ## Compatibility and verification
+
+Spaces compatibility uses pane-local transcript/composer ownership and native
+tab-strip controls checked read-only in authenticated Helium on 2026-11-07.
+Each visible conversation gets its own context, info card, and worker controls.
+Space chat timestamps use `spaceChat.createdAt`; worker timestamps retain sent,
+started, and finished semantics. The Messages filter and existing split
+reversal/divider handling are unchanged. Space worker cards are not treated
+as Task subagents.
+
+The right navigation rail keeps its border inward. The collapsed sidebar
+toggle stays beside the rail, with room reserved in legacy headers.
+`tests/spaces-layout.mjs` checks both sidebar sides and auxiliary-placement
+preferences, expanded/collapsed navigation, pointer and keyboard resizing of
+outer and nested splits, draft preservation, and the narrow-width fallback.
+These are synthetic Chromium checks. The combined layout and compatibility
+package has not been loaded into authenticated Helium.
+
+`tests/spaces.mjs` exercises this markup with synthetic data, including duplicate
+message IDs across panes, multiple workers, delayed responses, worker switching,
+hidden-pane cleanup, and focused info-orb teardown. The initial read-only
+inspection had no running extension. A subsequent authorized runtime check in
+authenticated Helium on 2026-11-07 verified coordinator, Orb worker, and Mac
+worker contexts, worker-only Messages, a real Task/Subagents panel, timestamps
+against each conversation's own data, and worker-switch cleanup. After fixing
+a delayed info-card callback found in the first pass, the corrected build
+recorded zero runtime or manifest errors, including three focused-orb teardown
+checks. Test preferences were restored and existing drafts preserved.
 
 Selectors were checked against Amp's publicly served app assets on 2026-10-23.
 Amp's layout is not a public API, so a future site update may require adjusting
@@ -359,7 +388,7 @@ private text masked after capture; see `docs/assets/README.md`.
 - [1400 × 560 marquee promotional tile](store/promo-marquee.png)
 - [Historical screenshots and refresh requirements](store/screenshots/README.md)
 
-Upload 1.4.0 as an update to the existing store item, after completing its
+Upload 1.4.2 as an update to the existing store item, after completing its
 release checklist and reviewing the privacy declarations. Building the ZIP
 does not submit or publish it. Existing live, privacy-redacted 1280 × 800
 captures show older versions; refresh outdated images before submission.

@@ -212,7 +212,14 @@
     flex-direction: row-reverse !important;
   }
 
-  /* Tabbed Views and the alternate secondary pane sit opposite navigation. */
+  /* Keep the persistent Space/app navigation rail, with its border inward. */
+  html[data-amp-sidebar-right] .app-frame-stack-rail > .app-primary-navigation {
+    border-left: 1px solid var(--border, #80808040) !important;
+    border-right: 0 !important;
+  }
+
+  /* Includes the native Space chat/worker split and each worker's nested Views.
+     Reverse each horizontal group without moving Amp-owned pane nodes. */
   html[data-amp-sidebar-move-views] .multi-pane-pane-group[data-direction="horizontal"],
   html[data-amp-sidebar-move-views] .thread-file-tab-pane-group[data-direction="horizontal"] {
     flex-direction: row-reverse !important;
@@ -255,10 +262,18 @@
     display: none !important;
   }
 
-  html[data-amp-sidebar-right] .app-content-frame:not(.app-sidebar-closed) > .sidebar-trigger-wrapper {
+  html[data-amp-sidebar-right] .app-content-frame > .sidebar-trigger-wrapper {
     left: auto !important;
-    right: calc(var(--sidebar-width) - 2.5rem) !important;
+    right: 6px !important;
     padding-right: 0 !important;
+  }
+
+  html[data-amp-sidebar-right] .app-content-frame:not(.app-sidebar-closed) > .sidebar-trigger-wrapper {
+    right: calc(var(--sidebar-width) - 2.5rem) !important;
+  }
+
+  html[data-amp-sidebar-right] .app-content-frame.app-sidebar-closed .app-title-bar {
+    padding-right: max(3rem, var(--app-title-bar-content-right, 0px)) !important;
   }
 
   html[data-amp-sidebar-right-resizing],
@@ -290,7 +305,7 @@
     cursor: pointer;
   }
 
-  .thread-layout-panes[data-amp-subagents-open] {
+  [data-amp-subagents-host][data-amp-subagents-open] {
     --amp-agent-index-width: 280px;
     display: flex;
     flex-direction: row;
@@ -485,7 +500,7 @@
   }
 
   /* A narrow conversation gets a drawer, not an unreadably squeezed column. */
-  .thread-layout-panes[data-amp-subagents-open][data-amp-subagents-overlay] { display: block; }
+  [data-amp-subagents-host][data-amp-subagents-open][data-amp-subagents-overlay] { display: block; }
   [data-amp-subagents-overlay] > [data-amp-subagents-ui="panel"]:not([hidden]) {
     position: absolute;
     inset-block: 0;

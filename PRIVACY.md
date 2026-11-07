@@ -1,9 +1,9 @@
 # Privacy policy
 
-Updated November 4, 2026 for the unreleased amp configurable defaults 1.4.0
-source and package. The current public Chrome Web Store release is 1.3.0;
-its [version-specific policy](https://github.com/Tyru5/amp-configurable-defaults/blob/a5358243491143f77ccc6e7d0744756f2d97f18f/PRIVACY.md)
-remains available. This page describes 1.4.0's behavior, not a claim of publication.
+Updated November 7, 2026 for the unreleased amp configurable defaults 1.4.2
+source and package. The current public Chrome Web Store release is 1.4.1;
+the [1.4.1 source policy](https://github.com/Tyru5/amp-configurable-defaults/blob/f91de7295a4509bf82db9c4032f2e5c64721ccf7/PRIVACY.md)
+remains available. This page describes 1.4.2's behavior, not a claim of publication.
 
 ## What the extension does
 
@@ -49,13 +49,19 @@ When **Show model and runner in the composer**, **Show thread info orb**, or
 **Always show message timestamps** is on, the extension requests
 the open thread's page data from `https://ampcode.com/threads/<id>/__data`, the
 same same-origin request Amp's thread page makes, using your existing Amp
-session. It reads the thread's mode, model, executor type, runner name or
+session. It reads the thread's title, mode, model, executor type, runner name or
 hostname, working directory, and message IDs and timestamp metadata from the
 response. It keeps these values in memory for the current tab and displays them
 in the enabled composer label, info card, or message timestamps. New and streaming
 message times refresh at most once every five seconds while the tab is visible.
 The response is not stored or sent anywhere else. Turning all three settings off
 stops these requests.
+
+In Spaces, each visible coordinator or worker conversation has separate
+in-memory data and controls. The same requests apply to each visible
+conversation. Space chat timestamps use the message IDs and creation times
+from its `spaceChat` records. Parked and hidden conversations are excluded;
+switching workers clears the previous worker's cached data and controls.
 
 When **Show thread info orb** is on, the extension reads the thread title,
 executor, project, mode, and visibility already shown in Amp's title bar and

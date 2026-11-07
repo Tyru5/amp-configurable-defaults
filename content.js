@@ -3,6 +3,45 @@
   const desktop = matchMedia("(min-width: 768px)");
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
+  // A Space and its workers share a page, but never a composer or thread data.
+  const transcriptSelector = '[data-thread-transcript-scroll][data-thread-id], [data-thread-transcript-override][data-thread-id]';
+  globalThis.ampThreadViews = () => [...document.querySelectorAll(transcriptSelector)].filter(transcript =>
+    !transcript.closest('[data-space-thread-tabs-parking]') && transcript.checkVisibility({ visibilityProperty: true })).map(transcript => {
+    let container = transcript.closest('[data-thread-agent-tab-content]') ?? transcript.parentElement;
+    while (container && !container.querySelector('[data-message-composer-root]')) {
+      container = container.parentElement;
+      if (container?.querySelectorAll(transcriptSelector).length > 1) return null;
+    }
+    if (!container) return null;
+    const layout = transcript.closest('.thread-layout-panes');
+    const host = container.matches('[data-thread-agent-tab-content]') ? container :
+      layout?.querySelectorAll(transcriptSelector).length === 1 ? layout : container;
+    const composer = container.querySelector('[data-message-composer-root]');
+    const pane = transcript.closest('[data-thread-file-tab-pane]');
+    const titleBar = pane?.querySelector('[data-pane-tab-strip]') ??
+      host.querySelector('.thread-title-bar-container .app-title-bar') ??
+      host.querySelector('.thread-title-bar-container');
+    const header = titleBar?.querySelector('[data-thread-title-bar-controls]') ??
+      titleBar?.querySelector('[data-tab-strip-actions]') ?? titleBar;
+    return { id: transcript.dataset.threadId, transcript, host, composer, header, titleBar,
+      toolbar: composer?.querySelector('[role="region"][aria-label="Attachments"]') };
+  }).filter(Boolean);
+
+  globalThis.ampSyncThreadViews = (controllers, create) => {
+    const views = globalThis.ampThreadViews();
+    const mounted = new Set(views.map(view => view.transcript));
+    for (const [transcript, controller] of controllers) {
+      if (!mounted.has(transcript)) {
+        controller.teardown();
+        controllers.delete(transcript);
+      }
+    }
+    for (const view of views) {
+      if (!controllers.has(view.transcript)) controllers.set(view.transcript, create());
+      controllers.get(view.transcript).refresh(view);
+    }
+  };
+
   // Shared by the Messages dock and the Subagents panel: bring a transcript
   // entry into view, focus it, and flash a highlight once it has arrived so the
   // eye lands on the right place. The highlight restarts if the same entry is

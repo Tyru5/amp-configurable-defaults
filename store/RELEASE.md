@@ -1,23 +1,35 @@
-# Version 1.4.0 submission checklist
+# Version 1.4.2 submission checklist
 
 ## Release status
 
-Checked November 4, 2026:
+Public listing checked November 7, 2026:
 
-- **Public release: 1.3.0**, updated October 30 on the
+- **Public release: 1.4.1**, updated November 6 on the
   [Chrome Web Store](https://chromewebstore.google.com/detail/amp-configurable-defaults/hpobhiphbifcjhplkegebmpiehkcpjod).
-  All 15 files in the downloaded store package match commit
-  [a535824](https://github.com/Tyru5/amp-configurable-defaults/commit/a5358243491143f77ccc6e7d0744756f2d97f18f),
-  after ignoring Google's added `update_url` manifest field.
-- **Next package: 1.4.0**, from `main`. It is not available from the public
+  This checks the listing's version/date, not the downloaded package bytes.
+- **Next package: 1.4.2**, from `main`. It is not available from the public
   store listing. The private dashboard's submission/review state has not been checked.
-- GitHub has an old, unpublished 1.0.0 draft, not a current public release.
-  Use the Web Store package as the released baseline, not that draft or the
-  version in `main`.
+- Use the Web Store listing for publication status, not the source version
+  or an unpublished GitHub draft.
 
 Building or testing the package does not upload, submit, or publish it.
 
-## Unreleased changes in 1.4.0
+## Spaces compatibility fixes in 1.4.2
+
+- Associate each visible coordinator and worker with its own composer labels,
+  info card, Messages control, Task/Subagents panel, and tool previews.
+- Read coordinator timestamps from `spaceChat.createdAt`; preserve worker
+  sent/started/finished timestamps and the existing thread-message filter.
+- Mount controls in each worker's native tab strip. Clear stale controls/data
+  when switching or hiding workers, and ignore delayed info-card callbacks
+  after teardown.
+- Keep the right navigation rail's border inward and its collapsed toggle
+  beside the rail, with space reserved in legacy headers. Preserve the
+  existing auxiliary reversal and divider handling.
+- Add Spaces ownership, timestamp, teardown, and four-state nested-layout
+  regression coverage. No permissions or defaults changed.
+
+## Already released in 1.4.0 and 1.4.1
 
 - Added a thread message control in the composer toolbar that lists incoming and outgoing thread
   messages by the other thread's title, with delivery status, relative times,
@@ -91,16 +103,32 @@ Supporting website work already present when 1.3.0 shipped:
 - These checks use local fixtures, not signed-in Amp. The live release checks
   below remain open. No store upload or submission was performed in this preparation.
 
+## Version 1.4.2 package verification
+
+- The integrated compatibility/sidebar ZIP is 52,062 bytes, with SHA-256
+  `4c55fcd17dc2e57bf6196cf95172645dc90da2afaa1368104fdf789d4d24443d`.
+- Local checks cover 49 Spaces, 39 layout, 177 legacy browser, 35 Messages,
+  11 split-pane, and 35 landing-page assertions, plus 13 Node tests and
+  2 Python package tests. Syntax, whitespace, and reproducible packaging pass.
+- Earlier authenticated Helium verification used a compatibility-only 1.4.1
+  candidate. Earlier native Windows verification used the exact sidebar CSS
+  with the installed runtime. Neither alone certifies this complete package
+  on authenticated Amp. Keep the final live smoke-test gate below open until
+  the exact 1.4.2 package is tested there.
+- Repository delivery does not complete the Web Store submission gates.
+  No Web Store upload, submission, privacy certification, or publication is
+  performed by building or pushing the source.
+
 ## Before uploading
 
 - [x] Fix the split-pane test's readiness waits and rerun the full release checks.
 - [ ] Review the embedded-thread framing/CSP exception and iframe remote-code
       disclosures against current Web Store policy before submission.
-- [ ] Smoke-test the final 1.4.0 ZIP on real, signed-in Amp. Earlier live checks
+- [ ] Smoke-test the final 1.4.2 ZIP on real, signed-in Amp. Earlier live checks
       in README.md do not replace testing this packaged release.
 - [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep
       fixture previews separately identified. No private content is published.
-- [ ] Refresh the historical screenshots for 1.4.0, including Messages and
+- [ ] Refresh the historical screenshots for 1.4.2, including Messages and
       formatted reading sheets. Do not advertise the removed master switch.
 - [ ] Repeat the final smoke test in current Google Chrome. Helium and fixture
       checks do not prove every Chrome/Amp layout combination. In particular,
@@ -109,7 +137,7 @@ Supporting website work already present when 1.3.0 shipped:
 - [ ] Confirm permission to use the Amp-derived mark before submitting
       the extension icon and promo tile to the Web Store.
 - [ ] Confirm access to the existing store item and resolve any account warnings.
-- [ ] Review the existing privacy declarations against 1.4.0's message and
+- [ ] Review the existing privacy declarations against 1.4.2's message and
       timestamp access, and personally accept any required certifications.
 
 ## Build and upload
@@ -128,6 +156,11 @@ node --test tests/background.test.mjs
 node --test tests/options.test.mjs
 node tests/browser.mjs # with the fixture server running on port 8765
 node tests/thread-messages.mjs # with the fixture server running on port 8765
+node tests/spaces.mjs # with the same fixture server running
+node tests/spaces-layout.mjs # with the same fixture server running
+node tests/landing.mjs # with the same fixture server running
+# For split-pane coverage, first open an owned agent-browser session:
+# node tests/thread-split.mjs <session> http://localhost:8765/tests/fixture.html
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
@@ -135,7 +168,7 @@ python3 scripts/package.py
 1. Open https://chrome.google.com/webstore/devconsole.
 2. Select the existing **amp configurable defaults** item,
    `hpobhiphbifcjhplkegebmpiehkcpjod`, and upload
-   `dist/amp-configurable-defaults-1.4.0.zip` as an update. Do not create a second
+   `dist/amp-configurable-defaults-1.4.2.zip` as an update. Do not create a second
    listing. Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, `store/promo-small.png`
    and `store/promo-marquee.png` in their matching promotional tile fields, and
@@ -147,7 +180,7 @@ python3 scripts/package.py
 6. Submit for review only after the live compatibility and screenshot checks
    above are complete. Prefer deferred/manual publishing if the dashboard offers
    it and you want to review approval before making the listing public.
-7. After 1.4.0 is publicly available, verify the store version and downloaded
+7. After 1.4.2 is publicly available, verify the store version and downloaded
    package, then update the release status in this file, README, and landing page.
 
 Sidebar placement is independent of other Options; there is no master switch.

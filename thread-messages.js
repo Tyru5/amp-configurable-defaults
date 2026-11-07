@@ -3,7 +3,7 @@
   const threadPattern = /^(?:https:\/\/ampcode\.com\/threads\/)?(T-[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12})(?:[?#].*)?$/i;
   let enabled = false;
   let changed = false;
-  let state;
+  const controllers = new Map();
   let scheduled = false;
   let sequence = 0;
 
@@ -71,6 +71,9 @@
     node.dateTime = date.toISOString();
     node.title = date.toLocaleString();
   }
+
+  function controller() {
+  let state;
 
   // The list and the message sit side by side in a sliding track, so the track
   // takes the height of the view being shown rather than the taller of the two.
@@ -406,14 +409,11 @@
     }
   }
 
-  function refresh() {
-    scheduled = false;
-    const transcript = document.querySelector(".thread-layout-panes [data-thread-transcript-scroll][data-thread-id]");
-    const host = transcript?.closest(".thread-layout-panes");
+  function refresh(view) {
+    const { transcript, host, toolbar } = view;
     // The control joins the composer toolbar after the upload button and the
     // model and runner label.
-    const toolbar = host?.querySelector('[data-thread-composer-footer] [data-message-composer-root] [role="region"][aria-label="Attachments"]');
-    if (!enabled || !desktop.matches || !toolbar) { teardown(); return; }
+    if (!enabled || !desktop.matches || !toolbar || transcript.hasAttribute("data-thread-transcript-override")) { teardown(); return; }
     if (state && (state.host !== host || state.id !== transcript.dataset.threadId)) teardown();
     if (!state) state = create(host, transcript.dataset.threadId);
     if (state.panel.parentElement !== host) host.append(state.panel);
@@ -434,10 +434,16 @@
     }
   }
 
+  return { refresh, teardown };
+  }
+
   function schedule() {
     if (scheduled) return;
     scheduled = true;
-    requestAnimationFrame(refresh);
+    requestAnimationFrame(() => {
+      scheduled = false;
+      globalThis.ampSyncThreadViews(controllers, controller);
+    });
   }
 
   new MutationObserver(records => {
@@ -447,7 +453,8 @@
         !(record.type === "childList" && [...record.addedNodes, ...record.removedNodes].length &&
           [...record.addedNodes, ...record.removedNodes].every(node => node instanceof Element && node.matches("[data-amp-thread-messages-ui]")));
     })) schedule();
-  }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["data-thread-id"] });
+  }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
+    attributeFilter: ["data-thread-id", "class", "style", "hidden"] });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local" || !changes.threadMessagesPanel) return;
     changed = true;

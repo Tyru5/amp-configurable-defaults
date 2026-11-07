@@ -6,7 +6,7 @@
   let enabled = false;
   let settings = {};
   let pending = false;
-  let state;
+  const controllers = new Map();
   let sequence = 0;
 
   const blockSelector = "p, pre, ul, ol, h1, h2, h3, h4, h5, h6, table, blockquote, hr, img";
@@ -153,6 +153,9 @@
     return node;
   }
 
+  function controller() {
+  let state;
+
   function close() {
     if (!state) return;
     closeReader();
@@ -171,6 +174,7 @@
     close();
     state.sizing.disconnect();
     state.host.removeAttribute("data-amp-subagents-overlay");
+    state.host.removeAttribute("data-amp-subagents-host");
     state.toggle.remove();
     state.panel.remove();
     state.reader.remove();
@@ -236,6 +240,7 @@
   }
 
   function create(host, transcript) {
+    host.setAttribute("data-amp-subagents-host", "");
     const panel = document.createElement("aside");
     panel.id = `amp-subagents-${++sequence}`;
     panel.dataset.ampSubagentsUi = "panel";
@@ -386,11 +391,9 @@
     header.click();
   }
 
-  function refresh() {
-    pending = false;
-    const transcript = document.querySelector(".thread-layout-panes [data-thread-transcript-scroll][data-thread-id]");
-    const host = transcript?.closest(".thread-layout-panes");
-    const toolbar = host?.querySelector(".thread-title-bar-container .app-title-bar");
+  function refresh(view) {
+    const { transcript, host } = view;
+    const toolbar = view.header ?? view.toolbar;
     if (!host || !toolbar) { teardown(); return; }
     if (state && (state.host !== host || state.thread !== transcript.dataset.threadId)) teardown();
     const sources = [...transcript.querySelectorAll(agentSelector)];
@@ -407,7 +410,7 @@
     if (!sources.length && !events.length) { teardown(); return; }
     if (!state) state = create(host, transcript);
     if (enabled && desktop.matches) {
-      if (!state.toggle.isConnected) toolbar.append(state.toggle);
+      if (state.toggle.parentElement !== toolbar) toolbar.append(state.toggle);
       if (!state.panel.isConnected) host.append(state.panel, state.reader);
     } else {
       if (state.open) close();
@@ -528,10 +531,16 @@
     state.original.disabled = !connected;
   }
 
+  return { refresh, teardown };
+  }
+
   function schedule() {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(refresh);
+    requestAnimationFrame(() => {
+      pending = false;
+      globalThis.ampSyncThreadViews(controllers, controller);
+    });
   }
 
   new MutationObserver(records => {
@@ -543,7 +552,7 @@
       return true;
     })) schedule();
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
-    attributeFilter: ["data-thread-id", "data-transcript-tool-status", "data-transcript-subagent-working"] });
+    attributeFilter: ["data-thread-id", "data-transcript-tool-status", "data-transcript-subagent-working", "class", "style", "hidden"] });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local" || !changes.subagentPanel) return;
     settings.subagentPanel = changes.subagentPanel.newValue;

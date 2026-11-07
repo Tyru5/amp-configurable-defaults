@@ -3,8 +3,7 @@
   const headerSelector = ".expandable-row-header";
   const previewSelector = "[data-amp-tool-preview]";
   const limit = 5;
-  const states = new Map();
-  let thread;
+  const controllers = new Map();
   let pending = false;
   let sequence = 0;
 
@@ -48,15 +47,20 @@
     }
   }
 
-  function refresh() {
-    pending = false;
-    const transcript = document.querySelector("[data-thread-transcript-scroll][data-thread-id]");
-    if (thread !== transcript?.dataset.threadId) {
+  function controller() {
+  const states = new Map();
+  let thread;
+  function teardown() {
+    for (const state of states.values()) restore(state);
+    states.clear();
+  }
+
+  function refresh({ transcript }) {
+    if (thread !== transcript.dataset.threadId) {
       for (const state of states.values()) restore(state);
       states.clear();
-      thread = transcript?.dataset.threadId;
+      thread = transcript.dataset.threadId;
     }
-    if (!transcript) return;
     // Keep native labels mounted for Amp's streaming updates and event handlers.
     // The code blocks also travel with the inert five-call preview copies.
     formatCommands(transcript);
@@ -165,10 +169,16 @@
     }
   }
 
+  return { refresh, teardown };
+  }
+
   function schedule() {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(refresh);
+    requestAnimationFrame(() => {
+      pending = false;
+      globalThis.ampSyncThreadViews(controllers, controller);
+    });
   }
 
   new MutationObserver(records => {
@@ -180,6 +190,6 @@
       return true;
     })) schedule();
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
-    attributeFilter: ["data-thread-id", "data-transcript-status-row-id", "class"] });
+    attributeFilter: ["data-thread-id", "data-transcript-status-row-id", "class", "style", "hidden"] });
   schedule();
 })();

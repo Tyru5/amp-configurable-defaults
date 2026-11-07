@@ -21,7 +21,7 @@ const track = '[data-amp-thread-messages-track]';
 const view = `document.querySelector('${panel}').dataset.view`;
 const open = `document.querySelector('${panel}').matches(':popover-open')`;
 // The slide between list and message animates; wait until the view has settled in place.
-const settled = name => `${view} === '${name}' && Math.abs(document.querySelector('[data-amp-thread-messages-view="${name}"]').getBoundingClientRect().left - document.querySelector('${panel}').getBoundingClientRect().left - document.querySelector('${panel}').clientLeft) < 1`;
+const settled = name => `${open} && document.querySelector('${toggle}').getAttribute('aria-expanded') === 'true' && ${view} === '${name}' && Math.abs(document.querySelector('[data-amp-thread-messages-view="${name}"]').getBoundingClientRect().left - document.querySelector('${panel}').getBoundingClientRect().left - document.querySelector('${panel}').clientLeft) < 1`;
 const setup = String.raw`(() => {
   const parent = 'T-01a190c3-2e10-74ac-8a09-c7b0bcdbf598';
   const child = 'T-01a19424-b624-7647-883f-6a0ccb73b0dc';
@@ -72,7 +72,7 @@ try {
   check(`document.querySelector('${toggle}').title === 'Messages with T-…bcdbf598, T-…cb73b0dc' && !fixtureThreadRequests.some(r => r.id.startsWith('T-'))`, 'before the first open, the tooltip lists thread IDs and no other thread is requested');
   const before = evaluate('fixtureThreadRequests.length');
   browser('click', toggle);
-  browser('wait', '--fn', `document.querySelectorAll('${list} > button').length === 4`);
+  browser('wait', '--fn', `document.querySelector('${toggle}').getAttribute('aria-expanded') === 'true' && document.querySelectorAll('${list} > button').length === 4`);
   check(`fixtureThreadRequests.length > ${before} && fixtureThreadRequests.slice(${before}).every(r => ['fixture-a', messageFixture.parent, messageFixture.child].includes(r.id)) && ${view} === 'list'`, 'opening reads only the current thread and its correspondents and shows the conversation list');
   browser('wait', '--fn', `document.querySelector('${list} > button:first-child [data-amp-thread-messages-name]').textContent === 'Release preparation'`);
   check(`document.querySelector('${toggle}').title === 'Messages with Release preparation, T-…cb73b0dc'`, 'after opening, the tooltip names each other thread once');

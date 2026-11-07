@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "amp configurable defaults",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Customize Amp's sidebar placement, thread panels, and composer model and runner labels. Click the toolbar icon for settings.",
   "homepage_url": "https://github.com/Tyru5/amp-configurable-defaults",
   "icons": {

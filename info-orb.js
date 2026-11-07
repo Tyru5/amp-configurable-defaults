@@ -1,10 +1,14 @@
 (() => {
   const desktop = matchMedia("(min-width: 768px)");
-  const barSelector = ".thread-title-bar-container .app-title-bar";
   let enabled = false;
   let settings = {};
   let pending = false;
+  const controllers = new Map();
+  let sequence = 0;
+
+  function controller() {
   let state;
+  let view;
 
   // Amp's title bar hides its project, mode, and visibility controls at
   // narrower widths. Read the same nodes so the card always matches Amp.
@@ -14,13 +18,16 @@
       value = value?.replace(/\s+/g, " ").trim();
       if (value) rows.push([label, value]);
     };
-    add("Thread", (bar.querySelector("[data-title-text]") ?? bar.querySelector("h2"))?.textContent);
-    add("Executor", bar.querySelector("[data-thread-title-executor-icon]")?.getAttribute("aria-label"));
-    const runner = globalThis.ampThreadRunner;
+    const context = globalThis.ampThreadContexts?.get(view.id);
+    add("Thread", (bar?.querySelector('[data-card-tab="agent"] > button[role="tab"] .truncate') ??
+      bar?.querySelector("[data-title-text]") ?? bar?.querySelector("h2"))?.textContent || context?.title);
+    const runner = context?.runner;
+    add("Executor", bar?.querySelector("[data-thread-title-executor-icon]")?.getAttribute("aria-label") ??
+      (runner?.label === "Executor" ? runner.name : null));
     if (runner?.label === "Runner") add("Runner", runner.name);
     add("Directory", runner?.directory);
     let mode = false;
-    for (const control of bar.querySelectorAll(".thread-title-bar-meta-control")) {
+    for (const control of bar?.querySelectorAll(".thread-title-bar-meta-control") ?? []) {
       if (control.querySelector(".truncate")) add("Project", control.textContent);
       else if (control.querySelector(".border")) add("Visibility", control.textContent);
       else {
@@ -28,7 +35,7 @@
         add("Mode", control.textContent);
       }
     }
-    if (!mode) add("Mode", bar.querySelector("[data-thread-title-mode-icon]")?.getAttribute("aria-label"));
+    if (!mode) add("Mode", bar?.querySelector("[data-thread-title-mode-icon]")?.getAttribute("aria-label") ?? context?.mode);
     return rows;
   }
 
@@ -50,24 +57,28 @@
   }
 
   function hideSoon() {
-    clearTimeout(state.hideTimer);
-    if (state.pinned) return;
+    const current = state;
+    if (!current) return;
+    clearTimeout(current.hideTimer);
+    if (current.pinned) return;
     // A short grace period lets the pointer cross the gap from orb to card.
-    state.hideTimer = setTimeout(() => {
-      if (!state.pinned && !state.orb.matches(":hover, :focus-visible") && !state.card.matches(":hover, :focus-within")) hide();
+    current.hideTimer = setTimeout(() => {
+      if (state !== current) return;
+      if (!current.pinned && !current.orb.matches(":hover, :focus-visible") && !current.card.matches(":hover, :focus-within")) hide();
     }, 150);
   }
 
   function setup() {
+    const id = `amp-info-card-${++sequence}`;
     const orb = document.createElement("button");
     orb.type = "button";
     orb.setAttribute("data-amp-info-orb", "");
     orb.setAttribute("aria-label", "Thread info. Click to pin.");
-    orb.setAttribute("aria-controls", "amp-info-card");
+    orb.setAttribute("aria-controls", id);
     orb.setAttribute("aria-expanded", "false");
     orb.setAttribute("aria-pressed", "false");
     const card = document.createElement("section");
-    card.id = "amp-info-card";
+    card.id = id;
     card.setAttribute("data-amp-info-card", "");
     card.setAttribute("aria-label", "Thread info");
     card.hidden = true;
@@ -109,7 +120,7 @@
   }
 
   function render() {
-    if (!state || state.card.hidden || !state.bar) return;
+    if (!state || state.card.hidden) return;
     const rows = details(state.bar);
     const signature = JSON.stringify(rows);
     if (state.list.dataset.signature === signature) return;
@@ -123,21 +134,22 @@
     }));
   }
 
-  function refresh() {
-    pending = false;
-    const bar = enabled && desktop.matches && document.body ? document.querySelector(barSelector) : null;
-    if (!bar) {
+  function refresh(next) {
+    view = next;
+    if (!enabled || !desktop.matches || !document.body) {
       teardown();
       return;
     }
+    const bar = view.titleBar;
     if (!state) setup();
     if (state.bar !== bar) {
       state.bar = bar;
       state.observer.disconnect();
-      state.observer.observe(bar, { childList: true, subtree: true, characterData: true, attributes: true });
+      if (bar) state.observer.observe(bar, { childList: true, subtree: true, characterData: true, attributes: true });
     }
     // Float beside the conversation, not over a left sidebar or left-side view.
-    const left = `${Math.round(Math.max(0, bar.closest(".thread-title-bar-container").getBoundingClientRect().left))}px`;
+    const anchor = bar?.closest(".thread-title-bar-container") ?? view.host;
+    const left = `${Math.round(Math.max(0, anchor.getBoundingClientRect().left))}px`;
     if (state.orb.style.getPropertyValue("--amp-info-orb-left") !== left) {
       state.orb.style.setProperty("--amp-info-orb-left", left);
       state.card.style.setProperty("--amp-info-orb-left", left);
@@ -145,16 +157,23 @@
     render();
   }
 
+  return { refresh, teardown };
+  }
+
   function schedule() {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(refresh);
+    requestAnimationFrame(() => {
+      pending = false;
+      globalThis.ampSyncThreadViews(controllers, controller);
+    });
   }
 
   new MutationObserver(records => {
     if (records.some(record => !(record.target instanceof Element && record.target.closest("[data-amp-info-orb], [data-amp-info-card]")))) schedule();
-  }).observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "data-state"] });
-  addEventListener("amp-thread-runner-change", schedule);
+  }).observe(document, { childList: true, subtree: true, attributes: true,
+    attributeFilter: ["class", "style", "data-state", "data-thread-id", "hidden"] });
+  addEventListener("amp-thread-context-change", schedule);
   addEventListener("resize", schedule);
   desktop.addEventListener("change", schedule);
   chrome.storage.onChanged.addListener((changes, area) => {
