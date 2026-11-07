@@ -2,9 +2,15 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 
 const url = process.argv[2] || 'http://localhost:8765/tests/fixture.html';
-const session = 'amp-sidebar-test';
+const session = `amp-sidebar-test-${process.pid}`;
 function browser(...args) {
   return execFileSync('agent-browser', ['--session', session, ...args], { encoding: 'utf8' }).trim();
+}
+// Send Escape as separate key events: a full press marks headless Chrome's page
+// hidden on macOS, and returning the tab to the front would refire focus events.
+function keyEscape() {
+  browser('keydown', 'Escape');
+  browser('keyup', 'Escape');
 }
 function evaluate(code) {
   return JSON.parse(browser('--json', 'eval', code)).data.result;
@@ -182,7 +188,7 @@ try {
   browser('press', 'Enter');
   browser('hover', '#switch');
   check(`!document.querySelector('[data-amp-subagents-ui="reader"]').hidden && document.querySelector('[data-amp-subagents-ui="reader"] button[aria-pressed="true"]') !== null`, 'activating a section pins the sheet');
-  browser('press', 'Escape');
+  keyEscape();
   check(`document.querySelector('[data-amp-subagents-ui="reader"]').hidden && !document.querySelector('[data-amp-subagents-ui="panel"]').hidden && document.activeElement.dataset.ampSubagentsSection === 'output'`, 'Escape closes only the sheet and returns section focus without reopening');
   browser('click', '[data-amp-subagents-list] > button:nth-child(2)');
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-task]').textContent === 'BETA task'`);
@@ -234,7 +240,7 @@ try {
   browser('wait', '--fn', `!document.querySelector('[data-amp-subagents-ui="reader"]').hidden && !document.querySelector('[data-amp-subagents-task]').hidden`);
   check(`document.querySelector('[data-amp-subagents-task] h2').textContent === 'Goal' && document.querySelector('[data-amp-subagents-task] p code').textContent === 'retry.ts' && document.querySelector('[data-amp-subagents-task] p strong').textContent === 'report' && document.querySelectorAll('[data-amp-subagents-task] ul > li').length === 2 && document.querySelector('[data-amp-subagents-task] pre code').textContent === 'throw error;'`, 'plain task prompts render their markdown blocks and inline formatting');
   check(`document.querySelector('[data-amp-subagents-task] a').href === 'https://example.com/retry' && document.querySelector('[data-amp-subagents-task] a').target === '_blank' && document.querySelector('[data-amp-subagents-task] p:last-child br') !== null && document.querySelector('[data-amp-subagents-task] p:last-child').textContent === 'See docs.Do not edit files.' && document.querySelector('[data-amp-subagents-task] h2').getBoundingClientRect().height > 0`, 'task links open safely and single line breaks are kept');
-  browser('press', 'Escape');
+  keyEscape();
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="reader"]').hidden`);
   browser('eval', `[...document.querySelectorAll('[data-amp-subagents-list] > button')].find(e => e.textContent.includes('Result: Package extension')).click()`);
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-output]').textContent === 'DELTA background result'`);
@@ -284,7 +290,7 @@ try {
   browser('click', '[data-amp-subagents-ui="toggle"]');
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="panel"]').hidden === false`);
   browser('focus', '[aria-label="Close subagents"]');
-  browser('press', 'Escape');
+  keyEscape();
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="panel"]').hidden === true`);
   check(`document.querySelector('[data-amp-subagents-ui="panel"]').hidden && document.activeElement.matches('[data-amp-subagents-ui="toggle"]')`, 'Escape closes the reading panel and returns focus to its toggle');
   check(`Object.keys(JSON.parse(localStorage.getItem('extension-settings'))).every(key => ['enabled', 'right', 'rightWidth', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel', 'showComposerContext'].includes(key)) && !JSON.stringify({ ...localStorage, ...sessionStorage }).includes('THREAD_B_OUTPUT')`, 'agent tasks and output never enter browser storage');
@@ -366,7 +372,7 @@ try {
   browser('hover', `${card} a`);
   browser('click', `${card} a`);
   check(`location.hash === '#hover-details'`, 'native hover links remain interactive');
-  browser('press', 'Escape');
+  keyEscape();
   browser('wait', '--fn', `!document.querySelector('${card}')`);
   browser('focus', '#thread-child a');
   browser('wait', '--fn', `document.querySelector('${card}') !== null`);
@@ -376,7 +382,7 @@ try {
   browser('eval', 'chrome.storage.local.set({ right: false })');
   browser('wait', '--fn', `document.querySelector('${card}').getBoundingClientRect().left >= document.querySelector('#thread-child a').getBoundingClientRect().right`);
   check(`!document.querySelector('[data-sidebar-touch-preview]')`, 'moving left removes extension hover overrides');
-  browser('press', 'Escape');
+  keyEscape();
   browser('click', '#switch');
   browser('hover', '#thread-other a');
   browser('wait', '--fn', `document.querySelector('${card}') !== null`);
@@ -609,6 +615,12 @@ try {
   browser('eval', `document.querySelector('[data-thread-id]').dataset.threadId = 'fixture-missing'`);
   browser('wait', '--fn', `!document.querySelector('${times}')`);
   check(`!document.querySelector('${times}')`, 'failed navigation never displays timestamps from the previous thread');
+  browser('reload');
+  browser('eval', `${setupTimestamps}; chrome.storage.local.set({ infoOrb: true, subagentPanel: true }); fixtureAgents.add('alpha', 'Check layout', 'ALPHA task'); fixtureToolSection('read-only')`);
+  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 2 && document.querySelector('[data-amp-subagents-ui="toggle"]') && document.querySelector('[data-amp-info-orb]') && document.querySelector('${preview}')`);
+  browser('eval', `document.querySelectorAll('[data-message-composer-root]').forEach(node => node.remove()); new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+  check(`document.querySelectorAll('${times}').length === 2 && document.querySelector('[data-amp-subagents-ui="toggle"]')?.isConnected && document.querySelector('[data-amp-info-orb]')?.isConnected && document.querySelector('${preview}')?.isConnected`,
+    'a thread without a composer keeps timestamps, Subagents, the info orb, and tool previews');
   console.log('All browser checks passed.');
 } finally {
   browser('close');

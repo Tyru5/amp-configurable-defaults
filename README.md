@@ -272,7 +272,11 @@ node --check content.js
 node --check thread-split.js
 node --check subagents.js
 node --check thread-messages.js
+node --check composer.js
+node --check info-orb.js
+node --check tool-preview.js
 node --check options.js
+node --check docs/landing.js
 node --test tests/background.test.mjs
 node --test tests/options.test.mjs
 node tests/thread-messages.mjs # with the fixture server running on port 8765
@@ -302,13 +306,19 @@ node tests/browser.mjs
 node tests/landing.mjs
 ```
 
-For split-pane regression checks, pass an existing agent-browser session
-connected to your test browser. The test opens and closes only its own fixture
-tab, leaving the browser and other tabs open:
+For split-pane regression checks, pass an agent-browser session name. A new
+name launches its own browser, so no remote debugging connection is needed.
+The test opens and closes only its own fixture tab; close the session afterwards:
 
 ```sh
-node tests/thread-split.mjs <connected-session> http://localhost:8765/tests/fixture.html
+node tests/thread-split.mjs split-test http://localhost:8765/tests/fixture.html
+agent-browser --session split-test close
 ```
+
+The other browser checks launch their own uniquely named sessions. On macOS,
+a full Escape press marks headless Chrome's page hidden, so they send Escape
+as separate key events, or bring the tab back to the front when a native
+popover must close.
 
 The fixture's on-page toggle changes the placement preference through a mock
 Chrome storage API. It is not the toolbar popup or a control added to live Amp.
@@ -324,7 +334,10 @@ Each visible conversation gets its own context, info card, and worker controls.
 Space chat timestamps use `spaceChat.createdAt`; worker timestamps retain sent,
 started, and finished semantics. The Messages filter and existing split
 reversal/divider handling are unchanged. Space worker cards are not treated
-as Task subagents.
+as Task subagents. A conversation without a composer keeps its timestamps,
+info card, Subagents panel, and tool previews. The visible conversations are
+found once per page change and shared by every feature, so long threads
+stream without extra per-frame work.
 
 The right navigation rail keeps its border inward. The collapsed sidebar
 toggle stays beside the rail, with room reserved in legacy headers.

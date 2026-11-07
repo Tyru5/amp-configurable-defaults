@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 
 const url = process.argv[2] || "http://localhost:8765/docs/";
-const session = "landing-test";
+const session = `landing-test-${process.pid}`;
 function browser(...args) {
   return execFileSync("agent-browser", ["--session", session, ...args], {
     encoding: "utf8",

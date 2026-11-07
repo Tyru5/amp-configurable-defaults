@@ -4,28 +4,49 @@
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
   // A Space and its workers share a page, but never a composer or thread data.
-  const transcriptSelector = '[data-thread-transcript-scroll][data-thread-id], [data-thread-transcript-override][data-thread-id]';
-  globalThis.ampThreadViews = () => [...document.querySelectorAll(transcriptSelector)].filter(transcript =>
-    !transcript.closest('[data-space-thread-tabs-parking]') && transcript.checkVisibility({ visibilityProperty: true })).map(transcript => {
-    let container = transcript.closest('[data-thread-agent-tab-content]') ?? transcript.parentElement;
-    while (container && !container.querySelector('[data-message-composer-root]')) {
-      container = container.parentElement;
-      if (container?.querySelectorAll(transcriptSelector).length > 1) return null;
-    }
-    if (!container) return null;
-    const layout = transcript.closest('.thread-layout-panes');
-    const host = container.matches('[data-thread-agent-tab-content]') ? container :
-      layout?.querySelectorAll(transcriptSelector).length === 1 ? layout : container;
-    const composer = container.querySelector('[data-message-composer-root]');
-    const pane = transcript.closest('[data-thread-file-tab-pane]');
-    const titleBar = pane?.querySelector('[data-pane-tab-strip]') ??
-      host.querySelector('.thread-title-bar-container .app-title-bar') ??
-      host.querySelector('.thread-title-bar-container');
-    const header = titleBar?.querySelector('[data-thread-title-bar-controls]') ??
-      titleBar?.querySelector('[data-tab-strip-actions]') ?? titleBar;
-    return { id: transcript.dataset.threadId, transcript, host, composer, header, titleBar,
-      toolbar: composer?.querySelector('[role="region"][aria-label="Attachments"]') };
-  }).filter(Boolean);
+  function findViews() {
+    // Single-attribute queries stay fast on long transcripts; a selector list scans every node.
+    const transcripts = [...document.querySelectorAll("[data-thread-transcript-scroll]"),
+      ...document.querySelectorAll("[data-thread-transcript-override]")].filter(node => node.hasAttribute("data-thread-id"));
+    const composers = [...document.querySelectorAll('[data-message-composer-root]')];
+    // A view's container is its lowest ancestor holding a composer and no other
+    // transcript. Checking the few transcripts and composers with contains()
+    // avoids scanning a long transcript once per ancestor.
+    const alone = (node, transcript) => !transcripts.some(other => other !== transcript && node.contains(other));
+    return transcripts.filter(transcript =>
+      !transcript.closest('[data-space-thread-tabs-parking]') && transcript.checkVisibility({ visibilityProperty: true })).map(transcript => {
+      const tab = transcript.closest('[data-thread-agent-tab-content]');
+      let container = tab ?? transcript.parentElement;
+      let composer = composers.find(node => container.contains(node));
+      while (!composer && container.parentElement && alone(container.parentElement, transcript)) {
+        container = container.parentElement;
+        composer = composers.find(node => container.contains(node));
+      }
+      const layout = transcript.closest('.thread-layout-panes');
+      const native = tab ?? (layout && alone(layout, transcript) ? layout : null);
+      // Read-only threads have no composer; keep their native host so the
+      // panels that do not need a composer still work there.
+      const host = composer ? native ?? container : native;
+      if (!host) return null;
+      const pane = transcript.closest('[data-thread-file-tab-pane]');
+      const titleBar = pane?.querySelector('[data-pane-tab-strip]') ??
+        host.querySelector('.thread-title-bar-container .app-title-bar') ??
+        host.querySelector('.thread-title-bar-container');
+      const header = titleBar?.querySelector('[data-thread-title-bar-controls]') ??
+        titleBar?.querySelector('[data-tab-strip-actions]') ?? titleBar;
+      return { id: transcript.dataset.threadId, transcript, host, composer: composer ?? null, header, titleBar,
+        toolbar: composer?.querySelector('[role="region"][aria-label="Attachments"]') ?? null };
+    }).filter(Boolean);
+  }
+
+  // Every feature asks for the views on each animation frame while a reply
+  // streams. Share one result until the page structure, visibility, or size changes.
+  let views = null;
+  const invalidate = () => { views = null; };
+  new MutationObserver(invalidate).observe(document, { childList: true, subtree: true, attributes: true,
+    attributeFilter: ["data-thread-id", "data-state", "class", "style", "hidden"] });
+  addEventListener("resize", invalidate);
+  globalThis.ampThreadViews = () => views ??= findViews();
 
   globalThis.ampSyncThreadViews = (controllers, create) => {
     const views = globalThis.ampThreadViews();

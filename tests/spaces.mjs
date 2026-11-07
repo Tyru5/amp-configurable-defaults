@@ -1,10 +1,23 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 
-const session = 'amp-spaces-test';
+const session = `amp-spaces-test-${process.pid}`;
 const url = process.argv[2] || 'http://localhost:8765/tests/fixture.html';
 function browser(...args) {
   return execFileSync('agent-browser', ['--session', session, ...args], { encoding: 'utf8' }).trim();
+}
+// A full Escape press marks headless Chrome's page hidden on macOS, which pauses
+// animation frames. Native popovers only close on a full press, so bring the tab
+// back to the front afterwards.
+function pressEscape() {
+  browser('press', 'Escape');
+  browser('tab', JSON.parse(browser('--json', 'tab', 'list')).data.tabs.find(tab => tab.active).tabId);
+}
+// Send Escape as separate key events: a full press marks headless Chrome's page
+// hidden on macOS, and returning the tab to the front would refire focus events.
+function keyEscape() {
+  browser('keydown', 'Escape');
+  browser('keyup', 'Escape');
 }
 function evaluate(code) {
   return JSON.parse(browser('--json', 'eval', code)).data.result;
@@ -251,7 +264,7 @@ try {
     browser('click', `#${evaluate(`document.querySelector('#space-worker-card ${toggle}').getAttribute('aria-controls')`)} ${list} > button:first-child`);
     eventually(`document.querySelector('[data-amp-thread-messages-body]')?.textContent.includes('A no-fromPuck message')`, 'the retained message is the worker A payload, not a same-ID message from another pane');
     check(`!document.querySelector('[data-amp-thread-messages-body]').textContent.includes('excluded Puck')`, 'Puck payload does not leak into message detail');
-    browser('press', 'Escape');
+    pressEscape();
   });
   test('no false Task panel', () => {
     check(`!document.querySelector('[data-amp-subagents-ui]') && !document.querySelector('[data-amp-subagents-open]')`,
@@ -332,14 +345,14 @@ try {
     eventually(`document.querySelectorAll('#${panelID} ${list} > button').length === 2`, 'second worker messages come from its own thread');
     browser('click', `#${panelID} ${list} > button:first-child`);
     eventually(`document.querySelector('#${panelID} [data-amp-thread-messages-body]')?.textContent.includes('B no-fromPuck message')`, 'second worker opens B content, not cached A content');
-    browser('press', 'Escape');
+    pressEscape();
     check(`fixtureThreadRequests.some(r => r.id === 'space-worker-b') && !fixtureThreadRequests.some(r => ['space-hidden-worker','space-parked-worker'].includes(r.id))`,
       'adding a visible worker fetches that worker but still ignores parked contexts');
   });
   test('independent tool previews', () => {
     for (const id of ['space-chat-card', 'space-worker-card']) {
       browser('eval', `fixtureSpaces.orb('${id}').focus()`);
-      browser('press', 'Escape');
+      keyEscape();
     }
     browser('eval', `for (const [id, key, count] of [['space-worker-card','a-calls',7],['space-worker-b-card','b-calls',9]]) {
       const root = document.querySelector('#' + id + ' [data-thread-transcript-content]');

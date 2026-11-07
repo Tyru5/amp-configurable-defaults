@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 
-const session = 'spaces-layout';
+const session = `spaces-layout-${process.pid}`;
 const browser = (...args) => execFileSync('agent-browser', ['--session', session, ...args], { encoding: 'utf8' }).trim();
 const evaluate = code => JSON.parse(browser('--json', 'eval', code)).data.result;
 const check = (code, label) => {

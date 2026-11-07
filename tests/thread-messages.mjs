@@ -1,10 +1,17 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 
-const session = 'amp-messages-test';
+const session = `amp-messages-test-${process.pid}`;
 const url = process.argv[2] || 'http://localhost:8765/tests/fixture.html';
 function browser(...args) {
   return execFileSync('agent-browser', ['--session', session, ...args], { encoding: 'utf8' }).trim();
+}
+// A full Escape press marks headless Chrome's page hidden on macOS, which pauses
+// animation frames. Native popovers only close on a full press, so bring the tab
+// back to the front afterwards.
+function pressEscape() {
+  browser('press', 'Escape');
+  browser('tab', JSON.parse(browser('--json', 'tab', 'list')).data.tabs.find(tab => tab.active).tabId);
 }
 function evaluate(code) {
   return JSON.parse(browser('--json', 'eval', code)).data.result;
@@ -116,7 +123,7 @@ try {
   browser('wait', '--fn', `document.querySelector('${panel} header > p').textContent === 'Sent'`);
   check(`document.querySelectorAll('${list} > button').length === 4`, 'late results update cached calls after they leave the data page');
   browser('eval', `fixtureThreadData['fixture-a'].transcriptPage.messages = messageFixture.messages`);
-  browser('press', 'Escape');
+  pressEscape();
   browser('wait', '--fn', `!${open} && document.activeElement.matches('${toggle}') && document.querySelector('${toggle}').getAttribute('aria-expanded') === 'false'`);
   console.log('PASS Escape closes the popover and restores keyboard focus');
   browser('click', toggle);
