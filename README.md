@@ -158,7 +158,7 @@ than risk attaching them to the wrong agent.
 A muted message icon and count sit in the composer toolbar, after the model and
 runner label. It appears only once the thread has a message to or from another
 thread; threads without one show nothing. Clicking it opens a small popover above
-the composer with the conversation list: each entry shows the other thread, a
+the composer with the conversation list, newest on top: each entry shows the other thread, a
 direction arrow, how long ago it arrived, and a delivery status on sends.
 Choosing an entry slides to that message: its text, delivery time,
 attachment count, and link to the other thread, with a back control to return to

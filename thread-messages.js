@@ -287,7 +287,10 @@
     s.toggle.title = peers.length ? `Messages with ${peers.slice(0, 3).join(", ")}${peers.length > 3 ? `, and ${peers.length - 3} more` : ""}` : "Messages with other threads";
     write(s.notice, s.failed ? "Couldn't load messages. Close and reopen to retry." : "");
     s.notice.hidden = !s.notice.textContent;
-    for (const [key, entry] of s.items) {
+    // Newest on top. Entries arrive in transcript order, so undated entries and
+    // ties fall back to the reverse of that order.
+    const ordered = [...s.items].reverse().sort(([, a], [, b]) => (b.at?.getTime() ?? 0) - (a.at?.getTime() ?? 0));
+    ordered.forEach(([key, entry], index) => {
       if (!entry.button) {
         entry.button = button("", () => {
           if (s.selected !== key) s.detail.scrollTop = 0;
@@ -303,8 +306,10 @@
         const mark = document.createElement("span");
         mark.append(icon(entry.direction === "Incoming" ? "arrowDownLeft" : "arrowUpRight"));
         entry.button.append(who, document.createElement("span"), document.createElement("time"), document.createElement("span"), mark);
-        s.list.append(entry.button);
       }
+      // Insert only out-of-place rows, so a focused row is not detached when a
+      // newer one lands above it.
+      if (s.list.children[index] !== entry.button) s.list.insertBefore(entry.button, s.list.children[index] ?? null);
       const [who, chip, time, preview] = entry.button.children;
       const incoming = entry.direction === "Incoming";
       entry.button.dataset.delivery = entry.status.toLowerCase();
@@ -322,10 +327,10 @@
       const compact = entry.body.replace(/\s+/g, " ");
       write(preview, compact.length > 70 ? `${compact.slice(0, 70).replace(/\s+\S*$/, "")}…` : compact || "No message text");
       entry.button.setAttribute("aria-pressed", String(s.selected === key));
-    }
+    });
     if (!s.items.size) return;
     if (!s.items.has(s.selected)) {
-      s.selected = s.items.keys().next().value;
+      s.selected = ordered[0][0];
       s.items.get(s.selected).button.setAttribute("aria-pressed", "true");
     }
     const entry = s.items.get(s.selected);

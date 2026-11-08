@@ -32,11 +32,13 @@ const settled = name => `${open} && document.querySelector('${toggle}').getAttri
 const setup = String.raw`(() => {
   const parent = 'T-01a190c3-2e10-74ac-8a09-c7b0bcdbf598';
   const child = 'T-01a19424-b624-7647-883f-6a0ccb73b0dc';
-  const incoming = { role: 'user', messageId: 'received', meta: { fromExecutorThreadID: parent }, content: [
+  // Transcript order is oldest first; the list must stack them newest first.
+  const ago = minutes => new Date(Date.now() - minutes * 60000).toISOString();
+  const incoming = { role: 'user', messageId: 'received', createdAt: ago(40), meta: { fromExecutorThreadID: parent }, content: [
     { type: 'text', text: 'Please test the worktree instances with the real bridge. Report failures and attach evidence. <script>window.untrustedMessageRan = true</script>' },
     { type: 'text', text: 'PRIVATE HIDDEN METADATA', hidden: true },
   ] };
-  const send = (id, thread) => ({ role: 'assistant', messageId: id, state: { type: 'complete' }, content: [
+  const send = (id, thread, minutes) => ({ role: 'assistant', messageId: id, createdAt: ago(minutes), state: { type: 'complete' }, content: [
     { type: 'tool_use', id, name: 'send_thread_message', input: { thread,
       message: 'Restart now keeps the signed-in window open. The bridge shuts down cleanly.\n\nRegression checks pass. Windows and Linux remain untested.', media_paths: ['evidence.png'] } },
   ] });
@@ -45,11 +47,12 @@ const setup = String.raw`(() => {
     { role: 'user', messageId: 'human', content: [{ type: 'text', text: 'This human message mentions send_thread_message and ' + child }] },
     { ...incoming, messageId: 'nested', parentToolUseId: 'subagent' },
     { ...incoming, messageId: 'puck', meta: { fromExecutorThreadID: parent, fromPuck: true } },
-    send('failed', child), send('sent', 'https://ampcode.com/threads/' + parent), send('pending', parent),
+    send('failed', child, 30), send('sent', 'https://ampcode.com/threads/' + parent, 20), send('pending', parent, 10),
     result('sent', { status: 'done', result: { threadID: parent } }),
     result('failed', { status: 'error', error: 'File too large to upload. The message was not sent.' }),
   ];
-  window.messageFixture = { parent, child, result, messages };
+  const later = { ...incoming, messageId: 'later', createdAt: ago(0), content: [{ type: 'text', text: 'A newer reply arrived.' }] };
+  window.messageFixture = { parent, child, result, later, messages };
   fixtureThreadData['fixture-a'].transcriptPage.messages = messages;
   // The parent is readable and named; the child stays unreadable, so it keeps its ID.
   fixtureThreadData[parent] = { type: 'result', transcriptPage: { messages: [] }, thread: { id: parent, title: '  Release preparation  ' } };
@@ -84,8 +87,9 @@ try {
   browser('wait', '--fn', `document.querySelector('${list} > button:first-child [data-amp-thread-messages-name]').textContent === 'Release preparation'`);
   check(`document.querySelector('${toggle}').title === 'Messages with Release preparation, T-…cb73b0dc'`, 'after opening, the tooltip names each other thread once');
   check(`(() => { const names = [...document.querySelectorAll('${list} [data-amp-thread-messages-name]')];
-    return names.map(n => n.textContent + '|' + n.dataset.kind).join(',') === 'Release preparation|title,T-…cb73b0dc|id,Release preparation|title,Release preparation|title' &&
+    return names.map(n => n.textContent + '|' + n.dataset.kind).join(',') === 'Release preparation|title,Release preparation|title,T-…cb73b0dc|id,Release preparation|title' &&
       fixtureThreadRequests.filter(r => r.id === messageFixture.parent).length === 1; })()`, 'rows name readable threads by title, fetched once, and keep the ID for unreadable ones');
+  check(`[...document.querySelectorAll('${list} > button')].map(b => b.dataset.delivery).join() === 'pending,sent,failed,received'`, 'entries stack newest on top, oldest at the bottom');
   check(`document.querySelector('${toggle}').textContent.includes('4') && document.querySelector('[data-amp-thread-messages-view="message"]').inert`, 'the control counts loaded messages and the message view is inert behind the list');
   // The track animates its height; wait for it to land on the shown view's content height.
   const fitted = name => `Math.abs(document.querySelector('${track}').getBoundingClientRect().height - document.querySelector('[data-amp-thread-messages-view="${name}"] > div').offsetHeight) < 1`;
@@ -93,7 +97,7 @@ try {
   check(`${fitted('list')} && document.querySelector('${track}').style.height !== ''`, 'the panel takes the list height, not the message behind it');
   check(`[...document.querySelectorAll('${list} > button')].every(b => (b.dataset.direction === 'incoming') === b.children[1].hidden)`, 'delivery chips appear on sends only');
   if (process.env.CAPTURE_DIR) browser('screenshot', process.env.CAPTURE_DIR + '/thread-messages-list.png');
-  browser('click', `${list} > button:first-child`);
+  browser('click', `${list} > button:last-child`);
   browser('wait', '--fn', `${settled('message')} && document.activeElement.matches('${back}')`);
   check(`document.querySelector('[data-amp-thread-messages-view="list"]').inert && !document.querySelector('${panel} section').inert`, 'choosing an entry transitions to its message and moves focus to the back control');
   browser('wait', '--fn', fitted('message'));
@@ -104,24 +108,26 @@ try {
   if (process.env.CAPTURE_DIR) browser('screenshot', process.env.CAPTURE_DIR + '/thread-messages-incoming.png');
   browser('click', back);
   browser('wait', '--fn', settled('list'));
-  check(`document.activeElement.matches('${list} > button:first-child') && document.activeElement.getAttribute('aria-pressed') === 'true'`, 'back returns to the list with the read entry focused and marked');
-  browser('click', `${list} > button:nth-child(2)`);
+  check(`document.activeElement.matches('${list} > button:last-child') && document.activeElement.getAttribute('aria-pressed') === 'true'`, 'back returns to the list with the read entry focused and marked');
+  browser('click', `${list} > button:nth-child(3)`);
   browser('wait', '--fn', settled('message'));
   check(`document.querySelector('${panel} section').dataset.delivery === 'failed' && document.querySelector('${panel} header > p').textContent === 'Failed' && document.querySelector('[data-amp-thread-messages-error]').textContent.includes('not sent') && document.querySelector('${panel} a').textContent === messageFixture.child`, 'a complete assistant call with a failed result is not marked sent');
   if (process.env.CAPTURE_DIR) browser('screenshot', process.env.CAPTURE_DIR + '/thread-messages-failed.png');
   browser('click', back);
   browser('wait', '--fn', settled('list'));
-  browser('click', `${list} > button:nth-child(3)`);
+  browser('click', `${list} > button:nth-child(2)`);
   browser('wait', '--fn', settled('message'));
   check(`document.querySelector('${panel} header > p').textContent === 'Sent' && document.querySelector('[data-amp-thread-messages-error]').hidden && document.querySelector('${panel} section').textContent.includes('1 attachment')`, 'identical message text remains separate and success follows its own tool ID');
   browser('click', back);
   browser('wait', '--fn', settled('list'));
-  browser('click', `${list} > button:nth-child(4)`);
+  browser('click', `${list} > button:nth-child(1)`);
   browser('wait', '--fn', settled('message'));
   check(`document.querySelector('${panel} header > p').textContent === 'Pending'`, 'missing delivery result remains pending');
-  browser('eval', `fixtureThreadData['fixture-a'].transcriptPage.messages = [messageFixture.result('pending', {status:'done'})]`);
+  browser('eval', `fixtureThreadData['fixture-a'].transcriptPage.messages = [messageFixture.result('pending', {status:'done'}), messageFixture.later]`);
   browser('wait', '--fn', `document.querySelector('${panel} header > p').textContent === 'Sent'`);
-  check(`document.querySelectorAll('${list} > button').length === 4`, 'late results update cached calls after they leave the data page');
+  check(`document.querySelectorAll('${list} > button').length === 5`, 'late results update cached calls after they leave the data page');
+  check(`[...document.querySelectorAll('${list} > button')].map(b => b.dataset.delivery).join() === 'received,sent,sent,failed,received' &&
+    document.querySelector('${list} > button:first-child').textContent.includes('A newer reply')`, 'a newly arrived message stacks on top of the cached ones');
   browser('eval', `fixtureThreadData['fixture-a'].transcriptPage.messages = messageFixture.messages`);
   pressEscape();
   browser('wait', '--fn', `!${open} && document.activeElement.matches('${toggle}') && document.querySelector('${toggle}').getAttribute('aria-expanded') === 'false'`);
@@ -138,7 +144,7 @@ try {
     return d.bottom <= t.top && t.top - d.bottom < 12 && d.left >= 0 && d.right <= innerWidth; })()`, 'reopening resumes the message being read in a popover just above the control');
   browser('click', back);
   browser('wait', '--fn', settled('list'));
-  browser('click', `${list} > button:first-child`);
+  browser('click', `${list} > button:last-child`);
   browser('wait', '--fn', settled('message'));
   // Amp's transcript scrolls inside [data-thread-transcript-scroll]; make the fixture's scroll too, with the entry out of view.
   const scroller = `document.querySelector('[data-thread-transcript-scroll]')`;

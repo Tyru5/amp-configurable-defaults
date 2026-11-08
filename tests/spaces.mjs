@@ -261,7 +261,7 @@ try {
     const workerList = `document.getElementById(document.querySelector('#space-worker-card ${toggle}').getAttribute('aria-controls')).querySelector('${list}')`;
     eventually(`${workerList}?.children.length === 2`, 'both no-fromPuck and explicit false messages survive, while fromPuck=true is excluded');
     check(`[...${workerList}.children].every(n => n.dataset.direction === 'incoming')`, 'worker message entries retain incoming direction');
-    browser('click', `#${evaluate(`document.querySelector('#space-worker-card ${toggle}').getAttribute('aria-controls')`)} ${list} > button:first-child`);
+    browser('click', `#${evaluate(`document.querySelector('#space-worker-card ${toggle}').getAttribute('aria-controls')`)} ${list} > button:last-child`);
     eventually(`document.querySelector('[data-amp-thread-messages-body]')?.textContent.includes('A no-fromPuck message')`, 'the retained message is the worker A payload, not a same-ID message from another pane');
     check(`!document.querySelector('[data-amp-thread-messages-body]').textContent.includes('excluded Puck')`, 'Puck payload does not leak into message detail');
     pressEscape();
@@ -343,7 +343,7 @@ try {
     browser('click', `#space-worker-b-card ${toggle}`);
     const panelID = evaluate(`document.querySelector('#space-worker-b-card ${toggle}').getAttribute('aria-controls')`);
     eventually(`document.querySelectorAll('#${panelID} ${list} > button').length === 2`, 'second worker messages come from its own thread');
-    browser('click', `#${panelID} ${list} > button:first-child`);
+    browser('click', `#${panelID} ${list} > button:last-child`);
     eventually(`document.querySelector('#${panelID} [data-amp-thread-messages-body]')?.textContent.includes('B no-fromPuck message')`, 'second worker opens B content, not cached A content');
     pressEscape();
     check(`fixtureThreadRequests.some(r => r.id === 'space-worker-b') && !fixtureThreadRequests.some(r => ['space-hidden-worker','space-parked-worker'].includes(r.id))`,

@@ -29,6 +29,14 @@ Building or testing the package does not upload, submit, or publish it.
 - Add Spaces ownership, timestamp, teardown, and four-state nested-layout
   regression coverage. No permissions or defaults changed.
 
+## Thread messages change in 1.4.2
+
+- The thread message list stacks newest on top, oldest at the bottom, and new
+  messages arrive above cached ones. With nothing chosen yet, the popover opens
+  the newest message. Undated entries fall back to reverse transcript order.
+- Added fixture checks for the newest-first order and for a later message
+  landing on top. No permissions, defaults, or requests changed.
+
 ## Already released in 1.4.0 and 1.4.1
 
 - Added a thread message control in the composer toolbar that lists incoming and outgoing thread
@@ -105,9 +113,10 @@ Supporting website work already present when 1.3.0 shipped:
 
 ## Version 1.4.2 package verification
 
-- The integrated compatibility/sidebar ZIP is 52,062 bytes, with SHA-256
-  `4c55fcd17dc2e57bf6196cf95172645dc90da2afaa1368104fdf789d4d24443d`.
-- Local checks cover 49 Spaces, 39 layout, 177 legacy browser, 35 Messages,
+- The ZIP built from the current source, including the newest-first thread
+  message list, is 52,699 bytes, with SHA-256
+  `0ad885fd0b4f5a68d7e7e0bae1cab3c1873e727d7455f9a6ebea6e4fce69dd26`.
+- Local checks cover 49 Spaces, 39 layout, 177 legacy browser, 37 Messages,
   11 split-pane, and 35 landing-page assertions, plus 13 Node tests and
   2 Python package tests. Syntax, whitespace, and reproducible packaging pass.
 - Earlier authenticated Helium verification used a compatibility-only 1.4.1
