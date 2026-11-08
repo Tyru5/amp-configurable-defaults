@@ -63,6 +63,41 @@
     }
   };
 
+  // Every feature's entry point is a quiet control at the end of the composer's
+  // attachments toolbar, after the upload button and the model and runner label.
+  // Controls keep one order however their scripts happen to mount: this thread
+  // (info), its subagents, then messages with other threads.
+  const controlOrder = ["info", "subagents", "messages"];
+  globalThis.ampMountComposerControl = (toolbar, control) => {
+    const rank = node => controlOrder.indexOf(node.dataset.ampComposerControl);
+    const next = [...toolbar.children].find(node => node !== control && rank(node) > rank(control)) ?? null;
+    if (control.parentElement !== toolbar || control.nextElementSibling !== next) toolbar.insertBefore(control, next);
+  };
+
+  // Composer popovers open upward from their control, left-aligned with it and
+  // kept inside the window. A control near the top of the window, as in a
+  // read-only thread's title bar, opens downward instead.
+  globalThis.ampPlacePopover = (panel, control) => {
+    const anchor = control.getBoundingClientRect();
+    const left = Math.max(8, Math.min(anchor.left - 4, innerWidth - panel.offsetWidth - 8));
+    panel.style.left = `${Math.round(left)}px`;
+    const above = anchor.top - 6 >= panel.offsetHeight + 8 || anchor.top > innerHeight / 2;
+    panel.style.bottom = above ? `${Math.round(innerHeight - anchor.top + 6)}px` : "auto";
+    panel.style.top = above ? "auto" : `${Math.round(anchor.bottom + 6)}px`;
+  };
+
+  // Stroke icons on a 24-unit grid; inline SVG so page CSP cannot block them.
+  globalThis.ampIcon = d => {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("data-amp-icon", "");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    svg.append(path);
+    return svg;
+  };
+
   // Shared by the Messages dock and the Subagents panel: bring a transcript
   // entry into view, focus it, and flash a highlight once it has arrived so the
   // eye lands on the right place. The highlight restarts if the same entry is

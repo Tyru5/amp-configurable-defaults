@@ -27,7 +27,6 @@
     return node;
   }
 
-  // Stroke icons on a 24-unit grid; inline SVG so page CSP cannot block them.
   const ICONS = {
     bubble: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z",
     chevronUp: "m18 15-6-6-6 6",
@@ -36,13 +35,8 @@
     arrowUpRight: "M7 7h10v10M7 17 17 7",
   };
   function icon(name) {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("aria-hidden", "true");
+    const svg = globalThis.ampIcon(ICONS[name]);
     svg.dataset.ampThreadMessagesIcon = name;
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", ICONS[name]);
-    svg.append(path);
     return svg;
   }
 
@@ -81,14 +75,8 @@
     return !!state?.panel.matches(":popover-open");
   }
 
-  // The popover opens upward from its composer control, left-aligned with it and
-  // kept inside the window.
   function place() {
-    const s = state;
-    const anchor = s.toggle.getBoundingClientRect();
-    const left = Math.max(8, Math.min(anchor.left - 4, innerWidth - s.panel.offsetWidth - 8));
-    s.panel.style.left = `${Math.round(left)}px`;
-    s.panel.style.bottom = `${Math.round(innerHeight - anchor.top + 6)}px`;
+    globalThis.ampPlacePopover(state.panel, state.toggle);
   }
 
   function fit() {
@@ -151,9 +139,11 @@
     panel.dataset.ampThreadMessagesUi = "panel";
     panel.dataset.view = "list";
     panel.popover = "auto";
+    panel.setAttribute("data-amp-composer-popover", "");
     panel.setAttribute("aria-label", "Thread messages");
     const toggle = button("", () => {});
     toggle.dataset.ampThreadMessagesUi = "toggle";
+    toggle.dataset.ampComposerControl = "messages";
     // Stays hidden until the thread has a message with another thread.
     toggle.hidden = true;
     toggle.popoverTargetElement = panel;
@@ -422,7 +412,7 @@
     if (state && (state.host !== host || state.id !== transcript.dataset.threadId)) teardown();
     if (!state) state = create(host, transcript.dataset.threadId);
     if (state.panel.parentElement !== host) host.append(state.panel);
-    if (state.toggle.parentElement !== toolbar || state.toggle.nextElementSibling) toolbar.append(state.toggle);
+    globalThis.ampMountComposerControl(toolbar, state.toggle);
     if (isOpen()) place();
     // The page is checked even while collapsed, so the control appears once a message
     // exists. Transcript changes refresh at most every five seconds, with a

@@ -39,7 +39,7 @@ Features:
 - Jump from either reading panel to the original transcript entry with smooth scrolling and a highlight.
 - Preview long tool-call sections with five expandable rows and Bash code blocks.
 - See the thread's model and runner (or Orb) next to the composer's upload button.
-- Hover, focus, or pin a floating orb for the thread's title-bar details.
+- Open a thread info popover from the composer for the thread's title-bar details.
 - Optionally keep compact message dates and times always visible.
 - Keep labels, info cards, timestamps, and worker reading controls scoped to
   their own conversation when Space chat and workers are shown together.
@@ -47,7 +47,7 @@ Features:
 
 Options has independent checkboxes for right-side placement, right-side
 resizing, auxiliary-view placement, child-thread indentation, header-switch
-visibility, subagent panel, thread messages, composer model and runner, thread info orb,
+visibility, subagent panel, thread messages, composer model and runner, thread info,
 and persistent message timestamps. All default on except persistent timestamps. Turning off resizing restores native width without erasing the saved
 width. Collapse/expand stays native. Placement changes preserve every preference.
 
@@ -85,11 +85,11 @@ sidebar layout, handle its resize divider, and display rendered subagent
 activity in an optional reading panel. It needs automatic access on page load
 to restore the user's layout. Subagent prompts and results remain in memory
 for the current thread; they are not saved or transmitted. When the composer
-label, info orb, or persistent timestamps are on, it requests the open thread's page data from
+label, thread info control, or persistent timestamps are on, it requests the open thread's page data from
 https://ampcode.com/threads/<id>/__data, the same same-origin request Amp's
 page makes, and keeps only the title, mode, model, executor, runner, and working
 directory, plus message IDs and timestamp metadata, in memory.
-The info orb reads details already in Amp's title bar.
+The thread info popover reads details already in Amp's title bar.
 In Spaces, each visible coordinator or worker uses its own same-origin page
 data and in-memory state. Space chat timestamps use message IDs and creation
 times from `spaceChat`; parked and hidden conversations are excluded.
@@ -156,7 +156,7 @@ feature checkbox and an **Open settings in a tab** button. The
 arrow icon in Amp's sidebar header also switches placement without disabling
 other features. Use Amp's own sidebar toggle to collapse or reopen navigation. Drag
 the divider, or double-click it to reset width. On a thread with subagent
-activity, click Subagents in the conversation header to open its reading
+activity, click Subagents in the composer toolbar to open its reading
 panel. Hover or focus Task/Output to preview, click to pin, or choose View original
 to reveal native content. Inline summaries remain available with the panel closed.
 Options controls each feature independently. To test recovery, turn

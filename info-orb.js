@@ -39,88 +39,60 @@
     return rows;
   }
 
-  function show(pinned = state.pinned) {
-    clearTimeout(state.hideTimer);
-    state.pinned = pinned;
-    state.orb.setAttribute("aria-pressed", String(pinned));
-    state.orb.setAttribute("aria-expanded", "true");
-    state.card.hidden = false;
-    render();
-  }
-
-  function hide() {
-    clearTimeout(state.hideTimer);
-    state.pinned = false;
-    state.orb.setAttribute("aria-pressed", "false");
-    state.orb.setAttribute("aria-expanded", "false");
-    state.card.hidden = true;
-  }
-
-  function hideSoon() {
-    const current = state;
-    if (!current) return;
-    clearTimeout(current.hideTimer);
-    if (current.pinned) return;
-    // A short grace period lets the pointer cross the gap from orb to card.
-    current.hideTimer = setTimeout(() => {
-      if (state !== current) return;
-      if (!current.pinned && !current.orb.matches(":hover, :focus-visible") && !current.card.matches(":hover, :focus-within")) hide();
-    }, 150);
+  function isOpen() {
+    return !!state?.panel.matches(":popover-open");
   }
 
   function setup() {
-    const id = `amp-info-card-${++sequence}`;
-    const orb = document.createElement("button");
-    orb.type = "button";
-    orb.setAttribute("data-amp-info-orb", "");
-    orb.setAttribute("aria-label", "Thread info. Click to pin.");
-    orb.setAttribute("aria-controls", id);
-    orb.setAttribute("aria-expanded", "false");
-    orb.setAttribute("aria-pressed", "false");
-    const card = document.createElement("section");
-    card.id = id;
-    card.setAttribute("data-amp-info-card", "");
-    card.setAttribute("aria-label", "Thread info");
-    card.hidden = true;
+    // A quiet control in the composer toolbar, first among the thread's
+    // controls. It opens a popover above the composer with the title-bar details.
+    const panel = document.createElement("section");
+    panel.id = `amp-thread-info-${++sequence}`;
+    panel.dataset.ampThreadInfoUi = "panel";
+    panel.popover = "auto";
+    panel.setAttribute("data-amp-composer-popover", "");
+    panel.setAttribute("aria-label", "Thread info");
     const list = document.createElement("dl");
-    card.append(list);
-    state = { orb, card, list, pinned: false, hideTimer: 0, bar: null, observer: new MutationObserver(render) };
-
-    orb.addEventListener("pointerenter", () => show());
-    orb.addEventListener("focus", () => { if (!state.returningFocus && orb.matches(":focus-visible")) show(); });
-    orb.addEventListener("click", () => {
-      if (state.pinned) {
-        hide();
-        if (orb.matches(":hover")) show(false);
-      } else show(true);
+    panel.append(list);
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.dataset.ampThreadInfoUi = "toggle";
+    toggle.dataset.ampComposerControl = "info";
+    toggle.title = "Thread info";
+    toggle.setAttribute("aria-label", "Thread info");
+    toggle.popoverTargetElement = panel;
+    toggle.setAttribute("aria-controls", panel.id);
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.append(globalThis.ampIcon("M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 16v-4M12 8h.01"));
+    // The popover's toggle event drives the control's state, so the button, Escape,
+    // and clicks elsewhere (light dismiss) all open and close it the same way.
+    panel.addEventListener("toggle", event => {
+      const open = event.newState === "open";
+      toggle.setAttribute("aria-expanded", String(open));
+      if (open) globalThis.ampPlacePopover(panel, toggle);
+      else if (panel.contains(document.activeElement) || document.activeElement === document.body) toggle.focus({ preventScroll: true });
     });
-    for (const node of [orb, card]) {
-      node.addEventListener("pointerleave", hideSoon);
-      node.addEventListener("focusout", hideSoon);
+    for (const node of [toggle, panel]) {
       node.addEventListener("keydown", event => {
-        if (event.key !== "Escape" || card.hidden) return;
-        event.stopPropagation();
-        hide();
-        state.returningFocus = true;
-        orb.focus();
-        state.returningFocus = false;
+        if (event.key !== "Escape" || event.defaultPrevented || !isOpen()) return;
+        event.preventDefault();
+        panel.hidePopover();
       });
     }
-    card.addEventListener("pointerenter", () => clearTimeout(state.hideTimer));
-    document.body.append(orb, card);
+    state = { toggle, panel, list, bar: null, observer: new MutationObserver(render) };
   }
 
   function teardown() {
     if (!state) return;
-    clearTimeout(state.hideTimer);
     state.observer.disconnect();
-    state.orb.remove();
-    state.card.remove();
+    state.toggle.remove();
+    state.panel.remove();
     state = undefined;
   }
 
+  // The card stays current while closed so opening it never shows stale details.
   function render() {
-    if (!state || state.card.hidden) return;
+    if (!state) return;
     const rows = details(state.bar);
     const signature = JSON.stringify(rows);
     if (state.list.dataset.signature === signature) return;
@@ -132,11 +104,14 @@
       description.textContent = value;
       return [term, description];
     }));
+    if (isOpen()) globalThis.ampPlacePopover(state.panel, state.toggle);
   }
 
   function refresh(next) {
     view = next;
-    if (!enabled || !desktop.matches || !document.body) {
+    // Read-only threads have no composer; their title bar holds the control.
+    const toolbar = view.toolbar ?? view.header;
+    if (!enabled || !desktop.matches || !toolbar) {
       teardown();
       return;
     }
@@ -147,14 +122,10 @@
       state.observer.disconnect();
       if (bar) state.observer.observe(bar, { childList: true, subtree: true, characterData: true, attributes: true });
     }
-    // Float beside the conversation, not over a left sidebar or left-side view.
-    const anchor = bar?.closest(".thread-title-bar-container") ?? view.host;
-    const left = `${Math.round(Math.max(0, anchor.getBoundingClientRect().left))}px`;
-    if (state.orb.style.getPropertyValue("--amp-info-orb-left") !== left) {
-      state.orb.style.setProperty("--amp-info-orb-left", left);
-      state.card.style.setProperty("--amp-info-orb-left", left);
-    }
+    if (state.panel.parentElement !== view.host) view.host.append(state.panel);
+    globalThis.ampMountComposerControl(toolbar, state.toggle);
     render();
+    if (isOpen()) globalThis.ampPlacePopover(state.panel, state.toggle);
   }
 
   return { refresh, teardown };
@@ -170,7 +141,7 @@
   }
 
   new MutationObserver(records => {
-    if (records.some(record => !(record.target instanceof Element && record.target.closest("[data-amp-info-orb], [data-amp-info-card]")))) schedule();
+    if (records.some(record => !(record.target instanceof Element && record.target.closest("[data-amp-thread-info-ui]")))) schedule();
   }).observe(document, { childList: true, subtree: true, attributes: true,
     attributeFilter: ["class", "style", "data-state", "data-thread-id", "hidden"] });
   addEventListener("amp-thread-context-change", schedule);

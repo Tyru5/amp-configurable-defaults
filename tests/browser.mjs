@@ -169,7 +169,10 @@ try {
   check(`!document.querySelector('[data-amp-subagents-ui="toggle"]')`, 'ordinary conversation text does not create a subagent panel');
   browser('fill', '#message', 'Preserve the subagent-panel draft');
   browser('eval', `fixtureAgents.add('alpha', 'Check layout', 'ALPHA task'); fixtureAgents.add('beta', 'Check layout', 'BETA task')`);
-  browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="toggle"]')?.textContent === 'Subagents 2'`);
+  browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="toggle"]')?.getAttribute('aria-label') === 'Subagents, 2'`);
+  check(`(() => { const t = document.querySelector('[data-amp-subagents-ui="toggle"]'), r = t.getBoundingClientRect();
+    return t.parentElement.matches('[data-message-composer-root] [role="region"][aria-label="Attachments"]') && t.previousElementSibling?.matches('[data-amp-thread-info-ui="toggle"]') && t.textContent === '2' && r.width < 60 && r.height <= 24; })()`,
+    'Subagents is a compact composer control with a count, after the thread info control');
   check(`document.querySelectorAll('[data-amp-subagents-ui="reference"]').length === 2 && document.querySelector('[data-amp-subagents-ui="panel"]').hidden`, 'compact summaries render before the optional panel opens');
   check(`getComputedStyle(document.querySelector('[data-amp-subagents-ui="reference"]'), '::before').animationName === 'amp-subagent-pulse' && getComputedStyle(document.querySelector('[data-amp-subagents-ui="reference"]')).animationName === 'none'`, 'working agent dot pulses without animating its text');
   browser('set', 'media', 'light', 'reduced-motion');
@@ -273,12 +276,12 @@ try {
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="toggle"]') !== null`);
   check(`document.querySelector('[data-amp-subagents-ui="panel"]').hidden`, 're-enabling starts with native inline activity rather than reopening a stale panel');
   browser('eval', `fixtureAgents.navigate('fixture-b'); fixtureAgents.add('alpha', 'Thread B agent', 'THREAD_B_ONLY', 'done', 'THREAD_B_OUTPUT')`);
-  browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="toggle"]')?.textContent === 'Subagents 1'`);
+  browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="toggle"]')?.getAttribute('aria-label') === 'Subagents, 1'`);
   browser('click', '[data-amp-subagents-ui="toggle"]');
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-output]').textContent === 'THREAD_B_OUTPUT'`);
   check(`!document.querySelector('[data-amp-subagents-ui="panel"]').textContent.includes('DELTA')`, 'thread navigation clears old content even when agent IDs are reused');
-  browser('eval', `const toolbar = document.querySelector('.app-title-bar'); toolbar.replaceWith(document.querySelector('#shell').content.querySelector('.app-title-bar').cloneNode(true))`);
-  browser('wait', '--fn', `document.querySelectorAll('[data-amp-subagents-ui="toggle"]').length === 1`);
+  browser('eval', `document.querySelector('[data-amp-subagents-ui="toggle"]').remove()`);
+  browser('wait', '--fn', `document.querySelectorAll('[data-amp-subagents-ui="toggle"]').length === 1 && document.querySelector('[data-amp-subagents-ui="toggle"]').previousElementSibling?.matches('[data-amp-thread-info-ui="toggle"]')`);
   browser('set', 'viewport', '768', '800', '2');
   browser('wait', '--fn', `document.querySelector('.thread-layout-panes').hasAttribute('data-amp-subagents-overlay')`);
   check(`document.querySelector('[data-amp-subagents-ui="panel"]').getBoundingClientRect().right <= document.querySelector('.thread-layout-panes').getBoundingClientRect().right && document.documentElement.scrollWidth === innerWidth`, 'narrow desktop uses a bounded drawer without horizontal overflow');
@@ -509,52 +512,59 @@ try {
   browser('eval', 'chrome.storage.local.set({ showComposerContext: true, infoOrb: true })');
   browser('wait', '--fn', `(${contextText}).includes('Orb')`);
   check(`(${contextText}) === 'medium | Orb'`, 'turning the setting back on restores the line');
-  const orb = '[data-amp-info-orb]';
-  const infoCard = '[data-amp-info-card]';
+  const info = '[data-amp-thread-info-ui="toggle"]';
+  const infoCard = '[data-amp-thread-info-ui="panel"]';
+  const infoOpen = `document.querySelector('${infoCard}').matches(':popover-open')`;
   browser('set', 'viewport', '1280', '800', '2');
-  browser('mouse', 'move', '640', '780');
-  browser('wait', '--fn', `document.querySelector('${orb}') !== null`);
-  check(`(() => { const o = document.querySelector('${orb}').getBoundingClientRect(); const m = document.querySelector('.thread-title-bar-container').getBoundingClientRect(); return Math.abs(o.top + o.height / 2 - innerHeight / 2) < 1 && Math.abs(o.left - m.left - 12) < 1; })()`, 'info orb floats mid-height at the conversation left edge');
-  check(`document.querySelector('${infoCard}').hidden`, 'info card starts collapsed');
-  browser('hover', orb);
-  browser('wait', '--fn', `!document.querySelector('${infoCard}').hidden`);
-  check(`document.querySelector('${infoCard}').innerText.replace(/\\s+/g, ' ') === 'Thread Camera identification initiative Executor Orb Executor Project amp-configurable-defaults Mode ↯high Visibility Private'`, 'hover shows title-bar details, including ones Amp hides at this width');
-  browser('mouse', 'move', '640', '780');
-  browser('wait', '--fn', `document.querySelector('${infoCard}').hidden`);
-  browser('click', orb);
-  browser('mouse', 'move', '640', '780');
-  browser('wait', '300');
-  check(`!document.querySelector('${infoCard}').hidden && document.querySelector('${orb}').getAttribute('aria-pressed') === 'true'`, 'clicking pins the card after the pointer leaves');
+  browser('wait', '--fn', `document.querySelector('${info}') !== null`);
+  check(`(() => { const t = document.querySelector('${info}'), r = t.getBoundingClientRect();
+    return t.parentElement.matches('[data-message-composer-root] [role="region"][aria-label="Attachments"]') && t.previousElementSibling?.matches('[data-amp-composer-context]') && r.width < 40 && r.height <= 24; })()`,
+    'thread info is a compact composer control right after the model and runner label');
+  check(`!${infoOpen} && document.querySelector('${info}').getAttribute('aria-expanded') === 'false'`, 'info popover starts closed');
+  browser('click', info);
+  browser('wait', '--fn', infoOpen);
+  check(`(() => { const d = document.querySelector('${infoCard}').getBoundingClientRect(), t = document.querySelector('${info}').getBoundingClientRect();
+    return d.bottom <= t.top && t.top - d.bottom < 12 && Math.abs(d.left - (t.left - 4)) < 1 && document.querySelector('${info}').getAttribute('aria-expanded') === 'true'; })()`, 'the info popover opens upward from its control');
+  check(`document.querySelector('${infoCard}').innerText.replace(/\\s+/g, ' ') === 'Thread Camera identification initiative Executor Orb Executor Project amp-configurable-defaults Mode ↯high Visibility Private'`, 'the popover shows title-bar details, including ones Amp hides at this width');
   browser('eval', `chrome.storage.local.set({ showComposerContext: false }); fixtureAgents.navigate('fixture-a')`);
   browser('wait', '--fn', `document.querySelector('${infoCard}').textContent.includes('/Users/tiru5/My Repo/app')`);
-  check(`document.querySelector('${infoCard}').textContent.includes('Runnertiru5-macbook-pro') && !document.querySelector('[data-amp-composer-context]')`, 'orb shows runner and decoded directory even when composer context is disabled');
+  check(`${infoOpen} && document.querySelector('${infoCard}').textContent.includes('Runnertiru5-macbook-pro') && !document.querySelector('[data-amp-composer-context]')`, 'the open popover shows runner and decoded directory even when composer context is disabled');
   browser('eval', `fixtureAgents.navigate('fixture-c')`);
   browser('wait', '--fn', `document.querySelector('${infoCard}').textContent.includes('/srv/my work')`);
-  check(`document.querySelector('${infoCard}').textContent.includes('Runnerbuild-box') && !document.querySelector('${infoCard}').textContent.includes('tiru5-macbook-pro')`, 'pinned orb updates runner hostname and working directory on navigation');
+  check(`document.querySelector('${infoCard}').textContent.includes('Runnerbuild-box') && !document.querySelector('${infoCard}').textContent.includes('tiru5-macbook-pro')`, 'the popover updates runner hostname and working directory on navigation');
   browser('eval', `fixtureAgents.navigate('fixture-missing')`);
   browser('wait', '--fn', `![...document.querySelectorAll('${infoCard} dt')].some(e => ['Runner', 'Directory'].includes(e.textContent))`);
-  check(`!document.querySelector('${infoCard}').textContent.includes('/srv/my work')`, 'unavailable thread data never leaves the previous runner or directory in the orb');
+  check(`!document.querySelector('${infoCard}').textContent.includes('/srv/my work')`, 'unavailable thread data never leaves the previous runner or directory in the popover');
   browser('eval', `fixtureAgents.navigate('fixture-b')`);
   browser('wait', '--fn', `fixtureThreadRequests.at(-1).id === 'fixture-b'`);
   check(`![...document.querySelectorAll('${infoCard} dt')].some(e => ['Runner', 'Directory'].includes(e.textContent))`, 'cloud threads without environment data omit unavailable runner and directory');
   browser('eval', `document.querySelector('[data-title-text]').textContent = 'Renamed thread'`);
   browser('wait', '--fn', `document.querySelector('${infoCard}').textContent.includes('Renamed thread')`);
-  browser('click', orb);
-  browser('mouse', 'move', '640', '780');
-  browser('wait', '--fn', `document.querySelector('${infoCard}').hidden`);
-  check(`document.querySelector('${orb}').getAttribute('aria-pressed') === 'false'`, 'clicking again unpins and hover-away collapses');
-  browser('click', orb);
+  browser('click', info);
+  browser('wait', '--fn', `!${infoOpen}`);
+  check(`document.querySelector('${info}').getAttribute('aria-expanded') === 'false'`, 'clicking the control again closes the popover');
+  browser('click', '#message');
+  browser('wait', '--fn', `!${infoOpen}`);
+  check(`!${infoOpen}`, 'the closed popover does not reopen when the composer is focused');
+  browser('click', info);
+  browser('wait', '--fn', infoOpen);
+  browser('click', '#message');
+  browser('wait', '--fn', `!${infoOpen}`);
+  check(`!${infoOpen}`, 'clicking elsewhere closes the popover');
+  browser('click', info);
+  browser('wait', '--fn', infoOpen);
   // agent-browser's `press Escape` stops headless frame production, which stalls every
   // rAF-scheduled script afterwards. Deliver the key to whatever element has focus.
   browser('eval', `document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))`);
-  check(`document.querySelector('${infoCard}').hidden && document.activeElement.matches('${orb}')`, 'Escape closes a pinned card and keeps focus on the orb');
+  browser('wait', '--fn', `!${infoOpen}`);
+  check(`!${infoOpen} && document.activeElement.matches('${info}')`, 'Escape closes the popover and keeps focus on the control');
   browser('eval', 'chrome.storage.local.set({ infoOrb: false })');
-  browser('wait', '--fn', `!document.querySelector('${orb}') && !document.querySelector('${infoCard}')`);
+  browser('wait', '--fn', `!document.querySelector('${info}') && !document.querySelector('${infoCard}')`);
   browser('eval', 'chrome.storage.local.set({ infoOrb: true })');
-  browser('wait', '--fn', `document.querySelector('${orb}') !== null`);
+  browser('wait', '--fn', `document.querySelector('${info}') !== null`);
   browser('set', 'viewport', '767', '800', '2');
-  browser('wait', '--fn', `!document.querySelector('${orb}')`);
-  check(`!document.querySelector('${orb}')`, 'info orb is removed when disabled and on mobile');
+  browser('wait', '--fn', `!document.querySelector('${info}')`);
+  check(`!document.querySelector('${info}')`, 'the thread info control is removed when disabled and on mobile');
   browser('set', 'viewport', '1280', '800', '2');
 
   // Message markup and metadata from live Amp, inspected 2026-10-29. Deliberately
@@ -617,10 +627,16 @@ try {
   check(`!document.querySelector('${times}')`, 'failed navigation never displays timestamps from the previous thread');
   browser('reload');
   browser('eval', `${setupTimestamps}; chrome.storage.local.set({ infoOrb: true, subagentPanel: true }); fixtureAgents.add('alpha', 'Check layout', 'ALPHA task'); fixtureToolSection('read-only')`);
-  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 2 && document.querySelector('[data-amp-subagents-ui="toggle"]') && document.querySelector('[data-amp-info-orb]') && document.querySelector('${preview}')`);
+  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 2 && document.querySelector('[data-amp-subagents-ui="toggle"]') && document.querySelector('[data-amp-thread-info-ui="toggle"]') && document.querySelector('${preview}')`);
   browser('eval', `document.querySelectorAll('[data-message-composer-root]').forEach(node => node.remove()); new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
-  check(`document.querySelectorAll('${times}').length === 2 && document.querySelector('[data-amp-subagents-ui="toggle"]')?.isConnected && document.querySelector('[data-amp-info-orb]')?.isConnected && document.querySelector('${preview}')?.isConnected`,
-    'a thread without a composer keeps timestamps, Subagents, the info orb, and tool previews');
+  browser('wait', '--fn', `document.querySelector('.app-title-bar [data-amp-thread-info-ui="toggle"]') && document.querySelector('.app-title-bar [data-amp-subagents-ui="toggle"]')`);
+  check(`document.querySelectorAll('${times}').length === 2 && document.querySelector('[data-amp-subagents-ui="toggle"]')?.isConnected && document.querySelector('[data-amp-thread-info-ui="toggle"]')?.isConnected && document.querySelector('${preview}')?.isConnected &&
+    document.querySelector('[data-amp-thread-info-ui="toggle"]').nextElementSibling === document.querySelector('[data-amp-subagents-ui="toggle"]')`,
+    'a thread without a composer keeps timestamps, tool previews, and moves thread info and Subagents to the title bar in order');
+  browser('click', '[data-amp-thread-info-ui="toggle"]');
+  browser('wait', '--fn', `document.querySelector('[data-amp-thread-info-ui="panel"]').matches(':popover-open')`);
+  check(`(() => { const d = document.querySelector('[data-amp-thread-info-ui="panel"]').getBoundingClientRect(), t = document.querySelector('[data-amp-thread-info-ui="toggle"]').getBoundingClientRect(); return d.top >= t.bottom && d.top - t.bottom < 12; })()`,
+    'a title-bar control near the top of the window opens its popover downward');
   console.log('All browser checks passed.');
 } finally {
   browser('close');

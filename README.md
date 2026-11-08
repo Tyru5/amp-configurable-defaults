@@ -83,12 +83,14 @@ from the mode name.
 Hovering or keyboard-focusing a thread in the right sidebar opens Amp's native
 thread information card to its left. Amp still owns the content and dismissal.
 
-A small orb floats at mid-height on the conversation's left edge. Hover or focus
-it to see the thread title, executor, project, mode, and visibility from Amp's
-title bar, including details Amp hides at narrow widths. The card also shows
-the runner and working directory when available from the same thread data used
-by the composer label, even when that label is disabled. Click it to pin the
-card open; click again or press Escape to unpin. Desktop only.
+A thread info control sits in the composer toolbar, first among the extension's
+controls after the model and runner label. Click it to open a popover with the
+thread title, executor, project, mode, and visibility from Amp's title bar,
+including details Amp hides at narrow widths. The card also shows the runner and
+working directory when available from the same thread data used by the composer
+label, even when that label is disabled. Click again, press Escape, or click
+elsewhere to close it. On a read-only thread without a composer, the control
+sits in the title bar. Desktop only.
 
 These features have independent checkboxes in **Options**:
 
@@ -99,10 +101,10 @@ These features have independent checkboxes in **Options**:
 | Keep auxiliary views opposite the sidebar | On      | Native view placement and divider input                           |
 | Indent child threads                      | On      | Native row spacing on either side                                 |
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
-| Enable subagent reading panel             | On      | Native inline activity; removes any open panel                    |
+| Enable subagent reading panel             | On      | No Subagents control; native inline activity; removes any open panel |
 | Enable thread message panel               | On      | No thread-message control; native messages stay unchanged          |
-| Show model and runner in the composer     | On      | Composer unchanged; info orb and timestamps can still load data  |
-| Show thread info orb                      | On      | No floating orb; title-bar details stay in Amp's title bar        |
+| Show model and runner in the composer     | On      | No composer label; thread info and timestamps can still load data |
+| Show thread info in the composer          | On      | No thread info control; title-bar details stay in Amp's title bar |
 | Always show message timestamps            | Off     | Native Option/Alt timestamp behavior                              |
 
 **Always show message timestamps** keeps a compact, aligned date and time above
@@ -136,7 +138,8 @@ Sections with five or fewer rows remain fully visible. Expansion is remembered
 while viewing the thread, including when rows remount, and resets on navigation
 or reload. This applies on both sidebar sides and at mobile widths, without
 storing another preference or fetching unloaded thread history.
-On desktop, the **Subagents** header button opens an agent list opposite
+On desktop, the **Subagents** control in the composer toolbar (or the title bar
+on a read-only thread) shows the agent count and opens an agent list opposite
 navigation. Hover or focus **Task** or **Output** to preview a wider reading
 sheet; click to keep it open. The sheet keeps Amp's rendered formatting, so
 headings, lists, links, inline code, highlighted code blocks, quotes, and

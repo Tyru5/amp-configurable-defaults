@@ -356,16 +356,22 @@
       surface.addEventListener("focusin", () => clearTimeout(state.dismissTimer));
       surface.addEventListener("focusout", deferReaderClose);
     }
-    const toggle = button("Subagents", () => {
+    // A quiet control in the composer toolbar, beside the thread info and
+    // messages controls: a branching icon and the number of agents.
+    const toggle = button("", () => {
       if (state.open) close();
       else { state.open = true; schedule(); }
     });
     toggle.dataset.ampSubagentsUi = "toggle";
+    toggle.dataset.ampComposerControl = "subagents";
+    toggle.title = "Subagents";
     toggle.setAttribute("aria-controls", panel.id);
     toggle.setAttribute("aria-expanded", "false");
+    const count = document.createElement("span");
+    toggle.append(globalThis.ampIcon("M10 5a2 2 0 1 0 4 0a2 2 0 1 0-4 0M4 19a2 2 0 1 0 4 0a2 2 0 1 0-4 0M16 19a2 2 0 1 0 4 0a2 2 0 1 0-4 0M12 7v4m0 0-6 6m6-6 6 6"), count);
     const sizing = new ResizeObserver(() => host.toggleAttribute("data-amp-subagents-overlay", host.clientWidth < 800));
     sizing.observe(host);
-    return { host, thread: transcript.dataset.threadId, panel, toggle, list, title, status,
+    return { host, thread: transcript.dataset.threadId, panel, toggle, count, list, title, status,
       reader, readerTitle, readerLabel, pin, sections, section: null, pinned: false,
       notice, task, output, original, sizing, items: new Map(), inline: new Map(), selected: null, open: false, expanded: new Set() };
   }
@@ -393,7 +399,8 @@
 
   function refresh(view) {
     const { transcript, host } = view;
-    const toolbar = view.header ?? view.toolbar;
+    // Read-only threads have no composer; their title bar holds the control.
+    const toolbar = view.toolbar ?? view.header;
     if (!host || !toolbar) { teardown(); return; }
     if (state && (state.host !== host || state.thread !== transcript.dataset.threadId)) teardown();
     const sources = [...transcript.querySelectorAll(agentSelector)];
@@ -410,7 +417,7 @@
     if (!sources.length && !events.length) { teardown(); return; }
     if (!state) state = create(host, transcript);
     if (enabled && desktop.matches) {
-      if (state.toggle.parentElement !== toolbar) toolbar.append(state.toggle);
+      globalThis.ampMountComposerControl(toolbar, state.toggle);
       if (!state.panel.isConnected) host.append(state.panel, state.reader);
     } else {
       if (state.open) close();
@@ -475,7 +482,8 @@
     }
 
     if (!state.items.has(state.selected)) state.selected = state.items.keys().next().value;
-    write(state.toggle, `Subagents ${state.items.size}`);
+    write(state.count, String(state.items.size));
+    state.toggle.setAttribute("aria-label", `Subagents, ${state.items.size}`);
     state.toggle.setAttribute("aria-expanded", String(state.open));
     state.panel.hidden = !state.open;
     host.toggleAttribute("data-amp-subagents-open", state.open);

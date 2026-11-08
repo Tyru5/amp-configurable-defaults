@@ -200,11 +200,8 @@ const setup = String.raw`(() => {
       document.querySelector('#' + cardID + ' [data-thread-transcript-content]').append(row);
     },
     orb(cardID) {
-      const card = document.getElementById(cardID), bounds = card.getBoundingClientRect();
-      return [...document.querySelectorAll('[data-amp-info-orb]')].find(orb => {
-        const r = orb.getBoundingClientRect();
-        return orb.checkVisibility() && r.left >= bounds.left && r.right <= bounds.right;
-      });
+      const control = document.querySelector('#' + cardID + ' [data-amp-thread-info-ui="toggle"]');
+      return control?.checkVisibility() ? control : undefined;
     },
     info(cardID) {
       const orb = this.orb(cardID);
@@ -271,9 +268,9 @@ try {
       'Space child pane cards alone do not create a Task/Subagents panel');
   });
   test('modern info anchors', () => {
-    eventually(`fixtureSpaces.orb('space-chat-card') && fixtureSpaces.orb('space-worker-card')`, 'modern native headers anchor an info orb for each visible pane');
+    eventually(`fixtureSpaces.orb('space-chat-card') && fixtureSpaces.orb('space-worker-card')`, 'each visible pane mounts its own thread info control in its composer');
     check(`fixtureSpaces.orb('space-chat-card') !== fixtureSpaces.orb('space-worker-card') &&
-      fixtureSpaces.info('space-chat-card') !== fixtureSpaces.info('space-worker-card')`, 'each info orb owns a distinct info card');
+      fixtureSpaces.info('space-chat-card') !== fixtureSpaces.info('space-worker-card')`, 'each thread info control owns a distinct popover');
     browser('eval', `fixtureSpaces.orb('space-worker-card').click()`);
     eventually(`fixtureSpaces.info('space-worker-card')?.textContent.includes('space-runner-a')`, 'worker info uses its own runner');
     browser('eval', `fixtureSpaces.orb('space-chat-card').click()`);
@@ -287,7 +284,7 @@ try {
   });
   test('hidden and parked panes', () => {
     check(`!fixtureThreadRequests.some(r => ['space-hidden-worker','space-parked-worker'].includes(r.id)) &&
-      ['space-hidden-card','space-parked-card'].every(id => !document.querySelector('#' + id + ' [data-amp-composer-context], #' + id + ' [data-amp-thread-messages-ui], #' + id + ' [data-amp-subagents-ui], #' + id + ' [data-amp-info-orb], #' + id + ' ${time}'))`,
+      ['space-hidden-card','space-parked-card'].every(id => !document.querySelector('#' + id + ' [data-amp-composer-context], #' + id + ' [data-amp-thread-messages-ui], #' + id + ' [data-amp-subagents-ui], #' + id + ' [data-amp-thread-info-ui], #' + id + ' ${time}'))`,
     'hidden and display-none parked panes receive neither controls nor thread requests');
     check(`fixtureThreadRequests.some(r => r.id === 'space-chat') && fixtureThreadRequests.some(r => r.id === 'space-worker-a') &&
       fixtureThreadRequests.every(r => ['space-chat','space-worker-a',fixtureSpaces.parentA].includes(r.id) && r.credentials === 'same-origin')`,
@@ -324,7 +321,7 @@ try {
     'worker switch replaces same-ID timestamps without contaminating chat');
     check(`!document.querySelector('#space-worker-card').textContent.includes('space-runner-a') &&
       !document.querySelector('#space-chat-card [data-amp-thread-messages-ui]')`, 'stale worker runner and worker-only messages control do not leak');
-    eventually(`!!fixtureSpaces.orb('space-worker-card')`, 'worker info orb survives switching contexts');
+    eventually(`!!fixtureSpaces.orb('space-worker-card')`, 'worker thread info control survives switching contexts');
     browser('eval', `(() => { const orb = fixtureSpaces.orb('space-worker-card'); if (orb.getAttribute('aria-expanded') !== 'true') orb.click(); })()`);
     eventually(`fixtureSpaces.info('space-worker-card')?.textContent.includes('Worker B') &&
       !fixtureSpaces.info('space-worker-card').textContent.includes('space-runner-a') && !fixtureSpaces.info('space-worker-card').textContent.includes('/srv/worker a')`,
@@ -371,8 +368,8 @@ try {
   });
   browser('eval', `fixtureSpaces.addTask('space-worker-card', 'A task'); fixtureSpaces.addTask('space-worker-b-card', 'B task')`);
   test('modern Subagents anchors', () => {
-    eventually(`['space-worker-card','space-worker-b-card'].every(id => document.querySelector('#' + id + ' [data-pane-tab-strip] [data-tab-strip-actions] > div > [data-thread-title-bar-controls] ${subagents}')?.checkVisibility())`,
-      'real Task rows mount independent Subagents controls in both modern worker headers');
+    eventually(`['space-worker-card','space-worker-b-card'].every(id => document.querySelector('#' + id + ' [data-message-composer-root] [role="region"][aria-label="Attachments"] ${subagents}')?.checkVisibility())`,
+      'real Task rows mount independent Subagents controls in both worker composers');
     check(`!document.querySelector('#space-chat-card [data-amp-subagents-ui]') && document.querySelectorAll('${subagents}').length === 2`, 'worker Task controls never mount in chat or the shared outer header');
     check(`['space-worker-card','space-worker-b-card'].every(id =>
       document.querySelector('#' + id + ' [data-thread-agent-tab-content]')?.hasAttribute('data-amp-subagents-host')) &&
@@ -387,11 +384,11 @@ try {
   });
   test('pane lifecycle cleanup', () => {
     browser('eval', `document.querySelector('#space-worker-b-card').hidden = true`);
-    eventually(`document.querySelectorAll('[data-amp-info-orb]').length === 2 &&
-      !document.querySelector('#space-worker-b-card [data-amp-thread-messages-ui], #space-worker-b-card [data-amp-subagents-ui], #space-worker-b-card ${context}, #space-worker-b-card ${time}')`,
-    'hiding a mounted worker removes its controls, timestamps, and floating info');
+    eventually(`document.querySelectorAll('[data-amp-thread-info-ui="toggle"]').length === 2 &&
+      !document.querySelector('#space-worker-b-card [data-amp-thread-messages-ui], #space-worker-b-card [data-amp-subagents-ui], #space-worker-b-card ${context}, #space-worker-b-card ${time}, #space-worker-b-card [data-amp-thread-info-ui]')`,
+    'hiding a mounted worker removes its controls, timestamps, and thread info');
     browser('eval', `document.querySelector('#space-worker-b-card').hidden = false`);
-    eventually(`${contextText('space-worker-b-card')} === 'claude-sonnet-5-5 | Orb' && document.querySelectorAll('[data-amp-info-orb]').length === 3`,
+    eventually(`${contextText('space-worker-b-card')} === 'claude-sonnet-5-5 | Orb' && document.querySelectorAll('[data-amp-thread-info-ui="toggle"]').length === 3`,
       'showing a worker restores its own context');
     browser('eval', `(() => {
       const toolbar = document.querySelector('#space-worker-b-card [role="region"][aria-label="Attachments"]');
@@ -405,11 +402,11 @@ try {
   test('focused info-card teardown', () => {
     browser('eval', `window.infoTeardownErrors = []; addEventListener('error', event => infoTeardownErrors.push(event.message));
       fixtureSpaces.orb('space-worker-b-card').focus(); chrome.storage.local.set({infoOrb:false})`);
-    eventually(`document.querySelectorAll('[data-amp-info-orb]').length === 0`, 'disabling info removes focused and unfocused pane controls');
+    eventually(`document.querySelectorAll('[data-amp-thread-info-ui="toggle"]').length === 0`, 'disabling info removes focused and unfocused pane controls');
     browser('eval', 'new Promise(resolve => setTimeout(resolve, 250))');
-    check(`infoTeardownErrors.length === 0`, 'removing a focused info orb leaves no delayed callback errors');
+    check(`infoTeardownErrors.length === 0`, 'removing a focused thread info control leaves no delayed callback errors');
     browser('eval', `chrome.storage.local.set({infoOrb:true})`);
-    eventually(`document.querySelectorAll('[data-amp-info-orb]').length === 3`, 'info controls can be enabled again after focused teardown');
+    eventually(`document.querySelectorAll('[data-amp-thread-info-ui="toggle"]').length === 3`, 'info controls can be enabled again after focused teardown');
   });
   assert.equal(failures.length, 0, failures.map(({ label }) => label).join(', '));
   console.log('All Spaces compatibility checks passed.');
