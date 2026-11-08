@@ -23,10 +23,13 @@
   function formatCommands(transcript) {
     for (const header of transcript.querySelectorAll(headerSelector)) {
       if (header.closest(previewSelector)) continue;
-      // Amp's Bash label is a monospace span containing "$", the command,
-      // and an optional workdir. Do not infer shell commands from prose.
-      const label = header.querySelector(":scope > span.font-mono");
-      if (label?.children[0]?.textContent !== "$" || !label.children[1]) continue;
+      // Amp's Bash label is a span holding the "Ran" or "Running" status word,
+      // the monospace command, and an optional workdir (chunk 3fb57833aff76257.js,
+      // 2026-11-08). Do not infer shell commands from prose.
+      const label = header.querySelector(":scope > span");
+      const [status, command, workdir] = label?.children || [];
+      if (!["Ran", "Running"].includes(status?.textContent) || !command?.classList.contains("font-mono")) continue;
+      label.setAttribute("data-amp-bash-label", "");
       let block = header.querySelector(":scope > [data-amp-bash-block]");
       if (!block) {
         block = document.createElement("div");
@@ -40,10 +43,9 @@
         header.setAttribute("data-amp-bash-header", "");
       }
       const code = block.querySelector("code");
-      const command = label.children[1].textContent;
-      if (code.textContent !== command) code.textContent = command;
-      const workdir = label.children[2]?.textContent || "";
-      if (block.lastElementChild.textContent !== workdir) block.lastElementChild.textContent = workdir;
+      if (code.textContent !== command.textContent) code.textContent = command.textContent;
+      const directory = workdir?.textContent || "";
+      if (block.lastElementChild.textContent !== directory) block.lastElementChild.textContent = directory;
     }
   }
 

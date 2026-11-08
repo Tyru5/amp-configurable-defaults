@@ -383,16 +383,19 @@
       row.innerHTML = '<div data-transcript-entry-content><div><div class="expandable-row-header"><span></span></div></div></div>';
       const tool = row.querySelector('.expandable-row-header');
       tool.firstElementChild.textContent = labels[index % labels.length];
-      // Actual Bash label structure from Amp's 120990c8.js. The command
-      // remains a text node, including newlines, quotes and shell operators.
+      // Actual Bash label structure from Amp's 3fb57833aff76257.js, inspected
+      // 2026-11-08: a "Ran"/"Running" status word, the monospace command, and an
+      // optional "(in dir)" span. The command remains a text node, including
+      // newlines, quotes and shell operators.
       if ([0, 5, 7].includes(index)) {
         const label = tool.firstElementChild;
-        label.className = 'font-mono bash-label';
-        const prompt = document.createElement('span');
-        prompt.textContent = '$';
+        label.className = 'bash-label';
+        const status = document.createElement('span');
+        status.textContent = 'Ran';
         const command = document.createElement('span');
+        command.className = 'font-mono';
         command.textContent = labels[index].slice(2);
-        label.replaceChildren(prompt, command);
+        label.replaceChildren(status, command);
       }
       if (index === 0 || index >= 5) {
         tool.parentElement.dataset.transcriptToolRowId = `${id}-${index}`;

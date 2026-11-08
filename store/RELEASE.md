@@ -29,6 +29,14 @@ Building or testing the package does not upload, submit, or publish it.
 - Add Spaces ownership, timestamp, teardown, and four-state nested-layout
   regression coverage. No permissions or defaults changed.
 
+## Bash code block fix in 1.4.2
+
+- Amp's Bash tool label now reads **Ran** or **Running** followed by a
+  monospace command span, instead of a monospace `$` label. The code blocks
+  matched only the old shape, so no command rendered as a block in current
+  Amp. The matcher and fixture now follow the new label; the status word keeps
+  its native color. No permissions, defaults, or requests changed.
+
 ## Thread messages change in 1.4.2
 
 - The thread message list stacks newest on top, oldest at the bottom, and new
