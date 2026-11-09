@@ -297,6 +297,18 @@ node tests/browser.mjs
 amp orb service stop fixture
 ```
 
+For landing-page previews over a high-latency portal, use the preview server
+and open `/docs/`:
+
+```sh
+amp orb service start landing --command 'python3 scripts/serve-preview.py' --port 8765 --portal
+```
+
+It serves the same files and adds a font preload response header for the landing
+page, so Caveat loads alongside the stylesheet instead of waiting for it.
+Stop the fixture service first if it is using port 8765. This is development-only;
+the published `docs/` files and extension package are unchanged.
+
 ### Checks
 
 ```sh
