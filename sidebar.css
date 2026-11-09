@@ -727,6 +727,31 @@
 [data-amp-tools-ui] :is(button, a):hover { background: color-mix(in srgb, var(--foreground, CanvasText) 6%, transparent); }
 [data-amp-tools-ui] :is(button, a):focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: -2px; }
 [data-amp-tools-ui][hidden], [data-amp-tools-ui="panel"] [hidden] { display: none; }
+/* Info, Subagents, and Messages opened from Thread tools lead with a quiet Back
+   button to it, before their title. html outranks each panel's button rules. */
+html button[data-amp-tools-ui="back"] {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  align-self: center;
+  gap: 2px;
+  height: 24px;
+  margin: 0 4px 0 -6px;
+  padding: 0 8px 0 3px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-foreground, #6b7280);
+  font: 500 12px/1 system-ui, sans-serif;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+  &:hover { background: color-mix(in srgb, var(--foreground, CanvasText) 6%, transparent); color: var(--foreground, CanvasText); }
+  &:focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: -2px; }
+  & > [data-amp-icon] { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  & + * { margin-inline-end: auto; }
+}
+[data-amp-thread-info-ui="panel"] > button[data-amp-tools-ui="back"] { margin: -4px 0 6px -6px; }
 
 /* Keep Amp's owned nodes in place. The extra conversation is a sibling pane. */
 [data-slot="sidebar-inset"][data-amp-thread-split] {

@@ -42,6 +42,7 @@
 
     function teardown() {
       if (!state) return;
+      dropBack();
       state.abort?.abort();
       clearTimeout(state.poll);
       clearTimeout(state.tipTimer);
@@ -139,6 +140,39 @@
       } else if (s.panel.contains(document.activeElement) || document.activeElement === document.body) {
         anchor().focus({ preventScroll: true });
       }
+    }
+
+    // A panel opened from this popover leads with a Back button that closes it
+    // and reopens this popover on the action that opened it. The button leaves
+    // once that panel closes by any route, so opening the panel from its own
+    // control shows none.
+    function offerBack(control) {
+      const s = state;
+      dropBack();
+      const target = document.getElementById(control.getAttribute("aria-controls"));
+      if (!target) return;
+      const back = button("Back", () => {
+        dropBack();
+        if (control.getAttribute("aria-expanded") === "true") control.click();
+        if (!isOpen()) s.panel.showPopover();
+        s.actions.children[s.controls.indexOf(control)]?.focus({ preventScroll: true });
+      }, "back");
+      back.title = "Back to Thread tools";
+      back.setAttribute("aria-label", "Back to Thread tools");
+      back.prepend(globalThis.ampIcon("m15 18-6-6 6-6"));
+      (target.querySelector("header") ?? target).prepend(back);
+      const watch = new MutationObserver(records => {
+        if (control.getAttribute("aria-expanded") === "false" && records.some(record => record.oldValue === "true")) dropBack();
+      });
+      watch.observe(control, { attributeFilter: ["aria-expanded"], attributeOldValue: true });
+      s.back = { button: back, watch };
+    }
+
+    function dropBack() {
+      if (!state?.back) return;
+      state.back.watch.disconnect();
+      state.back.button.remove();
+      state.back = null;
     }
 
     function escape(event) {
@@ -343,11 +377,14 @@
         s.controls = controls;
         s.actions.replaceChildren(...controls.map(control => {
           return button("", () => {
+            const opening = control.getAttribute("aria-expanded") !== "true";
             close();
             // These remain the original controls and panels, with their native
             // state, polling, and transcript navigation. Do not duplicate them.
             control.click();
             globalThis.ampComposerAnchor(control).focus({ preventScroll: true });
+            if (opening) offerBack(control);
+            else dropBack();
           });
         }));
       }

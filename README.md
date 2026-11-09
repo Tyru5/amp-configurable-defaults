@@ -105,7 +105,8 @@ above the button, left-aligned with it like the Info and Messages popovers, with
 dimming or blocking the thread. Click again, click elsewhere, use its close button,
 or press Escape to close it. **Skills** opens the same popover in the roomy layout.
 The panel lists all skills and opens the existing Info, Subagents, and Messages
-panels. Amp's attachment and send controls stay available. Resizing restores the
+panels. A panel opened this way starts with a **Back** button that returns to Thread
+tools. Amp's attachment and send controls stay available. Resizing restores the
 full layout when it fits.
 Counts use parentheses, for example **Skills (4)** and **Subagents (2)**.
 
