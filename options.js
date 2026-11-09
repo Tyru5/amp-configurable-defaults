@@ -8,6 +8,7 @@ const toggles = {
   threadMessagesPanel: document.querySelector("#threadMessagesPanel"),
   showComposerContext: document.querySelector("#showComposerContext"),
   infoOrb: document.querySelector("#infoOrb"),
+  showComposerSkills: document.querySelector("#showComposerSkills"),
   showTimestampDates: document.querySelector("#showTimestampDates"),
 };
 const status = document.querySelector("#status");

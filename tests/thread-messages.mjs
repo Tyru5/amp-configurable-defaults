@@ -74,7 +74,7 @@ try {
   browser('wait', '--fn', `document.querySelector('${toggle}').checkVisibility()`);
   check(`!${open} && !document.querySelector('.app-title-bar [data-amp-thread-messages-ui]')`, 'the control appears closed once the thread has messages');
   check(`(() => { const t = document.querySelector('${toggle}'), r = t.getBoundingClientRect();
-    return t.parentElement.matches('[data-message-composer-root] [role="region"][aria-label="Attachments"]') && !t.nextElementSibling && r.width < 60 && r.height <= 24; })()`, 'the control is a small item at the end of the composer toolbar');
+    return t.parentElement.matches('[data-message-composer-root] [role="region"][aria-label="Attachments"]') && t.nextElementSibling?.matches('[data-amp-composer-control="tools"]') && t.textContent === '(4)' && r.width < 60 && r.height <= 24; })()`, 'the control is a small counted item before the adaptive tools toggle');
   if (process.env.CAPTURE_DIR) {
     browser('eval', `document.querySelector('[data-message-composer-root]').scrollIntoView({ block: 'end' })`);
     browser('screenshot', process.env.CAPTURE_DIR + '/thread-messages-closed.png');

@@ -1,6 +1,6 @@
 # Privacy policy
 
-Updated November 7, 2026 for the unreleased amp configurable defaults 1.4.2
+Updated November 9, 2026 for the unreleased amp configurable defaults 1.4.2
 source and package. The current public Chrome Web Store release is 1.4.1;
 the [1.4.1 source policy](https://github.com/Tyru5/amp-configurable-defaults/blob/f91de7295a4509bf82db9c4032f2e5c64721ccf7/PRIVACY.md)
 remains available. This page describes 1.4.2's behavior, not a claim of publication.
@@ -13,7 +13,7 @@ is not affiliated with or endorsed by Amp.
 
 ## Information stored on your device
 
-The extension uses eleven preferences in `chrome.storage.local`:
+The extension uses twelve preferences in `chrome.storage.local`:
 
 - `right`: whether the sidebar should appear on the right.
 - `rightWidth`: the selected right-sidebar width, or no custom width.
@@ -25,6 +25,7 @@ The extension uses eleven preferences in `chrome.storage.local`:
 - `threadMessagesPanel`: offer the read-only thread message control.
 - `showComposerContext`: show the thread's model and runner in the composer.
 - `infoOrb`: show the floating thread info orb beside the conversation.
+- `showComposerSkills`: show skills successfully loaded in the thread.
 - `showTimestampDates`: add the calendar date to the times Amp shows above messages. Defaults to false.
 
 All boolean preferences except `showTimestampDates` default to true. Each feature
@@ -54,7 +55,7 @@ hostname, and working directory from the
 response. It keeps these values in memory for the current tab and displays them
 in the enabled composer label or info card.
 The response is not stored or sent anywhere else. Turning both settings off
-stops these requests.
+stops their shared requests; the skills and messages features have their own requests.
 
 **Show full dates in message timestamps** makes no request. It reads the
 `datetime` of the timestamps Amp already renders above messages and prefixes
@@ -74,7 +75,7 @@ This reading panel keeps a temporary, in-memory view for the current thread,
 including the last visible content when Amp unmounts an entry. It is discarded
 on thread navigation or page reload. Disabling the panel keeps inline summaries. Task
 prompts and output are never written to extension storage, browser storage,
-files, or a server. Only the eleven preferences above are persisted.
+files, or a server. Only the twelve preferences above are persisted.
 
 When the thread message control is enabled on desktop, it requests the current
 thread's same-origin page data using the existing Amp session, including while
@@ -94,8 +95,22 @@ removes the control and stops its requests.
 Its temporary cache is discarded on thread navigation, reload, disabling the
 setting, or switching to mobile. Message content never enters persistent storage.
 
-Apart from the thread communication described above, message timestamps,
-and the model name recorded on the latest assistant reply,
+When **Show skills used in the composer** is on, the extension requests the open
+desktop thread's same-origin page data and follows its older or newer transcript
+pages at `/api/threads/<id>/transcript-page`. It reads top-level `skill` tool calls,
+their successful results, and collapsed-turn skill summaries. It displays each
+skill name once, with an instruction excerpt and base directory when available.
+Other tools, failed loads, and nested subagent calls do not count. It never fetches
+skill files or runs their instructions. Incomplete history is labeled as partial.
+Live transcript changes refresh at most once every five seconds while the tab is
+visible; already-read history is reused. Turning the setting off, navigating away,
+or switching to mobile clears this in-memory cache and stops its requests.
+Clicking a skill opens `https://ampcode.com/settings/skills` in a new tab.
+When the composer is crowded, Thread tools groups extension controls into a
+dialog without changing Amp's composer or submitting its draft.
+
+Apart from the thread communication described above, message IDs, timestamps,
+skill calls and results, completion state, and the model name recorded on the latest assistant reply,
 the extension does not read ordinary conversation
 message contents, composer drafts,
 account details, passwords, authentication tokens, or browsing history. It

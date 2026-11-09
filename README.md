@@ -91,6 +91,20 @@ label, even when that label is disabled. Click again, press Escape, or click
 elsewhere to close it. On a read-only thread without a composer, the control
 sits in the title bar. Desktop only.
 
+Skills successfully loaded in the thread appear above the desktop composer toolbar.
+Repeated loads appear once; failed loads and nested subagent activity are excluded.
+Hover or focus a skill for an excerpt from its instructions and its location when
+available. Clicking opens Amp's Skills settings in a new tab, preserving the draft.
+Older transcript pages and Amp's collapsed-turn skill summaries are included.
+If history cannot be fully read, the count has a `+` and the tools dialog explains
+what is missing. Summaries may identify a skill without including its instructions.
+
+When the skill names or toolbar controls no longer fit, the extension folds its
+controls and model/runner label into **Thread tools**. The dialog lists all skills
+and opens the existing Info, Subagents, and Messages panels. Amp's attachment and
+send controls stay in place. Resizing restores the full layout when it fits.
+Counts use parentheses, for example **Skills (4)** and **Subagents (2)**.
+
 These features have independent checkboxes in **Options**:
 
 | Setting                                   | Default | When off                                                          |
@@ -104,6 +118,7 @@ These features have independent checkboxes in **Options**:
 | Enable thread message panel               | On      | No thread-message control; native messages stay unchanged          |
 | Show model and runner in the composer     | On      | No composer label; thread info can still load data                |
 | Show thread info in the composer          | On      | No thread info control; title-bar details stay in Amp's title bar |
+| Show skills used in the composer          | On      | No skills list or skills history requests; other controls still fold when crowded |
 | Show full dates in message timestamps     | Off     | Amp's time-only timestamps                                        |
 
 **Show full dates in message timestamps** adds the calendar date, including the
@@ -274,12 +289,14 @@ node --check subagents.js
 node --check thread-messages.js
 node --check composer.js
 node --check info-orb.js
+node --check composer-tools.js
 node --check tool-preview.js
 node --check options.js
 node --check docs/landing.js
 node --test tests/background.test.mjs
 node --test tests/options.test.mjs
 node tests/thread-messages.mjs # with the fixture server running on port 8765
+node tests/composer-tools.mjs # skill history, keyboard details, and adaptive overflow
 node tests/spaces.mjs # with the same fixture server running
 node tests/spaces-layout.mjs # native and opposite layouts, expanded and collapsed
 python3 -m unittest discover -s tests -p '*_test.py'

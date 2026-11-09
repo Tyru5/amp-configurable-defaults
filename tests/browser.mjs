@@ -171,7 +171,7 @@ try {
   browser('eval', `fixtureAgents.add('alpha', 'Check layout', 'ALPHA task'); fixtureAgents.add('beta', 'Check layout', 'BETA task')`);
   browser('wait', '--fn', `document.querySelector('[data-amp-subagents-ui="toggle"]')?.getAttribute('aria-label') === 'Subagents, 2'`);
   check(`(() => { const t = document.querySelector('[data-amp-subagents-ui="toggle"]'), r = t.getBoundingClientRect();
-    return t.parentElement.matches('[data-message-composer-root] [role="region"][aria-label="Attachments"]') && t.previousElementSibling?.matches('[data-amp-thread-info-ui="toggle"]') && t.textContent === '2' && r.width < 60 && r.height <= 24; })()`,
+    return t.parentElement.matches('[data-message-composer-root] [role="region"][aria-label="Attachments"]') && t.previousElementSibling?.matches('[data-amp-thread-info-ui="toggle"]') && t.textContent === '(2)' && r.width < 60 && r.height <= 24; })()`,
     'Subagents is a compact composer control with a count, after the thread info control');
   check(`document.querySelectorAll('[data-amp-subagents-ui="reference"]').length === 2 && document.querySelector('[data-amp-subagents-ui="panel"]').hidden`, 'compact summaries render before the optional panel opens');
   check(`getComputedStyle(document.querySelector('[data-amp-subagents-ui="reference"]'), '::before').animationName === 'amp-subagent-pulse' && getComputedStyle(document.querySelector('[data-amp-subagents-ui="reference"]')).animationName === 'none'`, 'working agent dot pulses without animating its text');
@@ -464,8 +464,8 @@ try {
   browser('set', 'viewport', '1280', '800', '2');
   const context = `[data-message-composer-root] [aria-label="Attachments"] > span:has(> input[type="file"]) + [data-amp-composer-context]`;
   const contextText = `[...document.querySelectorAll('${context} [data-amp-composer-context-item]')].map(e => e.textContent).join(' | ')`;
-  // The Messages dock also reads thread data; turn it off so request counts measure the composer and orb only.
-  browser('eval', 'chrome.storage.local.set({ threadMessagesPanel: false })');
+  // Other data readers are off so request counts measure the composer and orb only.
+  browser('eval', 'chrome.storage.local.set({ threadMessagesPanel: false, showComposerSkills: false })');
   browser('eval', `fixtureAgents.navigate('fixture-a')`);
   browser('wait', '--fn', `(${contextText}).includes('tiru5-macbook-pro')`);
   check(`(${contextText}) === 'claude-opus-5-5 | tiru5-macbook-pro'`, 'composer shows the latest top-level model, not a subagent or older reply, and the runner name beside the upload button');

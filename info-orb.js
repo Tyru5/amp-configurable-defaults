@@ -70,7 +70,7 @@
       const open = event.newState === "open";
       toggle.setAttribute("aria-expanded", String(open));
       if (open) globalThis.ampPlacePopover(panel, toggle);
-      else if (panel.contains(document.activeElement) || document.activeElement === document.body) toggle.focus({ preventScroll: true });
+      else if (panel.contains(document.activeElement) || document.activeElement === document.body) globalThis.ampComposerAnchor(toggle).focus({ preventScroll: true });
     });
     for (const node of [toggle, panel]) {
       node.addEventListener("keydown", event => {

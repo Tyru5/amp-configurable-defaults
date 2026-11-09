@@ -249,7 +249,7 @@
     const heading = document.createElement("header");
     const label = document.createElement("strong");
     label.textContent = "Subagents";
-    const dismiss = button("×", () => { close(); state.toggle.focus(); });
+    const dismiss = button("×", () => { close(); globalThis.ampComposerAnchor(state.toggle).focus(); });
     dismiss.setAttribute("aria-label", "Close subagents");
     heading.append(label, dismiss);
     const list = document.createElement("div");
@@ -346,7 +346,7 @@
         closeReader(true);
       } else {
         close();
-        state.toggle.focus();
+        globalThis.ampComposerAnchor(state.toggle).focus();
       }
     };
     for (const surface of [panel, reader]) {
@@ -482,7 +482,7 @@
     }
 
     if (!state.items.has(state.selected)) state.selected = state.items.keys().next().value;
-    write(state.count, String(state.items.size));
+    write(state.count, `(${state.items.size})`);
     state.toggle.setAttribute("aria-label", `Subagents, ${state.items.size}`);
     state.toggle.setAttribute("aria-expanded", String(state.open));
     state.panel.hidden = !state.open;

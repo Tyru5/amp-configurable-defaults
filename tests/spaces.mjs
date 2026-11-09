@@ -52,6 +52,19 @@ const list = '[data-amp-thread-messages-list]';
 const subagents = '[data-amp-subagents-ui="toggle"]';
 const contextText = id => `[...document.querySelectorAll('#${id} ${context} ${item}')].map(n => n.textContent).join(' | ')`;
 
+function activate(card, selector) {
+  if (evaluate(`document.querySelector('#${card} ${selector}').checkVisibility()`)) {
+    browser('click', `#${card} ${selector}`);
+    return;
+  }
+  browser('click', `#${card} [data-amp-tools-ui="toggle"]`);
+  const index = evaluate(`(() => {
+    const controls = [...document.querySelectorAll('#${card} [data-amp-composer-control]:not([data-amp-composer-control="tools"])')].filter(control => !control.hidden);
+    return controls.indexOf(document.querySelector('#${card} ${selector}')) + 1;
+  })()`);
+  browser('click', `#${card} [data-amp-tools-ui="actions"] button:nth-child(${index})`);
+}
+
 // Keep the shared fixture's default shell and data untouched. Only this runner
 // mounts Spaces. Ownership, tab strips, transcript/chat attributes and the
 // top-level spaceChat shape follow the verified live Spaces DOM.
@@ -199,7 +212,7 @@ const setup = String.raw`(() => {
     },
     orb(cardID) {
       const control = document.querySelector('#' + cardID + ' [data-amp-thread-info-ui="toggle"]');
-      return control?.checkVisibility() ? control : undefined;
+      return control && ampComposerAnchor(control).checkVisibility() ? control : undefined;
     },
     info(cardID) {
       const orb = this.orb(cardID);
@@ -207,13 +220,19 @@ const setup = String.raw`(() => {
     },
   };
   fixtureSpaces.mount();
-  chrome.storage.local.set({ showComposerContext: true, infoOrb: true, threadMessagesPanel: true, subagentPanel: true });
+  for (const id of ['space-worker-a', 'space-worker-b']) {
+    fixtureThreadData[id].transcriptPage.messages.push(
+      { role: 'assistant', content: [{ type: 'tool_use', id: 'shared-skill-id', name: 'skill', input: { name: id + '-skill' } }] },
+      { role: 'user', content: [{ type: 'tool_result', toolUseID: 'shared-skill-id', run: { status: 'done', result: { content: [{ type: 'text', text: 'Worker skill instructions.' }] } } }] }
+    );
+  }
+  chrome.storage.local.set({ showComposerContext: true, infoOrb: true, threadMessagesPanel: true, subagentPanel: true, showComposerSkills: true });
 })()`;
 
 try {
   browser('open', url);
   browser('set', 'viewport', '1600', '900', '2');
-  browser('eval', `localStorage.setItem('extension-settings', JSON.stringify({showComposerContext:false, infoOrb:false, threadMessagesPanel:false})); location.reload()`);
+  browser('eval', `localStorage.setItem('extension-settings', JSON.stringify({showComposerContext:false, infoOrb:false, threadMessagesPanel:false, showComposerSkills:false})); location.reload()`);
   browser('wait', '--fn', 'typeof fixtureAgents === "object"');
   browser('eval', setup);
   test('fixture contract', () => {
@@ -316,11 +335,16 @@ try {
   test('multiple visible workers', () => {
     eventually(`${contextText('space-worker-card')} === 'claude-opus-5-5 | space-runner-a' && ${contextText('space-worker-b-card')} === 'claude-sonnet-5-5 | Orb' &&
       ${contextText('space-chat-card')} === 'claude-haiku-5-5 | Orb'`, 'two visible workers and chat each retain their own composer context');
-    eventually(`document.querySelector('#space-worker-card ${toggle}')?.checkVisibility() && document.querySelector('#space-worker-b-card ${toggle}')?.checkVisibility()`,
-      'each visible worker has its own messages control');
+    eventually(`['space-worker-card','space-worker-b-card'].every(id => {
+      const control = document.querySelector('#' + id + ' ${toggle}');
+      return control && !control.hidden && ampComposerAnchor(control).checkVisibility();
+    })`, 'each visible worker has messages available directly or through Thread tools');
+    eventually(`document.querySelector('#space-worker-card [data-amp-tools-ui="rail"] a')?.textContent === 'space-worker-a-skill' &&
+      document.querySelector('#space-worker-b-card [data-amp-tools-ui="rail"] a')?.textContent === 'space-worker-b-skill' &&
+      !document.querySelector('#space-chat-card [data-amp-tools-ui]')`, 'worker skill histories stay separate despite identical tool IDs, without mounting in Space chat');
     check(`document.querySelectorAll('[data-amp-composer-context]').length === 3`,
     'multiple workers receive independent data even with identical message IDs');
-    browser('click', `#space-worker-b-card ${toggle}`);
+    activate('space-worker-b-card', toggle);
     const panelID = evaluate(`document.querySelector('#space-worker-b-card ${toggle}').getAttribute('aria-controls')`);
     eventually(`document.querySelectorAll('#${panelID} ${list} > button').length === 2`, 'second worker messages come from its own thread');
     browser('click', `#${panelID} ${list} > button:last-child`);
@@ -331,7 +355,7 @@ try {
   });
   test('independent tool previews', () => {
     for (const id of ['space-chat-card', 'space-worker-card']) {
-      browser('eval', `fixtureSpaces.orb('${id}').focus()`);
+      browser('eval', `ampComposerAnchor(fixtureSpaces.orb('${id}')).focus()`);
       keyEscape();
     }
     browser('eval', `for (const [id, key, count] of [['space-worker-card','a-calls',7],['space-worker-b-card','b-calls',9]]) {
@@ -351,15 +375,17 @@ try {
   });
   browser('eval', `fixtureSpaces.addTask('space-worker-card', 'A task'); fixtureSpaces.addTask('space-worker-b-card', 'B task')`);
   test('modern Subagents anchors', () => {
-    eventually(`['space-worker-card','space-worker-b-card'].every(id => document.querySelector('#' + id + ' [data-message-composer-root] [role="region"][aria-label="Attachments"] ${subagents}')?.checkVisibility())`,
-      'real Task rows mount independent Subagents controls in both worker composers');
+    eventually(`['space-worker-card','space-worker-b-card'].every(id => {
+      const control = document.querySelector('#' + id + ' [data-message-composer-root] [role="region"][aria-label="Attachments"] ${subagents}');
+      return control && ampComposerAnchor(control).checkVisibility();
+    })`, 'real Task rows mount independent Subagents controls accessible from both worker composers');
     check(`!document.querySelector('#space-chat-card [data-amp-subagents-ui]') && document.querySelectorAll('${subagents}').length === 2`, 'worker Task controls never mount in chat or the shared outer header');
     check(`['space-worker-card','space-worker-b-card'].every(id =>
       document.querySelector('#' + id + ' [data-thread-agent-tab-content]')?.hasAttribute('data-amp-subagents-host')) &&
       !document.querySelector('.thread-layout-panes[data-amp-subagents-host], [data-agent-pane][data-amp-subagents-host], [data-thread-file-tab-pane][data-amp-subagents-host]')`,
     'Subagents panel hosts are the local agent-tab contents, never the shared layout or file-tab panes');
     for (const [id, label, other] of [['space-worker-card','A task','B task'], ['space-worker-b-card','B task','A task']]) {
-      browser('click', `#${id} ${subagents}`);
+      activate(id, subagents);
       const panelID = evaluate(`document.querySelector('#${id} ${subagents}').getAttribute('aria-controls')`);
       eventually(`document.getElementById('${panelID}')?.textContent.includes('${label}') && !document.getElementById('${panelID}').textContent.includes('${other}')`,
         `${label} panel reads only its own worker transcript`);
@@ -383,6 +409,8 @@ try {
     'remounting the native upload trigger leaves one correctly positioned context label');
   });
   test('focused info-card teardown', () => {
+    browser('set', 'viewport', '2560', '900', '2');
+    eventually(`fixtureSpaces.orb('space-worker-b-card')?.checkVisibility()`, 'wide worker restores the direct Info control before focused teardown');
     browser('eval', `window.infoTeardownErrors = []; addEventListener('error', event => infoTeardownErrors.push(event.message));
       fixtureSpaces.orb('space-worker-b-card').focus(); chrome.storage.local.set({infoOrb:false})`);
     eventually(`document.querySelectorAll('[data-amp-thread-info-ui="toggle"]').length === 0`, 'disabling info removes focused and unfocused pane controls');

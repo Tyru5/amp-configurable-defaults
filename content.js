@@ -67,18 +67,23 @@
   // attachments toolbar, after the upload button and the model and runner label.
   // Controls keep one order however their scripts happen to mount: this thread
   // (info), its subagents, then messages with other threads.
-  const controlOrder = ["info", "subagents", "messages"];
+  const controlOrder = ["info", "subagents", "messages", "tools"];
   globalThis.ampMountComposerControl = (toolbar, control) => {
     const rank = node => controlOrder.indexOf(node.dataset.ampComposerControl);
     const next = [...toolbar.children].find(node => node !== control && rank(node) > rank(control)) ?? null;
     if (control.parentElement !== toolbar || control.nextElementSibling !== next) toolbar.insertBefore(control, next);
   };
 
+  // Collapsed controls still own their panels; anchor and restore focus to the
+  // visible Thread tools button when they are opened from its dialog.
+  globalThis.ampComposerAnchor = control => control.closest("[data-amp-tools-collapsed]")
+    ?.querySelector('[data-amp-composer-control="tools"]') ?? control;
+
   // Composer popovers open upward from their control, left-aligned with it and
   // kept inside the window. A control near the top of the window, as in a
   // read-only thread's title bar, opens downward instead.
   globalThis.ampPlacePopover = (panel, control) => {
-    const anchor = control.getBoundingClientRect();
+    const anchor = globalThis.ampComposerAnchor(control).getBoundingClientRect();
     const left = Math.max(8, Math.min(anchor.left - 4, innerWidth - panel.offsetWidth - 8));
     panel.style.left = `${Math.round(left)}px`;
     const above = anchor.top - 6 >= panel.offsetHeight + 8 || anchor.top > innerHeight / 2;

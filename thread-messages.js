@@ -112,7 +112,7 @@
     const s = state;
     clearTimeout(s.poll);
     s.toggle.setAttribute("aria-expanded", "false");
-    if (s.panel.contains(document.activeElement) || document.activeElement === document.body) s.toggle.focus({ preventScroll: true });
+    if (s.panel.contains(document.activeElement) || document.activeElement === document.body) globalThis.ampComposerAnchor(s.toggle).focus({ preventScroll: true });
   }
 
   function close() {
@@ -270,7 +270,7 @@
     if (!state) return;
     const s = state;
     s.toggle.hidden = !s.items.size;
-    write(s.count, String(s.items.size));
+    write(s.count, `(${s.items.size})`);
     s.toggle.setAttribute("aria-label", `Thread messages, ${s.items.size}`);
     const peers = [...new Set([...s.items.values()].map(entry => entry.peer))]
       .map(peer => s.titles.get(peer) ?? `T-…${peer.slice(-8)}`);
