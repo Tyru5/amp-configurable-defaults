@@ -410,20 +410,35 @@ try {
   browser('eval', `fixtureAgents.navigate('tool-previews'); window.tools = fixtureToolSection('work'); window.shortTools = fixtureToolSection('short', 5, true)`);
   const preview = '[data-amp-tool-preview]';
   browser('wait', '--fn', `document.querySelectorAll('${preview}').length === 1 && document.querySelector('${preview} code.language-bash') !== null`);
-  check(`[...document.querySelector('[data-amp-tool-preview-calls]').children].map(e => e.querySelector('code.language-bash') ? '$ ' + e.querySelector('code.language-bash').textContent : e.textContent).join('|') === '$ bash skills/iris-load.sh|Read git status|List .github/workflows|Read build-cache-manifest.yml L1–80|Grep "ci|cache|build|e2e"'`, 'loaded status shows the first five calls, in order, rather than the latest five');
+  check(`[...document.querySelector('[data-amp-tool-preview-calls]').children].map(e => e.querySelector('code.language-bash') ? '$ ' + e.querySelector('code.language-bash').textContent : e.querySelector('pre > code')?.textContent || e.textContent).join('|') === '$ bash skills/iris-load.sh|Read git status|List .github/workflows|Read build-cache-manifest.yml L1–80|Grep "ci|cache|build|e2e"'`, 'loaded status shows the first five calls, in order, rather than the latest five');
+  check(`[tools, shortTools].every(section => [2, 3, 4].every(i => {
+    const row = section.rows[i], code = row.querySelector('pre > code');
+    return code && !code.classList.contains('language-bash') && code.textContent === row.querySelector('.action-label').textContent &&
+      getComputedStyle(code.parentElement).whiteSpace === 'pre-wrap' && getComputedStyle(row.querySelector('.expandable-row-header')).borderInlineStartWidth === '2px';
+  }))`, 'Read, Grep and List activity summaries use wrapping code blocks even without expandable output or a five-call preview');
   check(`tools.rows.every(e => getComputedStyle(e).display === 'none') && shortTools.rows.every(e => e.getBoundingClientRect().height > 0) && !document.querySelector('#fixture-transcript .expandable-row-header + pre')`, 'long sections hide native rows without opening output, while five-call sections stay visible');
   check(`document.querySelector('[data-amp-tool-preview-calls]').inert && document.querySelector('[data-amp-tool-preview-calls]').getAttribute('aria-hidden') === 'true' && document.querySelector('${preview} > button').getAttribute('aria-controls').split(' ').every(id => document.getElementById(id))`, 'preview has one accessible expansion control and inert copies with valid native targets');
-  check(`[...document.querySelectorAll('#fixture-status-work ~ .transcript-entry-row:not([id*="short"]) pre > code.language-bash')].map(e => e.textContent).join('|') === 'bash skills/iris-load.sh|gh run list -R example/platform -w ci.yml|python3 jobs.py' && !tools.rows[1].querySelector('pre')`, 'every Bash call uses pre/code while non-shell labels keep their native formatting');
+  check(`[...document.querySelectorAll('#fixture-status-work ~ .transcript-entry-row:not([id*="short"]) pre > code.language-bash')].map(e => e.textContent).join('|') === 'bash skills/iris-load.sh|gh run list -R example/platform -w ci.yml|python3 jobs.py' && !tools.rows[1].querySelector('pre') && !tools.status.querySelector('pre')`, 'Bash code blocks remain distinct from activity summaries, native links and status headings');
   const multilineBash = `for file in "report one.txt" *.log; do\n  printf '%s\\n' "$file <tag> & value" | sed 's/ /_/g'\ndone`;
   browser('eval', `tools.add(); const label = tools.rows[0].querySelector('.bash-label'); label.children[1].textContent = ${JSON.stringify(multilineBash)}; const dir = document.createElement('span'); dir.textContent = '(in /workspace/project with spaces)'; label.append(dir); label.children[0].style.color = 'rgb(255, 0, 0)'`);
   browser('wait', '--fn', `document.querySelector('${preview} button').textContent === 'Show all 10 tool calls' && document.querySelector('${preview} pre > code')?.textContent === ${JSON.stringify(multilineBash)}`);
-  check(`['${preview}', '#fixture-tool-work-0'].every(selector => { const root = document.querySelector(selector), code = root.querySelector('pre > code.language-bash'); return code.textContent === ${JSON.stringify(multilineBash)} && code.childElementCount === 0 && root.querySelector('[data-amp-bash-block] small').textContent === '(in /workspace/project with spaces)' && getComputedStyle(code.parentElement).whiteSpace === 'pre-wrap' && getComputedStyle(root.querySelector('.bash-label > span')).color === 'rgb(255, 0, 0)'; })`, 'streaming Bash preserves newlines, indentation, literal HTML and operators, working directory and native status color');
+  check(`['${preview}', '#fixture-tool-work-0'].every(selector => { const root = document.querySelector(selector), code = root.querySelector('pre > code.language-bash'); return code.textContent === ${JSON.stringify(multilineBash)} && code.childElementCount === 0 && root.querySelector('[data-amp-tool-block] small').textContent === '(in /workspace/project with spaces)' && getComputedStyle(code.parentElement).whiteSpace === 'pre-wrap' && getComputedStyle(root.querySelector('.bash-label > span')).color === 'rgb(255, 0, 0)'; })`, 'streaming Bash preserves newlines, indentation, literal HTML and operators, working directory and native status color');
+  const longGrep = 'Grep src/tui/workflow_page.rs "^pub(super) fn|^fn|^impl|<Widget> & value|KeyCode::Left|KeyCode::Right"';
+  browser('eval', `tools.rows[4].querySelector('[data-transcript-action-title]').textContent = ${JSON.stringify(longGrep)}; tools.rows[3].querySelector('.action-range').textContent = 'L877-1225'`);
+  browser('wait', '--fn', `document.querySelector('${preview} [data-amp-tool-preview-calls] > :nth-child(5) code')?.textContent === ${JSON.stringify(longGrep)}`);
+  check(`['${preview} [data-amp-tool-preview-calls]', '#fixture-transcript'].every(selector => {
+    const codeAt = i => document.querySelector(selector).querySelector(selector.startsWith('${preview}') ? ':scope > :nth-child(' + (i + 1) + ') pre > code' : '#fixture-tool-work-' + i + ' pre > code');
+    return codeAt(3).textContent === 'Read build-cache-manifest.yml L877-1225' && codeAt(4).textContent === ${JSON.stringify(longGrep)} && codeAt(4).childElementCount === 0;
+  })`, 'streamed activity titles and separate Read line ranges update in native rows and previews as literal text');
   browser('scrollintoview', `${preview} > button`);
   browser('click', `${preview} > button`);
   check(`!document.querySelector('${preview}') && tools.rows.every(e => e.getBoundingClientRect().height > 0) && document.activeElement === tools.status.querySelector('.expandable-row-header')`, 'clicking the preview reveals all calls and preserves keyboard focus');
   browser('scrollintoview', '#fixture-tool-work-0 .expandable-row-header');
   browser('click', '#fixture-tool-work-0 code.language-bash');
   check(`document.querySelector('#fixture-tool-work-0 .expandable-row-header + pre')?.textContent === 'Fixture command output'`, 'clicking the Bash code block retains its native output disclosure');
+  browser('scrollintoview', '#fixture-tool-work-4 code');
+  browser('click', '#fixture-tool-work-4 code');
+  check(`document.querySelector('#fixture-tool-work-4 .expandable-row-header + pre')?.textContent === 'Fixture command output'`, 'clicking a Grep summary code block retains its native output disclosure');
   browser('scrollintoview', '#fixture-tool-work-1 a');
   browser('click', '#fixture-tool-work-1 a');
   check(`location.hash === '#fixture-file'`, 'revealed tool retains its original link');
@@ -443,14 +458,16 @@ try {
   browser('eval', `fixtureAgents.navigate('tool-previews-mobile'); window.tools = fixtureToolSection('work')`);
   browser('wait', '--fn', `document.querySelector('${preview}') !== null`);
   browser('set', 'viewport', '390', '844', '2');
-  browser('eval', `tools.rows[0].querySelector('.bash-label').children[1].textContent = ${JSON.stringify(multilineBash)}`);
+  browser('eval', `tools.rows[0].querySelector('.bash-label').children[1].textContent = ${JSON.stringify(multilineBash)}; tools.rows[4].querySelector('[data-transcript-action-title]').textContent = ${JSON.stringify(longGrep)}`);
   browser('wait', '--fn', `document.querySelector('${preview} code')?.textContent === ${JSON.stringify(multilineBash)}`);
   check(`(() => { const box = document.querySelector('${preview}').getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth && getComputedStyle(document.querySelector('[data-amp-tool-preview-calls]')).maskImage.includes('linear-gradient'); })()`, 'narrow viewport keeps the faded preview inside the conversation');
   check(`(() => { const pre = document.querySelector('${preview} pre'); return pre.scrollWidth <= pre.clientWidth + 1 && pre.clientHeight >= parseFloat(getComputedStyle(pre).lineHeight) * 3; })()`, 'multiline Bash is not truncated and wraps inside a narrow preview');
+  check(`(() => { const code = document.querySelector('${preview} [data-amp-tool-preview-calls] > :nth-child(5) code'), pre = code.parentElement; return code.textContent === ${JSON.stringify(longGrep)} && pre.scrollWidth <= pre.clientWidth + 1 && pre.clientHeight > parseFloat(getComputedStyle(pre).lineHeight); })()`, 'long Grep patterns wrap in narrow previews without ellipsis or horizontal overflow');
   browser('scrollintoview', '#fixture-status-work .expandable-row-header');
   browser('click', '#fixture-status-work .expandable-row-header');
   check(`!document.querySelector('${preview}') && tools.rows.every(e => e.getBoundingClientRect().height > 0)`, 'clicking the status header also reveals every call');
   check(`[...document.querySelectorAll('#fixture-tool-work-0 pre, #fixture-tool-work-5 pre')].every(pre => pre.scrollWidth <= pre.clientWidth + 1) && document.querySelector('#fixture-tool-work-0 code').textContent === ${JSON.stringify(multilineBash)}`, 'expanded multiline and long single-line Bash commands wrap without losing text');
+  check(`(() => { const pre = tools.rows[4].querySelector('pre'); return pre.textContent === ${JSON.stringify(longGrep)} && pre.scrollWidth <= pre.clientWidth + 1 && pre.clientHeight > parseFloat(getComputedStyle(pre).lineHeight); })()`, 'expanded Grep summaries retain the full wrapped pattern');
   browser('reload');
   browser('eval', `fixtureAgents.navigate('tool-previews-mobile'); window.tools = fixtureToolSection('work')`);
   browser('wait', '--fn', `document.querySelector('${preview}') !== null`);

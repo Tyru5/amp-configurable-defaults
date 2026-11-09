@@ -146,6 +146,9 @@ on its status header to reveal the whole section. The preview button also works
 with Enter or Space. Individual output disclosures stay closed until opened.
 Bash commands render as code blocks in both previews and expanded sections,
 preserving line breaks and indentation and wrapping long lines without truncation.
+Read, Grep, and List activity summaries use the same block style, including file
+line ranges and full search patterns, even when they have no expandable output.
+These blocks show Amp's summary text, not reconstructed shell commands.
 Sections with five or fewer rows remain fully visible. Expansion is remembered
 while viewing the thread, including when rows remount, and resets on navigation
 or reload. This applies on both sidebar sides and at mobile widths, without

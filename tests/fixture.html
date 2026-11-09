@@ -58,6 +58,8 @@
   .expandable-row-header:has(> [data-transcript-status-row-id]) { padding: 6px 10px; border-radius: 8px; background: #80808015; }
   .expandable-row-chevron { display: inline-block; }
   .expandable-row-chevron.rotate-90 { transform: rotate(90deg); }
+  .action-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 20px; }
+  .action-range { margin-left: 4px; font-size: 12px; color: GrayText; }
   .font-mono { font-family: ui-monospace, monospace; }
   .bash-label { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
   .bash-label > :nth-child(2) { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
@@ -398,7 +400,7 @@
         command.textContent = labels[index].slice(2);
         label.replaceChildren(status, command);
       }
-      if (index === 0 || index >= 5) {
+      if (index === 0 || index >= 4) {
         tool.parentElement.dataset.transcriptToolRowId = `${id}-${index}`;
         tool.setAttribute('data-transcript-expandable-row', '');
         tool.tabIndex = -1;
@@ -417,6 +419,28 @@
         link.href = '#fixture-file';
         link.textContent = ' git status';
         tool.firstElementChild.replaceChildren('Read', link);
+      }
+      // Activity summaries use a div, not the Bash label's span. Amp's
+      // 3fb57833aff76257.js (2026-11-09), Sf/Gd/zd/Bd: the action title holds
+      // the verb and object; a Read line range is a separate sibling span.
+      if ([2, 3, 4].includes(index)) {
+        const label = document.createElement('div');
+        label.className = 'action-label';
+        const title = document.createElement('span');
+        title.dataset.transcriptActionTitle = '';
+        const text = index === 3 ? 'Read build-cache-manifest.yml' : labels[index];
+        const split = text.indexOf(' ');
+        const object = document.createElement('span');
+        object.textContent = text.slice(split + 1);
+        title.append(text.slice(0, split + 1), object);
+        label.append(title);
+        if (index === 3) {
+          const range = document.createElement('span');
+          range.className = 'action-range';
+          range.textContent = 'L1–80';
+          label.append(' ', range);
+        }
+        tool.firstElementChild.replaceWith(label);
       }
       if (chevron.classList.contains('rotate-90')) (rows.at(-1) || status).after(row);
       rows.push(row);

@@ -67,7 +67,7 @@
   [data-transcript-message-lookup-id][id*="/w:work-group:"] [data-transcript-expandable-row],
   [data-transcript-tool-row-id] > [data-transcript-expandable-row],
   [data-amp-tool-preview-calls] > [data-amp-tool-preview-expandable],
-  [data-amp-bash-header]
+  [data-amp-tool-header]
 ) {
   margin-block: 5px;
   padding: 7px 10px;
@@ -83,11 +83,13 @@
 ) [data-transcript-expandable-row] > .expandable-row-chevron { opacity: .75; }
 
 /* Keep Amp's live Ran/Running status word; show the command as a real code block.
-   Preserve line breaks and indentation; wrap long lines instead of truncating. */
-[data-amp-bash-header] > [data-amp-bash-label] { display: contents; }
-[data-amp-bash-header] > [data-amp-bash-label] > :nth-child(n + 2) { display: none; }
-.expandable-row-header > [data-amp-bash-block] { display: block; flex: 1; min-width: 0; }
-[data-amp-bash-block] > pre {
+   Activity summaries share the block style but are not shell commands.
+   Keep native labels mounted for streaming updates, without duplicate text. */
+[data-amp-tool-header] > [data-amp-bash-label] { display: contents; }
+[data-amp-tool-header] > [data-amp-bash-label] > :nth-child(n + 2),
+[data-amp-tool-header] > [data-amp-tool-label] { display: none; }
+.expandable-row-header > [data-amp-tool-block] { display: block; flex: 1; min-width: 0; }
+[data-amp-tool-block] > pre {
   margin: 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -95,20 +97,20 @@
   font: .8125rem/1.6 var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   color: var(--foreground, CanvasText);
 }
-[data-amp-bash-block] > pre > code {
+[data-amp-tool-block] > pre > code {
   padding: 0;
   background: transparent;
   color: inherit;
   font: inherit;
   white-space: inherit;
 }
-[data-amp-bash-block] > small {
+[data-amp-tool-block] > small {
   display: block;
   margin-top: 4px;
   font: .75rem/1.5 system-ui, sans-serif;
   color: var(--muted-foreground, #666);
 }
-[data-amp-bash-block] > small:empty { display: none; }
+[data-amp-tool-block] > small:empty { display: none; }
 
 /* Preview copies are inert. The full-area button reveals the untouched native
    rows, including their original links and individual output disclosures. */

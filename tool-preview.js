@@ -26,25 +26,32 @@
       // Amp's Bash label is a span holding the "Ran" or "Running" status word,
       // the monospace command, and an optional workdir (chunk 3fb57833aff76257.js,
       // 2026-11-08). Do not infer shell commands from prose.
-      const label = header.querySelector(":scope > span");
-      const [status, command, workdir] = label?.children || [];
-      if (!["Ran", "Running"].includes(status?.textContent) || !command?.classList.contains("font-mono")) continue;
-      label.setAttribute("data-amp-bash-label", "");
-      let block = header.querySelector(":scope > [data-amp-bash-block]");
+      const bashLabel = header.querySelector(":scope > span");
+      const [status, command, workdir] = bashLabel?.children || [];
+      const bash = ["Ran", "Running"].includes(status?.textContent) && command?.classList.contains("font-mono");
+      // Read/Grep/List activity summaries use a div and an explicit action-title
+      // marker instead (same chunk, 2026-11-09). Read line ranges and workdirs
+      // are siblings of that title, so copy the whole label, not just the title.
+      const action = header.querySelector(":scope > div > [data-transcript-action-title]");
+      if (!bash && !/^(Read|Grep|List)\s/.test(action?.textContent || "")) continue;
+      const label = bash ? bashLabel : action.parentElement;
+      label.setAttribute(bash ? "data-amp-bash-label" : "data-amp-tool-label", "");
+      let block = header.querySelector(":scope > [data-amp-tool-block]");
       if (!block) {
         block = document.createElement("div");
-        block.dataset.ampBashBlock = "";
+        block.dataset.ampToolBlock = "";
         const pre = document.createElement("pre");
         const code = document.createElement("code");
-        code.className = "language-bash";
+        if (bash) code.className = "language-bash";
         pre.append(code);
         block.append(pre, document.createElement("small"));
         label.after(block);
-        header.setAttribute("data-amp-bash-header", "");
+        header.setAttribute("data-amp-tool-header", "");
       }
       const code = block.querySelector("code");
-      if (code.textContent !== command.textContent) code.textContent = command.textContent;
-      const directory = workdir?.textContent || "";
+      const text = bash ? command.textContent : label.textContent;
+      if (code.textContent !== text) code.textContent = text;
+      const directory = bash ? workdir?.textContent || "" : "";
       if (block.lastElementChild.textContent !== directory) block.lastElementChild.textContent = directory;
     }
   }
