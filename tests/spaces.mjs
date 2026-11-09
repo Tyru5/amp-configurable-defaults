@@ -58,6 +58,7 @@ function activate(card, selector) {
     return;
   }
   browser('click', `#${card} [data-amp-tools-ui="toggle"]`);
+  browser('wait', '--fn', `document.querySelector('#${card} [data-amp-tools-ui="panel"]').getAnimations().length === 0`);
   const index = evaluate(`(() => {
     const controls = [...document.querySelectorAll('#${card} [data-amp-composer-control]:not([data-amp-composer-control="tools"])')].filter(control => !control.hidden);
     return controls.indexOf(document.querySelector('#${card} ${selector}')) + 1;

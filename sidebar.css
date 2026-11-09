@@ -642,7 +642,7 @@
   color: var(--foreground, CanvasText);
   text-decoration: none;
 }
-[data-amp-tools-ui="dialog"], [data-amp-tools-ui="tooltip"] {
+[data-amp-tools-ui="body"], [data-amp-tools-ui="tooltip"] {
   box-sizing: border-box;
   border: 1px solid var(--input-border, #80808033);
   border-radius: 10px;
@@ -650,25 +650,38 @@
   color: var(--popover-foreground, var(--foreground, CanvasText));
   color-scheme: inherit;
   font: 13px/1.5 system-ui, sans-serif;
-  box-shadow: 0 10px 30px -10px #00000040;
 }
-[data-amp-tools-ui="dialog"] {
-  width: min(580px, calc(100vw - 32px));
-  max-height: calc(100dvh - 48px);
-  padding: 0;
-  margin: auto;
+/* Keep the disclosure in flow above its controls. The inner clip lets the
+   composer grow and shrink without measuring or relocating Amp's own nodes. */
+[data-amp-tools-ui="panel"] {
+  display: grid;
+  grid-template-rows: 0fr;
+  min-width: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: grid-template-rows 180ms ease-out, opacity 140ms ease-out, visibility 180ms;
+}
+[data-amp-tools-ui="panel"][data-open] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  opacity: 1;
+}
+[data-amp-tools-ui="clip"] { min-height: 0; overflow: hidden; }
+[data-amp-tools-ui="body"] {
+  max-height: min(360px, 45dvh);
+  margin: 0 8px 8px;
   overflow: auto;
+  overscroll-behavior: contain;
 }
-[data-amp-tools-ui="dialog"]::backdrop { background: #0006; }
-[data-amp-tools-ui="dialog"] header {
+[data-amp-tools-ui="panel"] header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px 4px;
 }
-[data-amp-tools-ui="dialog"] h2,
-[data-amp-tools-ui="dialog"] h3 { margin: 0; font: inherit; font-weight: 600; }
-[data-amp-tools-ui="dialog"] button {
+[data-amp-tools-ui="panel"] h2,
+[data-amp-tools-ui="panel"] h3 { margin: 0; font: inherit; font-weight: 600; }
+[data-amp-tools-ui="panel"] button {
   min-height: 30px;
   padding: 4px 9px;
   border: 0;
@@ -678,7 +691,7 @@
   font: inherit;
   cursor: pointer;
 }
-[data-amp-tools-ui="dialog"] header button { width: 30px; font-size: 20px; }
+[data-amp-tools-ui="panel"] header button { width: 30px; font-size: 20px; }
 [data-amp-tools-ui="context"] { margin: 0 12px 8px; color: var(--muted-foreground, #6b7280); font-size: 11px; overflow-wrap: anywhere; }
 [data-amp-tools-ui="actions"] { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px; }
 [data-amp-tools-ui="actions"] button { border: 1px solid var(--input-border, #80808033); font-size: 12px; }
@@ -693,13 +706,16 @@
 [data-amp-tools-ui="tooltip"] p { margin: 6px 0; white-space: pre-wrap; }
 [data-amp-tools-ui="detail"] small,
 [data-amp-tools-ui="tooltip"] small { display: block; margin-top: 8px; color: var(--muted-foreground, #6b7280); font-size: 11px; }
-[data-amp-tools-ui="dialog"] footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--input-border, #80808033); font-size: 11px; color: var(--muted-foreground, #6b7280); }
-[data-amp-tools-ui="dialog"] footer a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
-[data-amp-tools-ui="tooltip"] { position: fixed; inset: auto; margin: 0; padding: 12px; width: min(340px, calc(100vw - 16px)); max-height: min(360px, 65vh); overflow: auto; overflow-wrap: anywhere; }
+[data-amp-tools-ui="panel"] footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--input-border, #80808033); font-size: 11px; color: var(--muted-foreground, #6b7280); }
+[data-amp-tools-ui="panel"] footer a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+[data-amp-tools-ui="tooltip"] { position: fixed; inset: auto; margin: 0; padding: 12px; width: min(340px, calc(100vw - 16px)); max-height: min(360px, 65vh); overflow: auto; overflow-wrap: anywhere; box-shadow: 0 10px 30px -10px #00000040; }
 [data-amp-tools-ui] [data-selected],
 [data-amp-tools-ui] :is(button, a):hover { background: color-mix(in srgb, var(--foreground, CanvasText) 6%, transparent); }
 [data-amp-tools-ui] :is(button, a):focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: -2px; }
-[data-amp-tools-ui][hidden], [data-amp-tools-ui="dialog"] [hidden] { display: none; }
+[data-amp-tools-ui][hidden], [data-amp-tools-ui="panel"] [hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-amp-tools-ui="panel"] { transition: none; }
+}
 
 /* Keep Amp's owned nodes in place. The extra conversation is a sibling pane. */
 [data-slot="sidebar-inset"][data-amp-thread-split] {

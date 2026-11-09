@@ -47,8 +47,7 @@
       clearTimeout(state.tipTimer);
       state.resize.disconnect();
       hideTip();
-      state.dialog.close();
-      for (const element of [state.rail, state.toggle, state.dialog, state.tip]) element.remove();
+      for (const element of [state.rail, state.toggle, state.panel, state.tip]) element.remove();
       state.composer.removeAttribute("data-amp-tools-collapsed");
       state = undefined;
     }
@@ -68,14 +67,14 @@
       if (skill.baseDir) target.append(node("small", skill.baseDir));
     }
 
-    function link(skill, inDialog = false) {
+    function link(skill, inPanel = false) {
       const anchor = node("a", skill.name);
       anchor.href = settingsURL;
       anchor.target = "_blank";
       anchor.rel = "noopener";
       anchor.setAttribute("aria-label", `${skill.name}, open Skills settings in a new tab`);
       const show = () => {
-        if (inDialog) {
+        if (inPanel) {
           state.selected = skill.name;
           state.list.querySelectorAll("a").forEach(item => item.toggleAttribute("data-selected", item === anchor));
           describe(skill, state.detail);
@@ -91,7 +90,7 @@
       };
       anchor.addEventListener("pointerenter", show);
       anchor.addEventListener("focus", show);
-      if (!inDialog) {
+      if (!inPanel) {
         const leave = () => { state.tipTimer = setTimeout(hideTip, 120); };
         anchor.addEventListener("pointerleave", leave);
         anchor.addEventListener("blur", leave);
@@ -99,30 +98,54 @@
       return anchor;
     }
 
-    function open(event) {
+    function expand(open, restoreFocus = false) {
+      const s = state;
+      s.open = open;
+      s.panel.toggleAttribute("data-open", open);
+      s.panel.inert = !open;
+      s.panel.setAttribute("aria-hidden", String(!open));
+      for (const control of [s.toggle, s.rail.querySelector("button")]) control?.setAttribute("aria-expanded", String(open));
+      if (restoreFocus) {
+        const target = s.opener?.checkVisibility() ? s.opener : s.toggle.checkVisibility() ? s.toggle : s.rail.querySelector("button");
+        target?.focus({ preventScroll: true });
+      }
+    }
+
+    function togglePanel(event) {
       hideTip();
       render();
       state.opener = event.currentTarget;
-      state.dialog.showModal();
-      state.toggle.setAttribute("aria-expanded", "true");
+      expand(!state.open);
+    }
+
+    function escape(event) {
+      hideTip();
+      if (state?.open && state.composer.contains(event.target) && !event.defaultPrevented) {
+        expand(false, true);
+        event.preventDefault();
+      }
     }
 
     function setup() {
       const prefix = `amp-tools-${++sequence}`;
-      const toggle = button("Thread tools", open, "toggle");
+      const toggle = button("Thread tools", togglePanel, "toggle");
       toggle.dataset.ampComposerControl = "tools";
-      toggle.setAttribute("aria-haspopup", "dialog");
       toggle.setAttribute("aria-controls", prefix);
       toggle.setAttribute("aria-expanded", "false");
       toggle.prepend(globalThis.ampIcon("M4 7h16M4 17h16M8 4v6M16 14v6"));
-      const dialog = node("dialog", "", "dialog");
-      dialog.id = prefix;
-      dialog.setAttribute("aria-labelledby", `${prefix}-title`);
+      const panel = node("section", "", "panel");
+      panel.id = prefix;
+      panel.inert = true;
+      panel.setAttribute("aria-hidden", "true");
+      panel.setAttribute("aria-labelledby", `${prefix}-title`);
+      const clip = node("div", "", "clip");
+      const body = node("div", "", "body");
+      clip.append(body);
+      panel.append(clip);
       const heading = node("h2", "Thread tools");
       heading.id = `${prefix}-title`;
-      const close = button("×", () => dialog.close());
+      const close = button("×", () => expand(false, true));
       close.setAttribute("aria-label", "Close thread tools");
-      close.autofocus = true;
       const header = node("header");
       header.append(heading, close);
       const context = node("p", "", "context");
@@ -146,16 +169,7 @@
       settings.rel = "noopener";
       settings.setAttribute("aria-label", "Open Skills settings in a new tab");
       footer.append(node("span", "Reused skills appear once."), settings);
-      dialog.append(header, context, actions, skills, footer);
-      dialog.addEventListener("close", () => {
-        toggle.setAttribute("aria-expanded", "false");
-        if (!dialog.isConnected) return;
-        if (state?.activating) { state.activating = false; return; }
-        if (state?.opener?.checkVisibility()) state.opener.focus({ preventScroll: true });
-        else if (toggle.checkVisibility()) toggle.focus({ preventScroll: true });
-        else state?.rail.querySelector("button")?.focus({ preventScroll: true });
-      });
-      dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+      body.append(header, context, actions, skills, footer);
       const rail = node("div", "", "rail");
       const tip = node("div", "", "tooltip");
       tip.id = `${prefix}-tip`;
@@ -166,10 +180,10 @@
       const resize = new ResizeObserver(schedule);
       resize.observe(view.composer);
       resize.observe(view.toolbar.parentElement);
-      state = { id: view.id, composer: view.composer, toolbar: view.toolbar, toggle, dialog, rail, tip,
+      state = { id: view.id, composer: view.composer, toolbar: view.toolbar, toggle, panel, rail, tip, open: false,
         context, actions, skills, label, notice, list, detail, footer, resize,
         used: new Map(), calls: new Map(), at: 0, dirty: true, historyLoaded: false, failed: false, incomplete: false };
-      view.host.append(dialog, tip);
+      view.host.append(tip);
     }
 
     function collect(pages, summaries) {
@@ -275,9 +289,9 @@
         const focused = document.activeElement;
         const focusRegion = s.list.contains(focused) ? s.list : s.rail.contains(focused) ? s.rail : null;
         hideTip();
-        const label = button(`Skills ${count}`, open);
-        label.setAttribute("aria-haspopup", "dialog");
-        label.setAttribute("aria-controls", s.dialog.id);
+        const label = button(`Skills ${count}`, togglePanel);
+        label.setAttribute("aria-controls", s.panel.id);
+        label.setAttribute("aria-expanded", String(s.open));
         s.rail.replaceChildren(label, ...skills.map(skill => link(skill)));
         if (!skills.length) s.rail.append(node("span", status));
         write(s.label, `Skills ${count}`);
@@ -306,8 +320,7 @@
         s.controls = controls;
         s.actions.replaceChildren(...controls.map(control => {
           return button("", () => {
-            s.activating = true;
-            s.dialog.close();
+            expand(false);
             // These remain the original controls and panels, with their native
             // state, polling, and transcript navigation. Do not duplicate them.
             control.click();
@@ -353,6 +366,7 @@
       if (row === view.composer) {
         if (state.rail.parentElement !== row) row.prepend(state.rail);
       } else if (state.rail.nextElementSibling !== row) row.before(state.rail);
+      if (state.panel.nextElementSibling !== state.rail) state.rail.before(state.panel);
       globalThis.ampMountComposerControl(view.toolbar, state.toggle);
       render();
       layout();
@@ -371,7 +385,7 @@
       if (state) state.dirty = true;
     }
 
-    return { refresh, teardown, hideTip, transcriptChanged, resumed };
+    return { refresh, teardown, escape, transcriptChanged, resumed };
   }
 
   function schedule() {
@@ -399,7 +413,7 @@
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
     attributeFilter: ["data-thread-id", "class", "style", "hidden"] });
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape") for (const controller of controllers.values()) controller.hideTip();
+    if (event.key === "Escape") for (const controller of controllers.values()) controller.escape(event);
   });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) for (const controller of controllers.values()) controller.resumed();

@@ -75,7 +75,7 @@
   };
 
   // Collapsed controls still own their panels; anchor and restore focus to the
-  // visible Thread tools button when they are opened from its dialog.
+  // visible Thread tools button when they are opened from its accordion.
   globalThis.ampComposerAnchor = control => control.closest("[data-amp-tools-collapsed]")
     ?.querySelector('[data-amp-composer-control="tools"]') ?? control;
 

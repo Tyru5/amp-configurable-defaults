@@ -96,13 +96,17 @@ Repeated loads appear once; failed loads and nested subagent activity are exclud
 Hover or focus a skill for an excerpt from its instructions and its location when
 available. Clicking opens Amp's Skills settings in a new tab, preserving the draft.
 Older transcript pages and Amp's collapsed-turn skill summaries are included.
-If history cannot be fully read, the count has a `+` and the tools dialog explains
+If history cannot be fully read, the count has a `+` and the tools panel explains
 what is missing. Summaries may identify a skill without including its instructions.
 
 When the skill names or toolbar controls no longer fit, the extension folds its
-controls and model/runner label into **Thread tools**. The dialog lists all skills
-and opens the existing Info, Subagents, and Messages panels. Amp's attachment and
-send controls stay in place. Resizing restores the full layout when it fits.
+controls and model/runner label into **Thread tools**. Clicking it expands a panel
+inside the composer above the toolbar, like an accordion, without dimming or
+blocking the thread. Click again, use its close button, or press Escape within
+the composer to collapse it. **Skills** opens the same panel in the roomy layout.
+The panel lists all skills and opens the existing Info, Subagents, and Messages
+panels. Amp's attachment and send controls stay available. Resizing restores the
+full layout when it fits. Reduced-motion preferences disable the transition.
 Counts use parentheses, for example **Skills (4)** and **Subagents (2)**.
 
 These features have independent checkboxes in **Options**:
