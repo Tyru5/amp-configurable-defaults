@@ -71,8 +71,7 @@ In the thread composer, to the right of the upload button, a compact label shows
 the model the thread is using and where it runs: the runner name for local
 threads, or **Orb** for cloud threads. Hover it for the mode and directory. The values come from the same thread data Amp's
 page loads, fetched from `ampcode.com` with your existing session. It refreshes
-on thread changes and at most once a minute while the tab is visible, or every
-five seconds while persistent timestamps need new message metadata. Before
+on thread changes and at most once a minute while the tab is visible. Before
 the first reply, it shows the thread's mode until a model is known. External
 agents show **Model unavailable** when the data does not identify a model,
 with the agent mode still available on hover. Their cloud executor is **Orb**.
@@ -103,18 +102,16 @@ These features have independent checkboxes in **Options**:
 | Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
 | Enable subagent reading panel             | On      | No Subagents control; native inline activity; removes any open panel |
 | Enable thread message panel               | On      | No thread-message control; native messages stay unchanged          |
-| Show model and runner in the composer     | On      | No composer label; thread info and timestamps can still load data |
+| Show model and runner in the composer     | On      | No composer label; thread info can still load data                |
 | Show thread info in the composer          | On      | No thread info control; title-bar details stay in Amp's title bar |
-| Always show message timestamps            | Off     | Native Option/Alt timestamp behavior                              |
+| Show full dates in message timestamps     | Off     | Amp's time-only timestamps                                        |
 
-**Always show message timestamps** keeps a compact, aligned date and time above
-each user and assistant message, including while you type. Hover for the
-timezone and whether the time marks sending, starting, or finishing a reply.
-Times use your browser's local timezone and Amp's message metadata. New and
-streaming messages refresh at most once every five seconds while the tab is
-visible. Missing timestamps are omitted, never guessed. This setting works on
-both sidebar sides and on mobile, independently of the composer label and info
-orb. Turning it off restores Amp's native Option/Alt behavior.
+**Show full dates in message timestamps** adds the calendar date, including the
+year, in front of the `HH:MM:SS` time Amp shows above each message. Amp shows
+those times with its own **Always Show Timestamps** setting or while you hold
+Option or Alt; this extension no longer keeps times visible itself. The date is
+the one Amp's displayed time falls on, derived from the message's timestamp
+without any extra request. Turning it off restores Amp's time-only display.
 
 Feature choices remain editable and active with either sidebar placement.
 Custom resizing applies only in right mode; left-side resizing stays native.
@@ -334,10 +331,9 @@ not change the extension's settings or access an Amp account.
 Spaces compatibility uses pane-local transcript/composer ownership and native
 tab-strip controls checked read-only in authenticated Helium on 2026-11-07.
 Each visible conversation gets its own context, info card, and worker controls.
-Space chat timestamps use `spaceChat.createdAt`; worker timestamps retain sent,
-started, and finished semantics. The Messages filter and existing split
+The Messages filter and existing split
 reversal/divider handling are unchanged. Space worker cards are not treated
-as Task subagents. A conversation without a composer keeps its timestamps,
+as Task subagents. A conversation without a composer keeps its
 info card, Subagents panel, and tool previews. The visible conversations are
 found once per page change and shared by every feature, so long threads
 stream without extra per-frame work.
@@ -355,8 +351,8 @@ message IDs across panes, multiple workers, delayed responses, worker switching,
 hidden-pane cleanup, and focused info-orb teardown. The initial read-only
 inspection had no running extension. A subsequent authorized runtime check in
 authenticated Helium on 2026-11-07 verified coordinator, Orb worker, and Mac
-worker contexts, worker-only Messages, a real Task/Subagents panel, timestamps
-against each conversation's own data, and worker-switch cleanup. After fixing
+worker contexts, worker-only Messages, a real Task/Subagents panel, and
+worker-switch cleanup. After fixing
 a delayed info-card callback found in the first pass, the corrected build
 recorded zero runtime or manifest errors, including three focused-orb teardown
 checks. Test preferences were restored and existing drafts preserved.

@@ -25,9 +25,9 @@ The extension uses eleven preferences in `chrome.storage.local`:
 - `threadMessagesPanel`: offer the read-only thread message control.
 - `showComposerContext`: show the thread's model and runner in the composer.
 - `infoOrb`: show the floating thread info orb beside the conversation.
-- `showMessageTimestamps`: keep message times visible without holding Option/Alt. Defaults to false.
+- `showTimestampDates`: add the calendar date to the times Amp shows above messages. Defaults to false.
 
-All boolean preferences except `showMessageTimestamps` default to true. Each feature
+All boolean preferences except `showTimestampDates` default to true. Each feature
 can be turned off independently in Options. Changing sidebar placement preserves
 these choices and the saved width. Options remains reachable from the extension
 toolbar menu. Older installs may retain unused `enabled` and `hideSidebarFooter`
@@ -45,22 +45,24 @@ When a summary is expanded or the subagent panel is open, it expands
 native subagent disclosures as needed and displays their rendered task prompts,
 results, and errors. Reading sheets preserve Amp's rendered formatting and
 render plain-text task prompts as Markdown; native content remains inline.
-When **Show model and runner in the composer**, **Show thread info orb**, or
-**Always show message timestamps** is on, the extension requests
+When **Show model and runner in the composer** or **Show thread info orb**
+is on, the extension requests
 the open thread's page data from `https://ampcode.com/threads/<id>/__data`, the
 same same-origin request Amp's thread page makes, using your existing Amp
 session. It reads the thread's title, mode, model, executor type, runner name or
-hostname, working directory, and message IDs and timestamp metadata from the
+hostname, and working directory from the
 response. It keeps these values in memory for the current tab and displays them
-in the enabled composer label, info card, or message timestamps. New and streaming
-message times refresh at most once every five seconds while the tab is visible.
-The response is not stored or sent anywhere else. Turning all three settings off
+in the enabled composer label or info card.
+The response is not stored or sent anywhere else. Turning both settings off
 stops these requests.
+
+**Show full dates in message timestamps** makes no request. It reads the
+`datetime` of the timestamps Amp already renders above messages and prefixes
+their calendar date in place.
 
 In Spaces, each visible coordinator or worker conversation has separate
 in-memory data and controls. The same requests apply to each visible
-conversation. Space chat timestamps use the message IDs and creation times
-from its `spaceChat` records. Parked and hidden conversations are excluded;
+conversation. Parked and hidden conversations are excluded;
 switching workers clears the previous worker's cached data and controls.
 
 When **Show thread info orb** is on, the extension reads the thread title,
@@ -92,8 +94,8 @@ removes the control and stops its requests.
 Its temporary cache is discarded on thread navigation, reload, disabling the
 setting, or switching to mobile. Message content never enters persistent storage.
 
-Apart from the thread communication described above, message IDs, timestamps,
-completion state, and the model name recorded on the latest assistant reply,
+Apart from the thread communication described above, message timestamps,
+and the model name recorded on the latest assistant reply,
 the extension does not read ordinary conversation
 message contents, composer drafts,
 account details, passwords, authentication tokens, or browsing history. It

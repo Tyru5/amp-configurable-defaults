@@ -567,72 +567,80 @@ try {
   check(`!document.querySelector('${info}')`, 'the thread info control is removed when disabled and on mobile');
   browser('set', 'viewport', '1280', '800', '2');
 
-  // Message markup and metadata from live Amp, inspected 2026-10-29. Deliberately
-  // give assistant creation and completion different times to catch mixups.
+  // Amp's own exact timestamps (its Always Show Timestamps setting or Alt
+  // held), inspected 2026-11-09: a <time data-transcript-exact-timestamp> with
+  // the ISO instant and HH:MM:SS in Amp's viewer time zone. Rows shown in a
+  // zone other than the browser's catch date derivation mixups.
   const setupTimestamps = `
-    fixtureThreadData['fixture-times'] = { type: 'result', thread: { id: 'fixture-times', messages: [
-      { protocolMessageID: 'M-sent', role: 'user', createdAt: '2026-10-28T23:59:58Z' },
-      { protocolMessageID: 'M-reply', role: 'assistant', createdAt: '2026-10-29T00:00:02Z', state: { type: 'complete' }, usage: { timestamp: '2026-10-29T00:01:09Z' } },
-      { protocolMessageID: 'M-invalid', role: 'user', createdAt: 'invalid' },
-      { protocolMessageID: 'M-child', role: 'assistant', parentToolUseId: 'child', createdAt: '2026-10-29T00:00:00Z' }
-    ] } };
+    fixtureThreadData['fixture-times'] = { type: 'result', thread: { id: 'fixture-times' } };
     fixtureAgents.navigate('fixture-times');
-    window.addTimestampRow = (id, role, text) => {
+    window.nativeTime = iso => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    window.addTimestampRow = (id, role, text, iso, shown) => {
       const row = document.createElement('div');
       row.dataset.transcriptMessageLookupId = id;
-      row.innerHTML = '<div data-transcript-entry-content><div data-transcript-message-role="' + role + '" data-transcript-message-alignment="' + (role === 'user' ? 'right' : 'left') + '"></div></div>';
+      row.innerHTML = '<div data-transcript-entry-content><div data-transcript-message-role="' + role + '"></div></div>';
       row.querySelector('[data-transcript-message-role]').textContent = text;
+      if (iso) {
+        const time = document.createElement('time');
+        time.dataset.transcriptExactTimestamp = '';
+        time.dateTime = iso;
+        time.textContent = shown ?? nativeTime(iso);
+        row.prepend(time);
+      }
       document.querySelector('#fixture-transcript').append(row);
     };
-    addTimestampRow('M-sent', 'user', 'Keep message times visible.');
-    addTimestampRow('M-reply', 'assistant', 'Timestamps remain visible while you type.');
-    addTimestampRow('M-invalid', 'user', 'No usable timestamp.');
-    addTimestampRow('M-child', 'assistant', 'Nested agent, not a top-level message.');
+    addTimestampRow('M-sent', 'user', 'Keep message times visible.', '2026-10-28T23:59:58.000Z');
+    addTimestampRow('M-reply', 'assistant', 'Dates follow the displayed time.', '2026-10-29T00:01:09.000Z');
+    addTimestampRow('M-east', 'assistant', 'Viewed from UTC+2.', '2026-10-28T23:59:58.000Z', '01:59:58');
+    addTimestampRow('M-west', 'assistant', 'Viewed from UTC-4.', '2026-10-28T23:59:58.000Z', '19:59:58');
+    addTimestampRow('M-plain', 'user', 'Nothing shown without Alt.');
   `;
-  const times = '[data-amp-message-timestamp]';
+  const times = 'time[data-transcript-exact-timestamp]';
+  const timeIn = id => `document.querySelector('[data-transcript-message-lookup-id="${id}"] ${times}')`;
+  const timeOnly = `[...document.querySelectorAll('${times}')].every(t => /^\\d{2}:\\d{2}:\\d{2}$/.test(t.textContent) && !t.hasAttribute('data-amp-native-time'))`;
+  const dated = `document.querySelectorAll('${times}').length === 4 && [...document.querySelectorAll('${times}')].every(t => t.textContent.includes(' · '))`;
+  // The date part as the extension formats it, for a calendar day given in UTC.
+  const day = iso => `new Date('${iso}').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })`;
+  const localDay = iso => `new Date('${iso}').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })`;
   browser('eval', `chrome.storage.local.set({ showComposerContext: false, infoOrb: false }); ${setupTimestamps}`);
-  check(`!document.querySelector('${times}')`, 'message timestamps are off by default');
+  check(`document.querySelectorAll('${times}').length === 4 && ${timeOnly}`, 'timestamp dates are off by default, leaving Amp’s time-only text');
   browser('fill', '#message', 'Unsent timestamp test draft');
-  browser('eval', `window.timestampAltEvents = 0; addEventListener('keydown', e => { if (e.altKey) timestampAltEvents++; }); chrome.storage.local.set({ showMessageTimestamps: true })`);
-  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 2`);
-  check(`[...document.querySelectorAll('${times}')].map(t => t.dateTime).join(',') === '2026-10-28T23:59:58.000Z,2026-10-29T00:01:09.000Z'`, 'timestamps use the sent time and assistant completion, omitting invalid and nested messages');
-  check(`['2026-10-28T23:59:58Z', '2026-10-29T00:01:09Z'].every((value, i) => {
-    const [date, time] = document.querySelectorAll('${times}')[i].textContent.split(' · ');
-    return date === new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) && /^\\d{2}:\\d{2}:\\d{2}$/.test(time);
-  })`, 'each timestamp shows its local calendar date beside the time, including the year');
-  check(`document.querySelector('${times}').title.startsWith('Sent ') && document.querySelector('[data-transcript-message-lookup-id="M-reply"] ${times}').getAttribute('aria-label').startsWith('Finished ')`, 'full dates and timestamp meaning are available to hover and assistive technology');
-  check(`document.querySelector('#message').value === 'Unsent timestamp test draft' && document.activeElement.id === 'message' && timestampAltEvents === 0 && !document.querySelector('[data-amp-composer-context]')`, 'timestamps work with the composer focused, without synthesizing Alt or enabling the other displays');
-  browser('eval', `const native = document.createElement('time'); native.dataset.transcriptExactTimestamp = ''; native.textContent = 'Native Alt time'; document.querySelector('[data-transcript-message-lookup-id="M-sent"]').prepend(native)`);
-  check(`getComputedStyle(document.querySelector('[data-transcript-exact-timestamp]')).display === 'none'`, 'native Alt timestamps do not duplicate persistent times');
-  browser('eval', `fixtureThreadData['fixture-times'].thread.messages.push({ protocolMessageID: 'M-stream', role: 'assistant', createdAt: '2026-10-29T00:02:00Z', state: { type: 'streaming' } }); addTimestampRow('M-stream', 'assistant', 'Streaming reply');`);
-  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 3`);
-  browser('eval', `const reply = fixtureThreadData['fixture-times'].thread.messages.at(-1); reply.state.type = 'complete'; reply.usage = { timestamp: '2026-10-29T00:03:47Z' };`);
-  browser('wait', '--fn', `document.querySelector('[data-transcript-message-lookup-id="M-stream"] ${times}')?.dateTime === '2026-10-29T00:03:47.000Z'`);
-  check(`document.querySelector('[data-transcript-message-lookup-id="M-stream"] ${times}').title.startsWith('Finished ')`, 'new messages and streaming completion update without a reload');
+  browser('eval', `window.timestampAltEvents = 0; addEventListener('keydown', e => { if (e.altKey) timestampAltEvents++; }); chrome.storage.local.set({ showTimestampDates: true })`);
+  browser('wait', '--fn', dated);
+  check(`${timeIn('M-sent')}.textContent === ${localDay('2026-10-28T23:59:58Z')} + ' · ' + nativeTime('2026-10-28T23:59:58Z') && ${timeIn('M-reply')}.textContent === ${localDay('2026-10-29T00:01:09Z')} + ' · ' + nativeTime('2026-10-29T00:01:09Z')`,
+    'times shown in the browser’s zone gain their local calendar date, including the year');
+  check(`${timeIn('M-east')}.textContent === ${day('2026-10-29')} + ' · 01:59:58' && ${timeIn('M-west')}.textContent === ${day('2026-10-28')} + ' · 19:59:58'`,
+    'the date follows the zone Amp displayed the time in, not the browser’s');
+  check(`[...document.querySelectorAll('${times}')].every(t => t.dateTime.endsWith('Z')) && !${timeIn('M-plain')} && !document.querySelector('[data-amp-message-timestamp]')`,
+    'the extension edits Amp’s timestamps in place and adds none of its own');
+  check(`document.querySelector('#message').value === 'Unsent timestamp test draft' && document.activeElement.id === 'message' && timestampAltEvents === 0 && !document.querySelector('[data-amp-composer-context]')`, 'dates work with the composer focused, without synthesizing Alt or enabling the other displays');
+  // Amp re-renders a finished reply's time by updating the same element.
+  browser('eval', `const t = ${timeIn('M-reply')}; t.dateTime = '2026-10-29T00:03:47.000Z'; t.firstChild.data = nativeTime('2026-10-29T00:03:47Z');`);
+  browser('wait', '--fn', `${timeIn('M-reply')}.textContent === ${localDay('2026-10-29T00:03:47Z')} + ' · ' + nativeTime('2026-10-29T00:03:47Z')`);
+  browser('eval', `addTimestampRow('M-stream', 'assistant', 'Late reply', '2026-10-30T12:00:00.000Z')`);
+  browser('wait', '--fn', `${timeIn('M-stream')}?.textContent === ${localDay('2026-10-30T12:00:00Z')} + ' · ' + nativeTime('2026-10-30T12:00:00Z')`);
+  check(`document.querySelectorAll('${times}').length === 5`, 'updated and newly rendered timestamps gain dates without a reload');
   browser('set', 'viewport', '390', '844');
-  check(`[...document.querySelectorAll('${times}')].every(t => { const b = t.getBoundingClientRect(); return b.width > 0 && b.left >= 0 && b.right <= innerWidth; })`, 'timestamps stay inside the message column on mobile');
+  check(`[...document.querySelectorAll('${times}')].every(t => { const b = t.getBoundingClientRect(); return b.width > 0 && b.left >= 0 && b.right <= innerWidth; })`, 'dated timestamps stay inside the message column on mobile');
   browser('set', 'viewport', '1280', '800');
   browser('eval', 'chrome.storage.local.set({ right: false })');
-  check(`document.querySelectorAll('${times}').length === 3`, 'timestamps are independent of sidebar placement');
-  browser('eval', 'chrome.storage.local.set({ showMessageTimestamps: false })');
-  browser('wait', '--fn', `!document.querySelector('${times}')`);
-  check(`getComputedStyle(document.querySelector('[data-transcript-exact-timestamp]')).display !== 'none'`, 'disabling restores native timestamp presentation');
-  browser('eval', 'chrome.storage.local.set({ showMessageTimestamps: true })');
+  check(`document.querySelectorAll('${times}').length === 5 && [...document.querySelectorAll('${times}')].every(t => t.textContent.includes(' · '))`, 'dates are independent of sidebar placement');
+  browser('eval', 'chrome.storage.local.set({ showTimestampDates: false })');
+  browser('wait', '--fn', timeOnly);
+  check(`${timeIn('M-east')}.textContent === '01:59:58' && ${timeIn('M-reply')}.textContent === nativeTime('2026-10-29T00:03:47Z')`, 'disabling restores Amp’s time-only text');
+  browser('eval', 'chrome.storage.local.set({ showTimestampDates: true })');
   browser('reload');
   browser('eval', setupTimestamps);
-  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 2`);
-  check(`JSON.parse(localStorage.getItem('extension-settings')).showMessageTimestamps === true`, 'timestamp preference survives reload');
-  browser('eval', `document.querySelector('[data-thread-id]').dataset.threadId = 'fixture-missing'`);
-  browser('wait', '--fn', `!document.querySelector('${times}')`);
-  check(`!document.querySelector('${times}')`, 'failed navigation never displays timestamps from the previous thread');
+  browser('wait', '--fn', dated);
+  check(`JSON.parse(localStorage.getItem('extension-settings')).showTimestampDates === true`, 'timestamp date preference survives reload');
   browser('reload');
   browser('eval', `${setupTimestamps}; chrome.storage.local.set({ infoOrb: true, subagentPanel: true }); fixtureAgents.add('alpha', 'Check layout', 'ALPHA task'); fixtureToolSection('read-only')`);
-  browser('wait', '--fn', `document.querySelectorAll('${times}').length === 2 && document.querySelector('[data-amp-subagents-ui="toggle"]') && document.querySelector('[data-amp-thread-info-ui="toggle"]') && document.querySelector('${preview}')`);
+  browser('wait', '--fn', `${dated} && document.querySelector('[data-amp-subagents-ui="toggle"]') && document.querySelector('[data-amp-thread-info-ui="toggle"]') && document.querySelector('${preview}')`);
   browser('eval', `document.querySelectorAll('[data-message-composer-root]').forEach(node => node.remove()); new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
   browser('wait', '--fn', `document.querySelector('.app-title-bar [data-amp-thread-info-ui="toggle"]') && document.querySelector('.app-title-bar [data-amp-subagents-ui="toggle"]')`);
-  check(`document.querySelectorAll('${times}').length === 2 && document.querySelector('[data-amp-subagents-ui="toggle"]')?.isConnected && document.querySelector('[data-amp-thread-info-ui="toggle"]')?.isConnected && document.querySelector('${preview}')?.isConnected &&
+  check(`${dated} && document.querySelector('[data-amp-subagents-ui="toggle"]')?.isConnected && document.querySelector('[data-amp-thread-info-ui="toggle"]')?.isConnected && document.querySelector('${preview}')?.isConnected &&
     document.querySelector('[data-amp-thread-info-ui="toggle"]').nextElementSibling === document.querySelector('[data-amp-subagents-ui="toggle"]')`,
-    'a thread without a composer keeps timestamps, tool previews, and moves thread info and Subagents to the title bar in order');
+    'a thread without a composer keeps timestamp dates, tool previews, and moves thread info and Subagents to the title bar in order');
   browser('click', '[data-amp-thread-info-ui="toggle"]');
   browser('wait', '--fn', `document.querySelector('[data-amp-thread-info-ui="panel"]').matches(':popover-open')`);
   check(`(() => { const d = document.querySelector('[data-amp-thread-info-ui="panel"]').getBoundingClientRect(), t = document.querySelector('[data-amp-thread-info-ui="toggle"]').getBoundingClientRect(); return d.top >= t.bottom && d.top - t.bottom < 12; })()`,

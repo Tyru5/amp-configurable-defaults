@@ -8,11 +8,11 @@ const toggles = {
   threadMessagesPanel: document.querySelector("#threadMessagesPanel"),
   showComposerContext: document.querySelector("#showComposerContext"),
   infoOrb: document.querySelector("#infoOrb"),
-  showMessageTimestamps: document.querySelector("#showMessageTimestamps"),
+  showTimestampDates: document.querySelector("#showTimestampDates"),
 };
 const status = document.querySelector("#status");
 const changed = new Set();
-const checked = (key, value) => key === "showMessageTimestamps" ? value === true : value !== false;
+const checked = (key, value) => key === "showTimestampDates" ? value === true : value !== false;
 
 if (new URLSearchParams(location.search).has("popup")) {
   document.documentElement.classList.add("popup");

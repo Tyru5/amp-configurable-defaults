@@ -18,16 +18,24 @@ Building or testing the package does not upload, submit, or publish it.
 
 - Associate each visible coordinator and worker with its own composer labels,
   info card, Messages control, Task/Subagents panel, and tool previews.
-- Read coordinator timestamps from `spaceChat.createdAt`; preserve worker
-  sent/started/finished timestamps and the existing thread-message filter.
+- Preserve the existing thread-message filter.
 - Mount controls in each worker's native tab strip. Clear stale controls/data
   when switching or hiding workers, and ignore delayed info-card callbacks
   after teardown.
 - Keep the right navigation rail's border inward and its collapsed toggle
   beside the rail, with space reserved in legacy headers. Preserve the
   existing auxiliary reversal and divider handling.
-- Add Spaces ownership, timestamp, teardown, and four-state nested-layout
+- Add Spaces ownership, teardown, and four-state nested-layout
   regression coverage. No permissions or defaults changed.
+
+## Timestamp change in 1.4.2
+
+- Amp now has its own **Always Show Timestamps** setting, so the extension's
+  persistent timestamps are gone. The option is now **Show full dates in
+  message timestamps** (`showTimestampDates`, default off): it prefixes the
+  calendar date to the `HH:MM:SS` Amp renders, whether from Amp's setting or
+  while Option/Alt is held. It makes no request; the old `showMessageTimestamps`
+  preference is no longer read. Timestamps no longer use the thread page data.
 
 ## Bash code block fix in 1.4.2
 

@@ -47,12 +47,10 @@ function test(label, run) {
 }
 const context = '[data-amp-composer-context]';
 const item = '[data-amp-composer-context-item]';
-const time = '[data-amp-message-timestamp]';
 const toggle = '[data-amp-thread-messages-ui="toggle"]';
 const list = '[data-amp-thread-messages-list]';
 const subagents = '[data-amp-subagents-ui="toggle"]';
 const contextText = id => `[...document.querySelectorAll('#${id} ${context} ${item}')].map(n => n.textContent).join(' | ')`;
-const times = id => `[...document.querySelectorAll('#${id} ${time}')].map(n => n.dateTime)`;
 
 // Keep the shared fixture's default shell and data untouched. Only this runner
 // mounts Spaces. Ownership, tab strips, transcript/chat attributes and the
@@ -209,13 +207,13 @@ const setup = String.raw`(() => {
     },
   };
   fixtureSpaces.mount();
-  chrome.storage.local.set({ showComposerContext: true, infoOrb: true, showMessageTimestamps: true, threadMessagesPanel: true, subagentPanel: true });
+  chrome.storage.local.set({ showComposerContext: true, infoOrb: true, threadMessagesPanel: true, subagentPanel: true });
 })()`;
 
 try {
   browser('open', url);
   browser('set', 'viewport', '1600', '900', '2');
-  browser('eval', `localStorage.setItem('extension-settings', JSON.stringify({showComposerContext:false, infoOrb:false, showMessageTimestamps:false, threadMessagesPanel:false})); location.reload()`);
+  browser('eval', `localStorage.setItem('extension-settings', JSON.stringify({showComposerContext:false, infoOrb:false, threadMessagesPanel:false})); location.reload()`);
   browser('wait', '--fn', 'typeof fixtureAgents === "object"');
   browser('eval', setup);
   test('fixture contract', () => {
@@ -239,15 +237,6 @@ try {
       return nodes.length === 1 && nodes[0].previousElementSibling?.querySelector('input[type="file"]') &&
         nodes[0].parentElement.matches('[role="region"][aria-label="Attachments"]');
     })`, 'each context is beside its own native Attachments trigger');
-  });
-  test('Space message timestamps', () => {
-    eventually(`JSON.stringify(${times('space-chat-card')}) === JSON.stringify(['2026-10-27T02:13:07.000Z','2026-10-27T03:29:43.000Z'])`,
-      'Space timestamps come from top-level spaceChat for same-row role and lookup IDs');
-    check(`!document.querySelector('#space-chat-card [data-transcript-message-lookup-id="invalid-chat"] ${time}')`, 'invalid Space timestamps are omitted');
-  });
-  test('legacy worker message timestamps', () => {
-    eventually(`JSON.stringify(${times('space-worker-card')}) === JSON.stringify(['2026-10-28T11:41:19.000Z','2026-10-28T11:49:53.000Z'])`,
-      'worker timestamps keep legacy sent and assistant completion semantics despite duplicate chat IDs');
   });
   test('worker messages ownership and Puck filtering', () => {
     eventually(`document.querySelector('#space-worker-card ${toggle}')?.checkVisibility()`, 'worker messages control appears in its own pane');
@@ -284,7 +273,7 @@ try {
   });
   test('hidden and parked panes', () => {
     check(`!fixtureThreadRequests.some(r => ['space-hidden-worker','space-parked-worker'].includes(r.id)) &&
-      ['space-hidden-card','space-parked-card'].every(id => !document.querySelector('#' + id + ' [data-amp-composer-context], #' + id + ' [data-amp-thread-messages-ui], #' + id + ' [data-amp-subagents-ui], #' + id + ' [data-amp-thread-info-ui], #' + id + ' ${time}'))`,
+      ['space-hidden-card','space-parked-card'].every(id => !document.querySelector('#' + id + ' [data-amp-composer-context], #' + id + ' [data-amp-thread-messages-ui], #' + id + ' [data-amp-subagents-ui], #' + id + ' [data-amp-thread-info-ui]'))`,
     'hidden and display-none parked panes receive neither controls nor thread requests');
     check(`fixtureThreadRequests.some(r => r.id === 'space-chat') && fixtureThreadRequests.some(r => r.id === 'space-worker-a') &&
       fixtureThreadRequests.every(r => ['space-chat','space-worker-a',fixtureSpaces.parentA].includes(r.id) && r.credentials === 'same-origin')`,
@@ -308,17 +297,13 @@ try {
     browser('eval', `fixtureSpaces.switchWorker('space-worker-a')`);
     eventually(`${contextText('space-worker-card')} === 'claude-opus-5-5 | space-runner-a'`, 'worker A restores before the old response arrives');
     browser('eval', `releaseWorker(); new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
-    check(`${contextText('space-worker-card')} === 'claude-opus-5-5 | space-runner-a' &&
-      JSON.stringify(${times('space-worker-card')}) === JSON.stringify(['2026-10-28T11:41:19.000Z','2026-10-28T11:49:53.000Z'])`,
-    'a late worker B response cannot overwrite worker A labels or timestamps');
+    check(`${contextText('space-worker-card')} === 'claude-opus-5-5 | space-runner-a'`,
+    'a late worker B response cannot overwrite worker A labels');
   });
   browser('eval', `fixtureSpaces.switchWorker('space-worker-b')`);
   test('worker switch', () => {
     eventually(`${contextText('space-worker-card')} === 'claude-sonnet-5-5 | Orb' && ${contextText('space-chat-card')} === 'claude-haiku-5-5 | Orb'`,
       'switching the worker drops the stale local runner and leaves chat context unchanged');
-    eventually(`JSON.stringify(${times('space-worker-card')}) === JSON.stringify(['2026-10-30T17:03:31.000Z','2026-10-30T17:14:59.000Z']) &&
-      JSON.stringify(${times('space-chat-card')}) === JSON.stringify(['2026-10-27T02:13:07.000Z','2026-10-27T03:29:43.000Z'])`,
-    'worker switch replaces same-ID timestamps without contaminating chat');
     check(`!document.querySelector('#space-worker-card').textContent.includes('space-runner-a') &&
       !document.querySelector('#space-chat-card [data-amp-thread-messages-ui]')`, 'stale worker runner and worker-only messages control do not leak');
     eventually(`!!fixtureSpaces.orb('space-worker-card')`, 'worker thread info control survives switching contexts');
@@ -333,9 +318,7 @@ try {
       ${contextText('space-chat-card')} === 'claude-haiku-5-5 | Orb'`, 'two visible workers and chat each retain their own composer context');
     eventually(`document.querySelector('#space-worker-card ${toggle}')?.checkVisibility() && document.querySelector('#space-worker-b-card ${toggle}')?.checkVisibility()`,
       'each visible worker has its own messages control');
-    check(`document.querySelectorAll('[data-amp-composer-context]').length === 3 &&
-      JSON.stringify(${times('space-worker-card')}) === JSON.stringify(['2026-10-28T11:41:19.000Z','2026-10-28T11:49:53.000Z']) &&
-      JSON.stringify(${times('space-worker-b-card')}) === JSON.stringify(['2026-10-30T17:03:31.000Z','2026-10-30T17:14:59.000Z'])`,
+    check(`document.querySelectorAll('[data-amp-composer-context]').length === 3`,
     'multiple workers receive independent data even with identical message IDs');
     browser('click', `#space-worker-b-card ${toggle}`);
     const panelID = evaluate(`document.querySelector('#space-worker-b-card ${toggle}').getAttribute('aria-controls')`);
@@ -385,8 +368,8 @@ try {
   test('pane lifecycle cleanup', () => {
     browser('eval', `document.querySelector('#space-worker-b-card').hidden = true`);
     eventually(`document.querySelectorAll('[data-amp-thread-info-ui="toggle"]').length === 2 &&
-      !document.querySelector('#space-worker-b-card [data-amp-thread-messages-ui], #space-worker-b-card [data-amp-subagents-ui], #space-worker-b-card ${context}, #space-worker-b-card ${time}, #space-worker-b-card [data-amp-thread-info-ui]')`,
-    'hiding a mounted worker removes its controls, timestamps, and thread info');
+      !document.querySelector('#space-worker-b-card [data-amp-thread-messages-ui], #space-worker-b-card [data-amp-subagents-ui], #space-worker-b-card ${context}, #space-worker-b-card [data-amp-thread-info-ui]')`,
+    'hiding a mounted worker removes its controls and thread info');
     browser('eval', `document.querySelector('#space-worker-b-card').hidden = false`);
     eventually(`${contextText('space-worker-b-card')} === 'claude-sonnet-5-5 | Orb' && document.querySelectorAll('[data-amp-thread-info-ui="toggle"]').length === 3`,
       'showing a worker restores its own context');

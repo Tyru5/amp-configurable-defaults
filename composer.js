@@ -5,18 +5,14 @@
   const refreshAfter = 60_000;
   let enabled = false;
   let infoOrb = false;
-  let showMessageTimestamps = false;
+  let showTimestampDates = false;
   let settings = {};
   let pending = false;
   const loaded = new Map();
   let contextSignature;
-  let timestampRefresh;
-  const timestampSelector = "[data-amp-message-timestamp]";
-  const clock = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-  const calendarDate = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
-  const fullDate = new Intl.DateTimeFormat(undefined, {
-    year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short",
-  });
+  // Amp's own message timestamps (its Always Show Timestamps setting, or Alt held).
+  const timestampSelector = "time[data-transcript-exact-timestamp]";
+  const calendarDate = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 
   function feature(meta, prefix) {
     return meta?.features?.find(value => typeof value === "string" && value.startsWith(prefix))?.slice(prefix.length) ?? null;
@@ -68,30 +64,9 @@
     const model = custom?.model ?? feature(thread.meta, "model:") ??
       lastModel(data.transcriptPage?.messages) ?? lastModel(thread.messages) ?? null;
     const mode = custom?.label ?? thread.agentMode ?? thread.meta?.agentMode ?? null;
-    const timestamps = new Map();
-    for (const message of data.transcriptPage?.messages ?? thread.messages ?? []) {
-      const id = message.protocolMessageID ?? message.messageId;
-      if (id == null) continue;
-      timestamps.set(String(id), null);
-      if (message.parentToolUseId !== undefined || !["user", "assistant"].includes(message.role)) continue;
-      const complete = message.role === "assistant" && message.state?.type === "complete";
-      const finished = complete ? message.usage?.timestamp : null;
-      const value = finished ?? message.createdAt;
-      const date = value == null ? null : new Date(value);
-      if (!date || !Number.isFinite(date.getTime())) continue;
-      timestamps.set(String(id), { date, label: message.role === "user" ? "Sent" : finished ? "Finished" : "Started",
-        streaming: message.role === "assistant" && !complete });
-    }
-    const chatTimestamps = new Map();
-    for (const message of data.spaceChat ?? []) {
-      if (message.messageId == null) continue;
-      const date = message.createdAt == null ? null : new Date(message.createdAt);
-      chatTimestamps.set(String(message.messageId), date && Number.isFinite(date.getTime()) ?
-        { date, label: "Sent", streaming: false } : null);
-    }
     // A generic external-agent usage marker does not identify the model.
     return { title: thread.title, model: model === "external-agent" ? null : model, mode,
-      effort: feature(thread.meta, "effort:"), runner: runner(thread), timestamps, chatTimestamps };
+      effort: feature(thread.meta, "effort:"), runner: runner(thread) };
   }
 
   async function load(id) {
@@ -107,37 +82,34 @@
   // file input, inside the composer's Attachments region.
   const triggerSelector = '[role="region"][aria-label="Attachments"] span:has(> input[type="file"][tabindex="-1"])';
 
-  function renderTimestamps(view, context) {
-    let needsRefresh = false;
-    const chat = view.transcript.hasAttribute("data-thread-transcript-override");
-    const timestamps = chat ? context?.chatTimestamps : context?.timestamps;
-    for (const row of view.transcript.querySelectorAll('[data-transcript-message-lookup-id]')) {
-      const message = chat ? row.matches('[data-transcript-message-role]') && row :
-        row.querySelector(':scope > [data-transcript-entry-content] [data-transcript-message-role]');
-      let time = row.querySelector(`:scope > ${timestampSelector}`);
-      const stamp = message ? timestamps?.get(row.dataset.transcriptMessageLookupId) : null;
-      if (!stamp) {
-        time?.remove();
-        if (message && !timestamps?.has(row.dataset.transcriptMessageLookupId)) needsRefresh = true;
+  // Amp shows only HH:mm:ss above each message. Prefix the calendar date of that
+  // time in the zone Amp displayed it in, derived from the ISO instant: Amp's
+  // viewer time zone can differ from the browser's. Edit the existing text node
+  // so Amp's own reference to it keeps receiving its updates.
+  function renderTimestampDates() {
+    for (const time of document.querySelectorAll(timestampSelector)) {
+      const text = time.firstChild;
+      const native = /^\d{2}:\d{2}:\d{2}$/.test(text?.data) ? text.data : time.dataset.ampNativeTime;
+      if (!native) continue;
+      if (!showTimestampDates) {
+        if (time.dataset.ampNativeTime) {
+          text.data = native;
+          delete time.dataset.ampNativeTime;
+        }
         continue;
       }
-      needsRefresh ||= stamp.streaming;
-      if (!time) {
-        time = document.createElement("time");
-        time.setAttribute("data-amp-message-timestamp", "");
-        row.prepend(time);
-      }
-      const iso = stamp.date.toISOString();
-      const title = `${stamp.label} ${fullDate.format(stamp.date)}`;
-      if (time.dateTime !== iso || time.title !== title) {
-        time.dateTime = iso;
-        time.textContent = `${calendarDate.format(stamp.date)} · ${clock.format(stamp.date)}`;
-        time.title = title;
-        time.setAttribute("aria-label", title);
-      }
-      time.dataset.side = message.dataset.transcriptMessageAlignment === "right" ? "right" : "left";
+      const date = new Date(time.dateTime);
+      if (!Number.isFinite(date.getTime())) continue;
+      const [hours, minutes, seconds] = native.split(":").map(Number);
+      const shift = (hours * 60 + minutes) * 60 + seconds - ((date.getUTCHours() * 60 + date.getUTCMinutes()) * 60 + date.getUTCSeconds());
+      // The time of day leaves the zone offset ambiguous by a day; take the
+      // candidate nearest the browser's offset.
+      const local = -date.getTimezoneOffset() * 60;
+      const offset = [shift - 86_400, shift, shift + 86_400].reduce((a, b) => Math.abs(b - local) < Math.abs(a - local) ? b : a);
+      const value = `${calendarDate.format(new Date(date.getTime() + offset * 1000))} · ${native}`;
+      time.dataset.ampNativeTime = native;
+      if (text.data !== value) text.data = value;
     }
-    return needsRefresh;
   }
 
   function item(kind, value, title) {
@@ -163,8 +135,7 @@
       node.setAttribute("aria-label", "Thread model and runner");
       trigger.after(node);
     }
-    const { timestamps, chatTimestamps, ...display } = context;
-    const key = JSON.stringify(display);
+    const key = JSON.stringify(context);
     if (node.dataset.ampComposerContextKey === key) return;
     node.dataset.ampComposerContextKey = key;
     const parts = [];
@@ -181,7 +152,7 @@
 
   function update() {
     pending = false;
-    clearTimeout(timestampRefresh);
+    renderTimestampDates();
     const views = globalThis.ampThreadViews();
     const active = new Set(views.map(view => view.id));
     for (const id of loaded.keys()) if (!active.has(id)) loaded.delete(id);
@@ -189,26 +160,15 @@
     document.querySelectorAll(contextSelector).forEach(node => {
       if (!composers.has(node.closest('[data-message-composer-root]'))) node.remove();
     });
-    const transcripts = new Set(showMessageTimestamps ? views.map(view => view.transcript) : []);
-    document.querySelectorAll(timestampSelector).forEach(node => {
-      if (!transcripts.has(node.closest('[data-thread-transcript-scroll], [data-thread-transcript-override]'))) node.remove();
-    });
     const contexts = new Map();
-    let nextRefresh = Infinity;
     for (const view of views) {
       const id = view.id;
       let entry = loaded.get(id);
       const context = entry?.context ?? null;
       contexts.set(id, context);
       if (enabled) render(view, context);
-      const missing = showMessageTimestamps && renderTimestamps(view, context);
-      if (!enabled && !infoOrb && !showMessageTimestamps) continue;
-      const interval = missing ? 5_000 : refreshAfter;
-      const age = entry ? Date.now() - entry.at : Infinity;
-      if (age < interval) {
-        if (missing) nextRefresh = Math.min(nextRefresh, interval - age);
-        continue;
-      }
+      if (!enabled && !infoOrb) continue;
+      if (entry && Date.now() - entry.at < refreshAfter) continue;
       if (entry?.loading || document.hidden) continue;
       if (!entry) {
         entry = { at: 0, context: null };
@@ -230,7 +190,6 @@
       contextSignature = signature;
       dispatchEvent(new Event("amp-thread-context-change"));
     }
-    if (nextRefresh < Infinity && !document.hidden) timestampRefresh = setTimeout(schedule, nextRefresh);
   }
 
   function schedule() {
@@ -240,25 +199,25 @@
   }
 
   new MutationObserver(records => {
-    if (records.some(record => !(record.target instanceof Element && record.target.closest(`${contextSelector}, ${timestampSelector}`)))) schedule();
+    if (records.some(record => !(record.target instanceof Element && record.target.closest(contextSelector)))) schedule();
   }).observe(document, { childList: true, subtree: true, attributes: true,
-    attributeFilter: ["data-thread-id", "data-transcript-message-lookup-id", "data-transcript-message-alignment", "class", "style", "hidden"] });
+    attributeFilter: ["data-thread-id", "data-transcript-message-lookup-id", "datetime", "class", "style", "hidden"] });
   document.addEventListener("visibilitychange", schedule);
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "local" || (!changes.showComposerContext && !changes.infoOrb && !changes.showMessageTimestamps)) return;
-    for (const key of ["showComposerContext", "infoOrb", "showMessageTimestamps"]) {
+    if (area !== "local" || (!changes.showComposerContext && !changes.infoOrb && !changes.showTimestampDates)) return;
+    for (const key of ["showComposerContext", "infoOrb", "showTimestampDates"]) {
       if (changes[key]) settings[key] = changes[key].newValue;
     }
     enabled = settings.showComposerContext !== false;
     infoOrb = settings.infoOrb !== false;
-    showMessageTimestamps = settings.showMessageTimestamps === true;
+    showTimestampDates = settings.showTimestampDates === true;
     schedule();
   });
-  chrome.storage.local.get(["showComposerContext", "infoOrb", "showMessageTimestamps"]).then(initial => {
+  chrome.storage.local.get(["showComposerContext", "infoOrb", "showTimestampDates"]).then(initial => {
     settings = { ...initial, ...settings };
     enabled = settings.showComposerContext !== false;
     infoOrb = settings.infoOrb !== false;
-    showMessageTimestamps = settings.showMessageTimestamps === true;
+    showTimestampDates = settings.showTimestampDates === true;
     schedule();
   });
 })();

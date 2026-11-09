@@ -6,7 +6,7 @@ import { runInNewContext } from 'node:vm';
 const source = await readFile(new URL('../options.js', import.meta.url), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const features = ['right', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel', 'threadMessagesPanel', 'showComposerContext', 'infoOrb'];
-const optIns = ['showMessageTimestamps'];
+const optIns = ['showTimestampDates'];
 
 function options(search = '', openOptionsPage = async () => {}) {
   const controls = Object.fromEntries(['enabled', ...features, ...optIns, 'status', 'open-options'].map(id => [id, {
@@ -66,14 +66,14 @@ test('Options defaults opt-ins off, saves them, and restores them independently 
 test('pending initial read merges storage changes per preference, including removal', async () => {
   const app = options();
   app.external('right', false);
-  app.external('showMessageTimestamps', true);
-  app.external('showMessageTimestamps', false, 'sync');
-  app.resolveRead({ right: true, showMessageTimestamps: false });
+  app.external('showTimestampDates', true);
+  app.external('showTimestampDates', false, 'sync');
+  app.resolveRead({ right: true, showTimestampDates: false });
   await tick();
   assert.equal(app.controls.right.checked, false);
-  assert.equal(app.controls.showMessageTimestamps.checked, true);
-  app.external('showMessageTimestamps', undefined);
-  assert.equal(app.controls.showMessageTimestamps.checked, false);
+  assert.equal(app.controls.showTimestampDates.checked, true);
+  app.external('showTimestampDates', undefined);
+  assert.equal(app.controls.showTimestampDates.checked, false);
   app.external('right', undefined);
   assert.equal(app.controls.right.checked, true);
 });
@@ -82,7 +82,7 @@ test('failed saves restore the prior checkbox unless another tab changed that pr
   const app = options();
   app.resolveRead({});
   await tick();
-  const timestamps = app.controls.showMessageTimestamps;
+  const timestamps = app.controls.showTimestampDates;
   app.setSave(() => Promise.reject(new Error('unavailable')));
   timestamps.checked = true;
   await timestamps.change();
@@ -94,7 +94,7 @@ test('failed saves restore the prior checkbox unless another tab changed that pr
   timestamps.checked = true;
   const saving = timestamps.change();
   assert.equal(timestamps.disabled, true);
-  app.external('showMessageTimestamps', true);
+  app.external('showTimestampDates', true);
   reject(new Error('unavailable'));
   await saving;
   assert.equal(timestamps.checked, true);
@@ -134,10 +134,10 @@ test('every feature saves with right placement off, ignoring the legacy master s
 test('popup saves every setting, receives external changes, and opens the full Options page', async () => {
   let opened = false;
   const app = options('?popup', async () => { opened = true; });
-  app.resolveRead({ right: false, showMessageTimestamps: true });
+  app.resolveRead({ right: false, showTimestampDates: true });
   await tick();
   assert.equal(app.controls.right.checked, false);
-  assert.equal(app.controls.showMessageTimestamps.checked, true);
+  assert.equal(app.controls.showTimestampDates.checked, true);
   for (const key of [...features, ...optIns]) {
     const toggle = app.controls[key];
     const next = !toggle.checked;

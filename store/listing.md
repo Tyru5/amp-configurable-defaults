@@ -40,15 +40,15 @@ Features:
 - Preview long tool-call sections with five expandable rows and Bash code blocks.
 - See the thread's model and runner (or Orb) next to the composer's upload button.
 - Open a thread info popover from the composer for the thread's title-bar details.
-- Optionally keep compact message dates and times always visible.
-- Keep labels, info cards, timestamps, and worker reading controls scoped to
+- Optionally add the full date to the times Amp shows above messages.
+- Keep labels, info cards, and worker reading controls scoped to
   their own conversation when Space chat and workers are shown together.
 - Keep mobile navigation native; inline summaries and tool styling remain available.
 
 Options has independent checkboxes for right-side placement, right-side
 resizing, auxiliary-view placement, child-thread indentation, header-switch
 visibility, subagent panel, thread messages, composer model and runner, thread info,
-and persistent message timestamps. All default on except persistent timestamps. Turning off resizing restores native width without erasing the saved
+and timestamp dates. All default on except timestamp dates. Turning off resizing restores native width without erasing the saved
 width. Collapse/expand stays native. Placement changes preserve every preference.
 
 After installing, pin the extension and refresh any open Amp tabs. The toolbar
@@ -76,7 +76,7 @@ opposite it, read thread communication, and show the open thread's model, runner
 Storage permission justification:
 The storage permission saves eleven preferences in chrome.storage.local:
 right, rightWidth, resizeSidebar, moveViews, indentThreads,
-showHeaderToggle, subagentPanel, threadMessagesPanel, showComposerContext, infoOrb, and showMessageTimestamps. They apply to open Amp tabs and survive
+showHeaderToggle, subagentPanel, threadMessagesPanel, showComposerContext, infoOrb, and showTimestampDates. They apply to open Amp tabs and survive
 browser restarts. No page contents or personal data are persisted.
 
 Host access justification:
@@ -85,14 +85,14 @@ sidebar layout, handle its resize divider, and display rendered subagent
 activity in an optional reading panel. It needs automatic access on page load
 to restore the user's layout. Subagent prompts and results remain in memory
 for the current thread; they are not saved or transmitted. When the composer
-label, thread info control, or persistent timestamps are on, it requests the open thread's page data from
+label or thread info control is on, it requests the open thread's page data from
 https://ampcode.com/threads/<id>/__data, the same same-origin request Amp's
 page makes, and keeps only the title, mode, model, executor, runner, and working
-directory, plus message IDs and timestamp metadata, in memory.
+directory in memory. Timestamp dates are derived from the timestamps Amp
+already renders, with no request.
 The thread info popover reads details already in Amp's title bar.
 In Spaces, each visible coordinator or worker uses its own same-origin page
-data and in-memory state. Space chat timestamps use message IDs and creation
-times from `spaceChat`; parked and hidden conversations are excluded.
+data and in-memory state; parked and hidden conversations are excluded.
 The enabled thread message control separately requests the current thread's page
 data, even while closed, to decide whether it should appear. While the
 browser tab is visible, it checks on thread load and transcript changes, at
@@ -125,7 +125,7 @@ Data usage:
 No user data is sent to the developer or external collection services.
 The live 1.4.1 listing declares Personal communications and Website content.
 Review those existing declarations against the local processing and same-origin
-requests described above, including 1.4.2's thread messages and timestamps.
+requests described above, including 1.4.2's thread messages.
 Do not clear categories solely because there is no external collection.
 The publisher must personally review and certify Google's data-use declarations.
 
