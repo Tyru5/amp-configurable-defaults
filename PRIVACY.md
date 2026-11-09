@@ -13,7 +13,7 @@ is not affiliated with or endorsed by Amp.
 
 ## Information stored on your device
 
-The extension uses twelve preferences in `chrome.storage.local`:
+The extension uses thirteen preferences in `chrome.storage.local`:
 
 - `right`: whether the sidebar should appear on the right.
 - `rightWidth`: the selected right-sidebar width, or no custom width.
@@ -26,6 +26,7 @@ The extension uses twelve preferences in `chrome.storage.local`:
 - `showComposerContext`: show the thread's model and runner in the composer.
 - `infoOrb`: show the floating thread info orb beside the conversation.
 - `showComposerSkills`: show skills successfully loaded in the thread.
+- `fadeToolCalls`: show faded previews of longer tool-call sections and Bash commands.
 - `showTimestampDates`: add the calendar date to the times Amp shows above messages. Defaults to false.
 
 All boolean preferences except `showTimestampDates` default to true. Each feature
@@ -75,7 +76,7 @@ This reading panel keeps a temporary, in-memory view for the current thread,
 including the last visible content when Amp unmounts an entry. It is discarded
 on thread navigation or page reload. Disabling the panel keeps inline summaries. Task
 prompts and output are never written to extension storage, browser storage,
-files, or a server. Only the twelve preferences above are persisted.
+files, or a server. Only the thirteen preferences above are persisted.
 
 When the thread message control is enabled on desktop, it requests the current
 thread's same-origin page data using the existing Amp session, including while

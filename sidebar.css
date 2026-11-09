@@ -90,6 +90,7 @@
 [data-amp-tool-header] > [data-amp-tool-label] { display: none; }
 .expandable-row-header > [data-amp-tool-block] { display: block; flex: 1; min-width: 0; }
 [data-amp-tool-block] > pre {
+  --amp-bash-preview-lines: 8;
   margin: 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -111,6 +112,33 @@
   color: var(--muted-foreground, #666);
 }
 [data-amp-tool-block] > small:empty { display: none; }
+[data-amp-bash-limited]:not([data-amp-bash-expanded]) > pre {
+  max-height: calc(var(--amp-bash-preview-lines) * 1lh);
+  overflow: hidden;
+}
+[data-amp-bash-limited][data-amp-bash-overflow]:not([data-amp-bash-expanded]) > pre {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 2lh), transparent);
+}
+[data-amp-bash-toggle] {
+  min-height: 24px;
+  margin-top: 4px;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--foreground, CanvasText);
+  font: .75rem/1.5 system-ui, sans-serif;
+  cursor: pointer;
+}
+[data-amp-bash-toggle]:hover {
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+[data-amp-bash-toggle]:focus-visible {
+  outline: 2px solid var(--ring, currentColor);
+  outline-offset: 2px;
+}
 
 /* Preview copies are inert. The full-area button reveals the untouched native
    rows, including their original links and individual output disclosures. */

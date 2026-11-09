@@ -9,6 +9,7 @@ const toggles = {
   showComposerContext: document.querySelector("#showComposerContext"),
   infoOrb: document.querySelector("#infoOrb"),
   showComposerSkills: document.querySelector("#showComposerSkills"),
+  fadeToolCalls: document.querySelector("#fadeToolCalls"),
   showTimestampDates: document.querySelector("#showTimestampDates"),
 };
 const status = document.querySelector("#status");

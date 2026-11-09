@@ -4,6 +4,10 @@
   const previewSelector = "[data-amp-tool-preview]";
   const limit = 5;
   const controllers = new Map();
+  const commandBlocks = new Set();
+  const commandSizes = new ResizeObserver(schedule);
+  let enabled = false;
+  let settings = {};
   let pending = false;
   let sequence = 0;
 
@@ -45,6 +49,24 @@
         if (bash) code.className = "language-bash";
         pre.append(code);
         block.append(pre, document.createElement("small"));
+        if (bash) {
+          pre.id = `amp-bash-command-${++sequence}`;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.ampBashToggle = "";
+          button.hidden = true;
+          button.setAttribute("aria-controls", pre.id);
+          button.addEventListener("click", event => {
+            event.stopPropagation();
+            block.toggleAttribute("data-amp-bash-expanded");
+            schedule();
+          });
+          button.addEventListener("keydown", event => {
+            // Expanding the command must not activate Amp's output disclosure.
+            if (["Enter", " "].includes(event.key)) event.stopPropagation();
+          });
+          block.append(button);
+        }
         label.after(block);
         header.setAttribute("data-amp-tool-header", "");
       }
@@ -52,7 +74,29 @@
       const text = bash ? command.textContent : label.textContent;
       if (code.textContent !== text) code.textContent = text;
       const directory = bash ? workdir?.textContent || "" : "";
-      if (block.lastElementChild.textContent !== directory) block.lastElementChild.textContent = directory;
+      const small = block.querySelector("small");
+      if (small.textContent !== directory) small.textContent = directory;
+      if (!bash) continue;
+      block.toggleAttribute("data-amp-bash-limited", enabled);
+      const pre = code.parentElement;
+      if (!commandBlocks.has(pre)) {
+        commandBlocks.add(pre);
+        commandSizes.observe(pre);
+      }
+      // Measure displayed lines, including wrapping. Hidden section sources
+      // cannot be measured until revealed; their inert copies are always capped.
+      if (pre.clientWidth) {
+        const style = getComputedStyle(pre);
+        const height = parseFloat(style.getPropertyValue("--amp-bash-preview-lines")) * parseFloat(style.lineHeight);
+        block.toggleAttribute("data-amp-bash-overflow", pre.scrollHeight > height + 1);
+      }
+      const button = block.querySelector("[data-amp-bash-toggle]");
+      const expanded = block.hasAttribute("data-amp-bash-expanded");
+      button.setAttribute("aria-expanded", String(expanded));
+      const buttonText = expanded ? "Show less" : "Show full command";
+      if (button.textContent !== buttonText) button.textContent = buttonText;
+      const hidden = !enabled || !block.hasAttribute("data-amp-bash-overflow");
+      if (button.hidden !== hidden) button.hidden = hidden;
     }
   }
 
@@ -120,7 +164,7 @@
       // headers, not its aggregate label or arbitrary lines of tool output.
       const calls = sources.flatMap(source => [...source.querySelectorAll(headerSelector)]
         .filter(call => !call.parentElement.querySelector(`:scope > ${headerSelector} ~ * ${headerSelector}`)));
-      if (calls.length <= limit) {
+      if (!enabled || calls.length <= limit) {
         restore(state);
         continue;
       }
@@ -143,6 +187,8 @@
       const clones = calls.slice(0, limit).map(call => {
         const clone = call.cloneNode(true);
         clone.toggleAttribute("data-amp-tool-preview-expandable", call.hasAttribute("data-transcript-expandable-row"));
+        clone.querySelector("[data-amp-bash-toggle]")?.remove();
+        clone.querySelector("[data-amp-bash-expanded]")?.removeAttribute("data-amp-bash-expanded");
         // Tool labels inherit typography from different native wrappers.
         const style = getComputedStyle(call);
         clone.style.font = style.font;
@@ -187,6 +233,11 @@
     requestAnimationFrame(() => {
       pending = false;
       globalThis.ampSyncThreadViews(controllers, controller);
+      for (const pre of commandBlocks) {
+        if (pre.isConnected) continue;
+        commandSizes.unobserve(pre);
+        commandBlocks.delete(pre);
+      }
     });
   }
 
@@ -200,5 +251,16 @@
     })) schedule();
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
     attributeFilter: ["data-thread-id", "data-transcript-status-row-id", "class", "style", "hidden"] });
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "local" || !changes.fadeToolCalls) return;
+    settings.fadeToolCalls = changes.fadeToolCalls.newValue;
+    enabled = settings.fadeToolCalls !== false;
+    schedule();
+  });
+  chrome.storage.local.get(["fadeToolCalls"]).then(initial => {
+    settings = { ...initial, ...settings };
+    enabled = settings.fadeToolCalls !== false;
+    schedule();
+  });
   schedule();
 })();

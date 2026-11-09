@@ -123,6 +123,7 @@ These features have independent checkboxes in **Options**:
 | Show model and runner in the composer     | On      | No composer label; thread info can still load data                |
 | Show thread info in the composer          | On      | No thread info control; title-bar details stay in Amp's title bar |
 | Show skills used in the composer          | On      | No skills list or skills history requests; other controls still fold when crowded |
+| Fade long tool-call sections              | On      | All tool rows and complete Bash commands are shown without fading |
 | Show full dates in message timestamps     | Off     | Amp's time-only timestamps                                        |
 
 **Show full dates in message timestamps** adds the calendar date, including the
@@ -144,19 +145,29 @@ Running and delegated agents have a gently pulsing status dot; completed,
 failed, and cancelled agents do not. Reduced motion keeps the active dot static.
 Tool-call summaries and individual tool headers use tinted rows with a left
 border to distinguish execution activity from assistant prose.
-Loaded status sections with more than five tool-call rows start with a preview
-of the first five, fading from top to bottom. Click anywhere in the preview or
+With **Fade long tool-call sections** enabled, loaded status sections with more
+than five tool-call rows start with a preview of the first five, fading from top
+to bottom. Turn it off in Options or the toolbar popup to show all rows immediately.
+Click anywhere in the preview or
 on its status header to reveal the whole section. The preview button also works
 with Enter or Space. Individual output disclosures stay closed until opened.
 Bash commands render as code blocks in both previews and expanded sections,
-preserving line breaks and indentation and wrapping long lines without truncation.
+preserving the full text, line breaks and indentation. With fading enabled,
+commands taller than eight displayed lines, including wrapped lines, start with
+a bounded preview. **Show full command** reveals the rest; **Show less** collapses
+it again. Both work with Enter or Space without opening the command's output.
+This also applies to standalone Bash calls and sections with five or fewer rows.
+Command expansion is kept on the current row, not in storage.
+Turning fading off shows complete commands as well as all tool rows.
 Read, Grep, and List activity summaries use the same block style, including file
 line ranges and full search patterns, even when they have no expandable output.
-These blocks show Amp's summary text, not reconstructed shell commands.
-Sections with five or fewer rows remain fully visible. Expansion is remembered
-while viewing the thread, including when rows remount, and resets on navigation
-or reload. This applies on both sidebar sides and at mobile widths, without
-storing another preference or fetching unloaded thread history.
+These blocks show Amp's summary text, not reconstructed shell commands, and are
+not subject to the eight-line Bash limit.
+Section expansion is remembered while viewing the thread, including when rows
+remount, and resets on navigation or reload. This applies on both sidebar sides
+and at mobile widths, without
+fetching unloaded thread history. Only the fade preference is stored, not which
+sections you expanded; toggling it keeps explicitly expanded sections open.
 On desktop, the **Subagents** control in the composer toolbar (or the title bar
 on a read-only thread) shows the agent count and opens an agent list opposite
 navigation. Hover or focus **Task** or **Output** to preview a wider reading
@@ -251,7 +262,7 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 
 Permissions: `storage` for local preferences, plus
 `declarativeNetRequestWithHostAccess` and access to `https://ampcode.com/*` for
-the embedded-thread security exception. The eleven stored keys are listed in the
+the embedded-thread security exception. The thirteen stored keys are listed in the
 privacy policy. The content script runs only on Amp. Network activity includes
 the optional same-origin thread data requests and the embedded Amp page's normal
 requests. The extension does not collect analytics or submit thread data;
