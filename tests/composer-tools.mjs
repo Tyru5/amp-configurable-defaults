@@ -15,7 +15,7 @@ const panel = '[data-amp-tools-ui="panel"]';
 const tip = '[data-amp-tools-ui="tooltip"]';
 const names = `[...document.querySelectorAll('${rail} a')].map(a => a.textContent).join(',')`;
 const collapsed = `document.querySelector('[data-message-composer-root]').hasAttribute('data-amp-tools-collapsed')`;
-const open = `document.querySelector('${panel}').hasAttribute('data-open')`;
+const open = `document.querySelector('${panel}').matches(':popover-open')`;
 const settled = `document.querySelector('${panel}').getAnimations().length === 0`;
 
 // Published Amp payload contracts, inspected 2026-11-09. These are synthetic
@@ -74,18 +74,17 @@ try {
   const closedHeight = evaluate(`document.querySelector('[data-message-composer-root]').getBoundingClientRect().height`);
   browser('click', toggle);
   browser('wait', '--fn', `${open} && ${settled}`);
-  check(`(() => { const p = document.querySelector('${panel}'), c = document.querySelector('[data-message-composer-root]'), rect = p.getBoundingClientRect(); return !document.querySelector(':modal') && c.contains(p) && rect.height > 0 && rect.bottom <= document.querySelector('${toggle}').getBoundingClientRect().top && Math.abs(c.getBoundingClientRect().height - ${closedHeight} - rect.height) < 1; })()`, 'Thread tools expands the composer above the trigger in normal flow, never as a centered modal or overlay');
+  check(`(() => { const p = document.querySelector('${panel}'), c = document.querySelector('[data-message-composer-root]'), t = document.querySelector('${toggle}').getBoundingClientRect(), rect = p.getBoundingClientRect(); return !document.querySelector(':modal') && !c.contains(p) && rect.height > 0 && rect.bottom <= t.top && Math.abs(rect.left - (t.left - 4)) < 1 && Math.abs(c.getBoundingClientRect().height - ${closedHeight}) < 1; })()`, 'Thread tools opens a popover above its trigger, left-aligned with it, without growing the composer or opening a modal');
   check(`document.activeElement === document.querySelector('${toggle}') && document.querySelector('${toggle}').getAttribute('aria-expanded') === 'true' && document.querySelector('${toggle}').getAttribute('aria-controls') === document.querySelector('${panel}').id && document.querySelector('${panel}').textContent.includes('Subagents (2)') && document.querySelector('${panel}').textContent.includes('Skills (4)')`, 'disclosure keeps focus on its trigger and exposes expanded state and counts');
-  check(`(() => { const p = document.querySelector('${panel}'), c = p.closest('[data-message-composer-root]'); return p.getBoundingClientRect().left >= c.getBoundingClientRect().left && p.getBoundingClientRect().right <= c.getBoundingClientRect().right && p.scrollWidth <= p.clientWidth; })()`, 'expanded panel fits a narrow composer without horizontal overflow');
-  browser('focus', `${panel} footer a`);
-  browser('press', 'Tab');
-  check(`document.activeElement === document.querySelector('[aria-label="Add images and files"]') && ${open}`, 'Tab leaves the panel for native composer controls without a focus trap');
-  browser('fill', '#message', 'Still editable while tools are open');
-  check(`${open} && document.querySelector('#message').value === 'Still editable while tools are open'`, 'the rest of the thread stays interactive while tools are expanded');
-  browser('fill', '#message', 'Preserve this unsent draft');
+  check(`(() => { const p = document.querySelector('${panel}'), r = p.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && p.scrollWidth <= p.clientWidth; })()`, 'the popover stays inside the window without horizontal overflow');
   browser('click', toggle);
   browser('wait', '--fn', `!${open} && ${settled}`);
-  check(`document.querySelector('${panel}').getBoundingClientRect().height === 0 && document.querySelector('${panel}').inert && document.querySelector('${toggle}').getAttribute('aria-expanded') === 'false'`, 'clicking the trigger again collapses the panel and removes hidden controls from keyboard navigation');
+  check(`!document.querySelector('${panel}').checkVisibility() && document.querySelector('${toggle}').getAttribute('aria-expanded') === 'false'`, 'clicking the trigger again closes the popover');
+  browser('click', toggle);
+  browser('wait', '--fn', `${open} && ${settled}`);
+  // The floating popover can cover the draft, so click an uncovered part of the thread.
+  browser('click', 'article h1');
+  check(`!${open} && document.querySelector('#message').value === 'Preserve this unsent draft'`, 'clicking elsewhere dismisses the popover without touching the draft');
   browser('focus', toggle);
   browser('press', 'Enter');
   browser('wait', '--fn', `${open} && ${settled}`);
@@ -115,19 +114,13 @@ try {
   browser('eval', `document.querySelector('[data-message-composer-root]').style.width = ''`);
   browser('wait', '--fn', `!${collapsed}`);
   check(`document.querySelector('${rail}').checkVisibility() && document.querySelector('[data-amp-subagents-ui="toggle"]').textContent === '(3)'`, 'growing the composer restores skill names and parenthesized compact counts');
-  check(`${open} && document.querySelector('${rail} button').getAttribute('aria-expanded') === 'true'`, 'resizing keeps the panel open and updates the visible Skills trigger');
+  check(`${open} && document.querySelector('${rail} button').getAttribute('aria-expanded') === 'true' && document.querySelector('${panel}').getBoundingClientRect().bottom <= document.querySelector('${rail} button').getBoundingClientRect().top`, 'resizing keeps the popover open above the visible Skills trigger');
   browser('click', `${rail} button`);
   browser('wait', '--fn', `!${open} && ${settled}`);
   browser('click', `${rail} button`);
   browser('wait', '--fn', `${open} && ${settled}`);
   browser('click', '[aria-label="Close thread tools"]');
-  check(`!${open} && document.activeElement === document.querySelector('${rail} button')`, 'Skills opens the same inline panel and its close button restores the roomy-layout trigger');
-  browser('set', 'media', 'light', 'reduced-motion');
-  browser('click', `${rail} button`);
-  check(`${open} && document.querySelector('${panel}').getBoundingClientRect().height > 0 && ${settled}`, 'reduced motion expands the panel immediately without animation');
-  browser('click', '[aria-label="Close thread tools"]');
-  check(`document.querySelector('${panel}').getBoundingClientRect().height === 0`, 'reduced motion collapses the panel immediately');
-  browser('set', 'media', 'light');
+  check(`!${open} && document.activeElement === document.querySelector('${rail} button')`, 'Skills opens the same popover and its close button restores the roomy-layout trigger');
   browser('focus', `${rail} a`);
   browser('eval', `const f = skillFixture; fixtureThreadData['skills-test'].transcriptPage.messages.push(f.call('new', 'new-skill'), f.result('new')); document.querySelector('#fixture-transcript').append(document.createElement('p'))`);
   browser('wait', '--fn', `${names} === 'agent-browser,creating-views,frontend-design,new-skill,tdd'`);

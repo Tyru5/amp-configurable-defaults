@@ -108,7 +108,7 @@ visible; already-read history is reused. Turning the setting off, navigating awa
 or switching to mobile clears this in-memory cache and stops its requests.
 Clicking a skill opens `https://ampcode.com/settings/skills` in a new tab.
 When the composer is crowded, Thread tools groups extension controls into a
-dialog without changing Amp's composer or submitting its draft.
+popover without changing Amp's composer or submitting its draft.
 
 Apart from the thread communication described above, message IDs, timestamps,
 skill calls and results, completion state, and the model name recorded on the latest assistant reply,

@@ -100,13 +100,13 @@ If history cannot be fully read, the count has a `+` and the tools panel explain
 what is missing. Summaries may identify a skill without including its instructions.
 
 When the skill names or toolbar controls no longer fit, the extension folds its
-controls and model/runner label into **Thread tools**. Clicking it expands a panel
-inside the composer above the toolbar, like an accordion, without dimming or
-blocking the thread. Click again, use its close button, or press Escape within
-the composer to collapse it. **Skills** opens the same panel in the roomy layout.
+controls and model/runner label into **Thread tools**. Clicking it opens a popover
+above the button, left-aligned with it like the Info and Messages popovers, without
+dimming or blocking the thread. Click again, click elsewhere, use its close button,
+or press Escape to close it. **Skills** opens the same popover in the roomy layout.
 The panel lists all skills and opens the existing Info, Subagents, and Messages
 panels. Amp's attachment and send controls stay available. Resizing restores the
-full layout when it fits. Reduced-motion preferences disable the transition.
+full layout when it fits.
 Counts use parentheses, for example **Skills (4)** and **Subagents (2)**.
 
 These features have independent checkboxes in **Options**:

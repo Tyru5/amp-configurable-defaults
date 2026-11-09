@@ -98,56 +98,78 @@
       return anchor;
     }
 
-    function expand(open, restoreFocus = false) {
-      const s = state;
-      s.open = open;
-      s.panel.toggleAttribute("data-open", open);
-      s.panel.inert = !open;
-      s.panel.setAttribute("aria-hidden", String(!open));
-      for (const control of [s.toggle, s.rail.querySelector("button")]) control?.setAttribute("aria-expanded", String(open));
-      if (restoreFocus) {
-        const target = s.opener?.checkVisibility() ? s.opener : s.toggle.checkVisibility() ? s.toggle : s.rail.querySelector("button");
-        target?.focus({ preventScroll: true });
-      }
+    function isOpen() {
+      return !!state?.panel.matches(":popover-open");
     }
 
-    function togglePanel(event) {
-      hideTip();
-      render();
-      state.opener = event.currentTarget;
-      expand(!state.open);
+    // The visible control that opened the panel, or whichever trigger the
+    // current layout shows after a resize hid it.
+    function anchor() {
+      const s = state;
+      return [s.opener, s.toggle, s.rail.querySelector("button")].find(control => control?.checkVisibility()) ?? s.toggle;
+    }
+
+    function close() {
+      if (isOpen()) state.panel.hidePopover();
+    }
+
+    function invoker(control) {
+      control.popoverTargetElement = state.panel;
+      control.setAttribute("aria-controls", state.panel.id);
+      control.setAttribute("aria-expanded", String(isOpen()));
+      control.addEventListener("click", event => { state.opener = event.currentTarget; });
+    }
+
+    // The popover's own events drive the triggers' state, so the buttons,
+    // Escape, and clicks elsewhere (light dismiss) open and close it the same way.
+    // beforetoggle fires synchronously, so aria-expanded never lags the popover.
+    function expanded(event) {
+      const s = state;
+      if (s?.panel !== event.target) return;
+      for (const control of [s.toggle, s.rail.querySelector("button")]) control?.setAttribute("aria-expanded", String(event.newState === "open"));
+    }
+
+    function toggled(event) {
+      const s = state;
+      if (s?.panel !== event.target) return;
+      if (event.newState === "open") {
+        hideTip();
+        render();
+        globalThis.ampPlacePopover(s.panel, anchor());
+      } else if (s.panel.contains(document.activeElement) || document.activeElement === document.body) {
+        anchor().focus({ preventScroll: true });
+      }
     }
 
     function escape(event) {
       hideTip();
-      if (state?.open && state.composer.contains(event.target) && !event.defaultPrevented) {
-        expand(false, true);
+      if (isOpen() && !event.defaultPrevented) {
         event.preventDefault();
+        close();
       }
     }
 
     function setup() {
       const prefix = `amp-tools-${++sequence}`;
-      const toggle = button("Thread tools", togglePanel, "toggle");
+      const toggle = node("button", "Thread tools", "toggle");
+      toggle.type = "button";
       toggle.dataset.ampComposerControl = "tools";
-      toggle.setAttribute("aria-controls", prefix);
-      toggle.setAttribute("aria-expanded", "false");
       toggle.prepend(globalThis.ampIcon("M4 7h16M4 17h16M8 4v6M16 14v6"));
+      // Opens upward from its trigger like the Info and Messages popovers,
+      // floating over the thread instead of growing the composer.
       const panel = node("section", "", "panel");
       panel.id = prefix;
-      panel.inert = true;
-      panel.setAttribute("aria-hidden", "true");
+      panel.popover = "auto";
+      panel.setAttribute("data-amp-composer-popover", "");
       panel.setAttribute("aria-labelledby", `${prefix}-title`);
-      const clip = node("div", "", "clip");
-      const body = node("div", "", "body");
-      clip.append(body);
-      panel.append(clip);
+      panel.addEventListener("beforetoggle", expanded);
+      panel.addEventListener("toggle", toggled);
       const heading = node("h2", "Thread tools");
       heading.id = `${prefix}-title`;
-      const close = button("×", () => expand(false, true));
-      close.setAttribute("aria-label", "Close thread tools");
+      const dismiss = button("×", close);
+      dismiss.setAttribute("aria-label", "Close thread tools");
       const header = node("header");
-      header.append(heading, close);
+      header.append(heading, dismiss);
       const context = node("p", "", "context");
       const actions = node("nav", "", "actions");
       actions.setAttribute("aria-label", "Open thread panels");
@@ -169,7 +191,7 @@
       settings.rel = "noopener";
       settings.setAttribute("aria-label", "Open Skills settings in a new tab");
       footer.append(node("span", "Reused skills appear once."), settings);
-      body.append(header, context, actions, skills, footer);
+      panel.append(header, context, actions, skills, footer);
       const rail = node("div", "", "rail");
       const tip = node("div", "", "tooltip");
       tip.id = `${prefix}-tip`;
@@ -180,10 +202,11 @@
       const resize = new ResizeObserver(schedule);
       resize.observe(view.composer);
       resize.observe(view.toolbar.parentElement);
-      state = { id: view.id, composer: view.composer, toolbar: view.toolbar, toggle, panel, rail, tip, open: false,
+      state = { id: view.id, composer: view.composer, toolbar: view.toolbar, toggle, panel, rail, tip,
         context, actions, skills, label, notice, list, detail, footer, resize,
         used: new Map(), calls: new Map(), at: 0, dirty: true, historyLoaded: false, failed: false, incomplete: false };
-      view.host.append(tip);
+      invoker(toggle);
+      view.host.append(panel, tip);
     }
 
     function collect(pages, summaries) {
@@ -289,9 +312,9 @@
         const focused = document.activeElement;
         const focusRegion = s.list.contains(focused) ? s.list : s.rail.contains(focused) ? s.rail : null;
         hideTip();
-        const label = button(`Skills ${count}`, togglePanel);
-        label.setAttribute("aria-controls", s.panel.id);
-        label.setAttribute("aria-expanded", String(s.open));
+        const label = node("button", `Skills ${count}`);
+        label.type = "button";
+        invoker(label);
         s.rail.replaceChildren(label, ...skills.map(skill => link(skill)));
         if (!skills.length) s.rail.append(node("span", status));
         write(s.label, `Skills ${count}`);
@@ -320,7 +343,7 @@
         s.controls = controls;
         s.actions.replaceChildren(...controls.map(control => {
           return button("", () => {
-            expand(false);
+            close();
             // These remain the original controls and panels, with their native
             // state, polling, and transcript navigation. Do not duplicate them.
             control.click();
@@ -366,10 +389,10 @@
       if (row === view.composer) {
         if (state.rail.parentElement !== row) row.prepend(state.rail);
       } else if (state.rail.nextElementSibling !== row) row.before(state.rail);
-      if (state.panel.nextElementSibling !== state.rail) state.rail.before(state.panel);
       globalThis.ampMountComposerControl(view.toolbar, state.toggle);
       render();
       layout();
+      if (isOpen()) globalThis.ampPlacePopover(state.panel, anchor());
       if (enabled && state.dirty && !document.hidden && !state.loading) {
         const wait = 5000 - (Date.now() - state.at);
         if (wait <= 0) load();

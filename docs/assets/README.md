@@ -56,8 +56,9 @@ them as local fixtures. They are not Web Store listing screenshots.
 
 - `composer-skills-fixture.webp`, 1504 × 365, shows a 720px-wide composer
   with four successful skill loads and two completed subagents.
-- `thread-tools-fixture.webp`, 824 × 1032, shows that same composer narrowed
-  to 380px and its Thread tools accordion opened. The model, skill excerpts,
+- `thread-tools-fixture.webp`, 972 × 854, shows that same composer narrowed
+  to 380px with its Thread tools popover open above the button. It was
+  recaptured after Thread tools became a popover, not at `59471a9`. The model, skill excerpts,
   draft text, and agent counts are synthetic. No thread messages are seeded,
   so the Messages control is absent.
 - `tool-preview-fixture.webp`, 1696 × 651, shows the fixture's nine-call
@@ -73,14 +74,17 @@ Capture method follows the Thread tools implementation's browser previews:
 3. Give the fixture dark colors using its native CSS variables, hide its
    explanatory article, and use a flex-column agent pane with the composer
    footer at the bottom. Set the composer input's minimum height to 70px.
+   For the Thread tools capture, also hide the transcript so only the composer
+   and its popover show.
    This styles the stand-in page only; extension controls use the unmodified
    `sidebar.css` and runtime scripts.
 4. Capture at 720px composer width, then at 380px after clicking
-   `[data-amp-tools-ui="toggle"]` and waiting for its animations to finish.
+   `[data-amp-tools-ui="toggle"]` and waiting for its popover to open.
 5. Navigate the fixture to a fresh thread and call
    `fixtureToolSection('landing')` for the faded tool preview.
 6. Take viewport PNGs, then crop to the composer or transcript bounding box
-   plus 16 CSS pixels of padding, using 2× coordinates. Encode with
+   (for Thread tools, the composer and popover together) plus 16 CSS pixels
+   of padding within the viewport, using 2× coordinates. Encode with
    ImageMagick `-quality 90` as WebP. No UI was composited or retouched;
    there was no private data to redact.
 

@@ -670,7 +670,7 @@
   color: var(--foreground, CanvasText);
   text-decoration: none;
 }
-[data-amp-tools-ui="body"], [data-amp-tools-ui="tooltip"] {
+[data-amp-tools-ui="tooltip"] {
   box-sizing: border-box;
   border: 1px solid var(--input-border, #80808033);
   border-radius: 10px;
@@ -679,25 +679,11 @@
   color-scheme: inherit;
   font: 13px/1.5 system-ui, sans-serif;
 }
-/* Keep the disclosure in flow above its controls. The inner clip lets the
-   composer grow and shrink without measuring or relocating Amp's own nodes. */
-[data-amp-tools-ui="panel"] {
-  display: grid;
-  grid-template-rows: 0fr;
-  min-width: 0;
-  visibility: hidden;
-  opacity: 0;
-  transition: grid-template-rows 180ms ease-out, opacity 140ms ease-out, visibility 180ms;
-}
-[data-amp-tools-ui="panel"][data-open] {
-  grid-template-rows: 1fr;
-  visibility: visible;
-  opacity: 1;
-}
-[data-amp-tools-ui="clip"] { min-height: 0; overflow: hidden; }
-[data-amp-tools-ui="body"] {
-  max-height: min(360px, 45dvh);
-  margin: 0 8px 8px;
+/* A composer popover above its trigger, like Info and Messages; the shared
+   rule places and frames it. Wider for the skill list and its details. */
+[data-amp-tools-ui="panel"]:popover-open {
+  width: min(400px, calc(100vw - 16px));
+  max-height: min(460px, 60vh);
   overflow: auto;
   overscroll-behavior: contain;
 }
@@ -741,9 +727,6 @@
 [data-amp-tools-ui] :is(button, a):hover { background: color-mix(in srgb, var(--foreground, CanvasText) 6%, transparent); }
 [data-amp-tools-ui] :is(button, a):focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: -2px; }
 [data-amp-tools-ui][hidden], [data-amp-tools-ui="panel"] [hidden] { display: none; }
-@media (prefers-reduced-motion: reduce) {
-  [data-amp-tools-ui="panel"] { transition: none; }
-}
 
 /* Keep Amp's owned nodes in place. The extra conversation is a sibling pane. */
 [data-slot="sidebar-inset"][data-amp-thread-split] {
