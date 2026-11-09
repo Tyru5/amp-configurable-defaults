@@ -77,6 +77,19 @@ try {
   check(`(() => { const p = document.querySelector('${panel}'), c = document.querySelector('[data-message-composer-root]'), t = document.querySelector('${toggle}').getBoundingClientRect(), rect = p.getBoundingClientRect(); return !document.querySelector(':modal') && !c.contains(p) && rect.height > 0 && rect.bottom <= t.top && Math.abs(rect.left - (t.left - 4)) < 1 && Math.abs(c.getBoundingClientRect().height - ${closedHeight}) < 1; })()`, 'Thread tools opens a popover above its trigger, left-aligned with it, without growing the composer or opening a modal');
   check(`document.activeElement === document.querySelector('${toggle}') && document.querySelector('${toggle}').getAttribute('aria-expanded') === 'true' && document.querySelector('${toggle}').getAttribute('aria-controls') === document.querySelector('${panel}').id && document.querySelector('${panel}').textContent.includes('Subagents (2)') && document.querySelector('${panel}').textContent.includes('Skills (4)')`, 'disclosure keeps focus on its trigger and exposes expanded state and counts');
   check(`(() => { const p = document.querySelector('${panel}'), r = p.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && p.scrollWidth <= p.clientWidth; })()`, 'the popover stays inside the window without horizontal overflow');
+  // Amp's bottom bar lays a full-size label under pointer-events: none control
+  // wrappers; the footer link must stay reachable above it, not under it.
+  const footerLink = `${panel} footer a`;
+  browser('scrollintoview', footerLink);
+  check(`(() => { const a = document.querySelector('${footerLink}'), r = a.getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === a; })()`, 'Open Skills settings is the element under the pointer, not covered by the composer label');
+  const draftTab = JSON.parse(browser('--json', 'tab', 'list')).data.tabs.find(tab => tab.active).tabId;
+  browser('click', footerLink);
+  const footerTab = JSON.parse(browser('--json', 'tab', 'list')).data.tabs.find(tab => new URL(tab.url).pathname === '/settings/skills');
+  assert.ok(footerTab, 'clicking Open Skills settings opens settings in another tab');
+  console.log('PASS clicking Open Skills settings opens settings in another tab');
+  browser('tab', 'close', footerTab.tabId);
+  browser('tab', draftTab);
+  if (!evaluate(open)) { browser('click', toggle); browser('wait', '--fn', `${open} && ${settled}`); }
   browser('click', toggle);
   browser('wait', '--fn', `!${open} && ${settled}`);
   check(`!document.querySelector('${panel}').checkVisibility() && document.querySelector('${toggle}').getAttribute('aria-expanded') === 'false'`, 'clicking the trigger again closes the popover');

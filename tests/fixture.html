@@ -4,10 +4,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Amp sidebar compatibility fixture</title>
 <style>
-  /* Composer stand-in: Attachments region and trigger structure from Amp's 4b22e4d9.js, inspected 2026-10-26. */
-  .fixture-composer { margin: 8px 12px; border: 1px solid #80808060; border-radius: 12px; font: 13px system-ui, sans-serif; }
+  /* Composer stand-in: Attachments region and trigger structure from Amp's 4b22e4d9.js, inspected 2026-10-26.
+     Bottom bar from Amp's 86fa4d97.js, inspected 2026-11-09: a full-size label under
+     pointer-events: none control wrappers, with the Attachments region one level deeper. */
+  .fixture-composer { display: flex; flex-direction: column; isolation: isolate; margin: 8px 12px; border: 1px solid #80808060; border-radius: 12px; font: 13px system-ui, sans-serif; }
   .fixture-composer-input { padding: 10px 12px; color: GrayText; }
-  .fixture-composer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 8px 8px; }
+  .fixture-composer-toolbar { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 8px 8px; }
+  .fixture-composer-label { position: absolute; inset: 0; z-index: 0; cursor: text; }
+  .fixture-composer-controls { position: relative; z-index: 10; display: flex; align-items: center; gap: 4px; min-width: 0; pointer-events: none; }
+  .fixture-composer-controls :is(a, button, input) { pointer-events: auto; }
+  .fixture-composer-left { display: flex; align-items: center; gap: 4px; min-width: 0; }
+  .fixture-composer-controls + .fixture-composer-controls { flex: 1 0 auto; justify-content: flex-end; }
   .fixture-composer-toolbar [role="region"] { display: flex; align-items: center; gap: 4px; min-width: 0; }
   .fixture-composer-toolbar button { border: 0; background: none; font-size: 15px; }
   * { box-sizing: border-box; }
@@ -131,7 +138,7 @@
             <div id="agent-pane" data-pane style="flex: 68 1 0px">
               <article><small>COMPATIBILITY PREVIEW</small><h1>Your conversation stays put.<br>The sidebar switches sides.</h1><p>This local fixture exercises the extension using the sidebar wrapper, container, gap, and resize divider found in Amp's published app assets.</p><p>The extension changes layout styles without moving app nodes or changing thread data. The test control above changes the same placement preference as the extension settings.</p><label for="message">Message</label><textarea id="message" rows="3" placeholder="Your composer remains editable"></textarea></article>
               <div class="thread-chat-scroll-region"><div data-thread-transcript-scroll data-thread-id="fixture-a"><div data-thread-transcript-content id="fixture-transcript"></div></div></div>
-              <div data-thread-composer-footer><div data-message-composer-root class="fixture-composer"><div class="fixture-composer-input">Message the agent…</div><div class="fixture-composer-toolbar"><div role="region" aria-label="Attachments"><span class="relative inline-flex shrink-0 border border-transparent"><button type="button" aria-label="Add images and files">📎</button><input type="file" multiple="" tabindex="-1" aria-hidden="true" hidden></span><!----></div><button type="button" class="fixture-send" aria-label="Send">↑</button></div></div></div>
+              <div data-thread-composer-footer><div data-message-composer-root class="fixture-composer"><div class="fixture-composer-input">Message the agent…</div><div class="fixture-composer-toolbar"><label class="fixture-composer-label"><span hidden>Message</span></label><div class="fixture-composer-controls"><div class="fixture-composer-left"><div role="region" aria-label="Attachments"><span class="relative inline-flex shrink-0 border border-transparent"><button type="button" aria-label="Add images and files">📎</button><input type="file" multiple="" tabindex="-1" aria-hidden="true" hidden></span><!----></div></div></div><div class="fixture-composer-controls"><button type="button" class="fixture-send" aria-label="Send">↑</button></div></div></div></div>
             </div>
             <div data-pane-resizer data-slot="resizable-handle" role="separator" aria-label="Resize views" tabindex="0" hidden></div>
             <section id="view-pane" data-pane style="flex: 32 1 0px" hidden><h2 id="view-title">Files</h2><p>Local fixture view content, not a live executor.</p></section>

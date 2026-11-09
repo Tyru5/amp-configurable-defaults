@@ -422,10 +422,12 @@
       if (!enabled && !view.toolbar.querySelector('[data-amp-composer-context], [data-amp-composer-control]:not([data-amp-composer-control="tools"]):not([hidden])')) { teardown(); return; }
       if (state && (state.id !== view.id || state.composer !== view.composer || state.toolbar !== view.toolbar)) teardown();
       if (!state) setup();
-      const row = view.toolbar.parentElement;
-      if (row === view.composer) {
-        if (state.rail.parentElement !== row) row.prepend(state.rail);
-      } else if (state.rail.nextElementSibling !== row) row.before(state.rail);
+      // Give skills their own row above Amp's whole bottom bar. Beside the
+      // Attachments row they would sit in Amp's pointer-events: none control
+      // wrapper and crowd its controls.
+      let bar = view.toolbar;
+      while (bar.parentElement !== view.composer) bar = bar.parentElement;
+      if (state.rail.nextElementSibling !== bar) bar.before(state.rail);
       globalThis.ampMountComposerControl(view.toolbar, state.toggle);
       render();
       layout();
