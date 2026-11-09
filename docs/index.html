@@ -131,9 +131,10 @@
             <h1 id="hero-title">Your Amp.<br />Your layout.</h1>
             <div class="hero-copy">
               <p>
-                A few better defaults for the way you work. Move navigation to
-                the right, read two threads side by side, give subagents a place
-                of their own, and see which model and runner each thread uses.
+                Put navigation where you want it. Read threads side by side,
+                follow subagents and thread messages, and keep model and runner
+                details close to your draft. An independent, open-source Chrome
+                extension for Amp.
               </p>
               <a
                 class="button primary"
@@ -144,7 +145,8 @@
               >
               <p class="install-note">
                 Chrome Web Store: 1.4.1 · Free, open source.<br />
-                Source preview: 1.4.2, not yet released.
+                <a href="#source-preview">See what's new in the 1.4.2 source preview</a>.
+                Not yet in the store.
               </p>
             </div>
           </div>
@@ -158,14 +160,15 @@
             />
             <figcaption>
               <span
-                >A real Amp session in Helium, 1681 × 1000, October 26, 2026.
-                Conversation, thread names, and project names are
-                redacted.</span
+                >Historical capture of a real Amp session in Helium,
+                1681 × 1000, October 26, 2026. Private content is redacted.
+                The 1.4.2 source moves the floating info orb shown here into
+                the composer toolbar.</span
               >
               <ul class="hero-points" aria-label="Shown in this capture">
                 <li>Navigation on the right</li>
                 <li>Child threads indented</li>
-                <li>Thread info orb, pinned</li>
+                <li>Earlier thread info card</li>
                 <li>Model and runner in the composer</li>
               </ul>
             </figcaption>
@@ -187,9 +190,75 @@
             Small changes.<br />More room for your work.
           </h2>
           <p>
-            Pick a side without switching anything else off. Every feature has
-            its own checkbox in the toolbar popup and Options.
+            Pick a side without switching anything else off. Configure the
+            features in the toolbar popup or Options. Source-preview changes
+            below are not yet in the store's 1.4.1 release.
           </p>
+        </div>
+        <aside class="source-preview" id="source-preview" aria-labelledby="preview-title">
+          <div>
+            <h3 id="preview-title">New in the 1.4.2 source preview.</h3>
+            <p>
+              Skills and thread controls share the composer. Long tool calls
+              are easier to scan. Each visible Spaces conversation keeps its
+              own context. These changes are merged into <code>main</code>.
+            </p>
+          </div>
+          <a href="#install">Try the source preview</a>
+        </aside>
+        <div class="feature-story" id="composer-tools">
+          <div class="feature-copy">
+            <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
+              <rect x="5" y="8" width="30" height="24" rx="3" />
+              <path d="M5 24h30M11 28h2m4 0h2m4 0h2M11 14h18m-18 5h11" />
+            </svg>
+            <h3>The thread's context, beside your draft.</h3>
+            <p>
+              In the <strong>1.4.2 source preview</strong>, successfully loaded
+              skills appear above the toolbar, each listed once. Hover or focus
+              a name for an instruction excerpt and location when available. Click
+              to open Amp's Skills settings in a new tab without losing your draft.
+            </p>
+            <p>
+              See the model, explicit effort setting, and runner name or
+              <strong>Orb</strong> beside <strong>Info</strong>,
+              <strong>Subagents</strong>, and, when messages exist,
+              <strong>Messages</strong>. Click Info for the thread's title,
+              project, mode, visibility, runner, and working directory when available.
+            </p>
+            <p>
+              When space gets tight, <strong>Thread tools</strong> folds these
+              controls into an accordion above the toolbar. Your draft,
+              attachments, and send button stay available. In a roomy composer,
+              <strong>Skills</strong> opens the same panel.
+            </p>
+            <div class="feature-detail">
+              Desktop only. A + on the skill count means history is incomplete.
+              Read-only threads keep Info and Subagents in the title bar.
+            </div>
+          </div>
+          <div class="composer-captures">
+            <figure>
+              <img
+                src="assets/composer-skills-fixture.webp"
+                alt="Local fixture of the 1.4.2 composer with four loaded skills above the model, Orb label, Info, and Subagents controls."
+                width="1504"
+                height="365"
+                loading="lazy"
+              />
+              <figcaption>Roomy composer. Actual extension in a local fixture with synthetic data, not live Amp.</figcaption>
+            </figure>
+            <figure class="compact-capture">
+              <img
+                src="assets/thread-tools-fixture.webp"
+                alt="Local fixture of a crowded composer with Thread tools expanded inline, showing Info, Subagents (2), and Skills (4) above the attachment and send controls."
+                width="824"
+                height="1032"
+                loading="lazy"
+              />
+              <figcaption>Narrower composer, same local fixture. The panel expands inline, not as a modal. Captured November 9, 2026.</figcaption>
+            </figure>
+          </div>
         </div>
         <div class="feature-story">
           <div class="feature-copy">
@@ -286,11 +355,14 @@
             <h3>Give subagents their own reading room.</h3>
             <p>
               Open <strong>Subagents</strong> from the desktop composer toolbar
+              in the <strong>1.4.2 source preview</strong>
               for a compact agent list opposite navigation. Hover or focus
               <strong>Task</strong> or <strong>Output</strong> to preview a
               wider reading sheet. Click to pin it open.
             </p>
             <p>
+              Read headings, lists, links, code, and tables as formatted content,
+              rather than raw text. Formatted reading sheets are already in 1.4.1.
               Files and Changes can stay alongside the list; narrower desktop
               windows use an overlay. Escape closes the sheet first, then the
               panel.
@@ -312,52 +384,87 @@
             />
             <figcaption>
               Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24,
-              2026. Private content hidden. In v1.2, Task and Output open in a
-              separate reading sheet.
+              2026. Private content hidden. Current Task and Output open in
+              separate formatted sheets. The 1.4.2 source moves the Subagents
+              control into the composer.
             </figcaption>
           </figure>
         </div>
-        <div class="feature-story">
+        <div class="feature-story" id="tool-previews">
           <div class="feature-copy">
             <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
-              <circle cx="11" cy="20" r="4" />
-              <rect x="18" y="10" width="17" height="20" rx="3" />
-              <path d="M22 16h9m-9 4h9m-9 4h6" />
+              <rect x="5" y="8" width="30" height="24" rx="3" />
+              <path d="m11 15 4 4-4 4m9 0h8" />
             </svg>
-            <h3>Know where every thread runs.</h3>
+            <h3>Scan the work. Open the details.</h3>
             <p>
-              Next to the composer's upload button, a compact label shows the
-              thread's model and where it runs: your runner's name for local
-              threads, or <strong>Orb</strong> for cloud threads. Hover it for
-              the mode and working directory.
+              Long tool-call sections start with a fading preview of the first
+              five calls. Click the preview or status header to reveal all
+              loaded calls. Individual outputs stay closed until you open them.
             </p>
             <p>
-              A small orb floats on the conversation's left edge. Hover or focus
-              it for the thread, executor, project, mode, and visibility from
-              Amp's title bar, even when narrow windows hide them. Click to pin
-              the card; click again or press Escape to unpin.
+              The <strong>1.4.2 source preview</strong> adds a
+              <strong>Fade long tool-call sections</strong> setting. With it
+              enabled, long Bash commands show eight displayed lines, including
+              wrapped lines. <strong>Show full command</strong> reveals the
+              rest; <strong>Show less</strong> folds it back.
+            </p>
+            <p>
+              Bash, Read, Grep, and List activity use readable code blocks,
+              preserving full commands, search patterns, and file line ranges.
+              Read, Grep, and List show Amp's summaries, not invented shell commands.
             </p>
             <div class="feature-detail">
-              The label reads the same thread data Amp's page loads, from
-              ampcode.com with your existing session. Both are desktop only and
-              can be turned off separately.
+              Turn fading off to show all calls and complete commands.
+              Works on either sidebar side and at narrow widths. Expansion is
+              temporary; only your fade preference is saved.
             </div>
           </div>
           <figure>
             <img
-              src="assets/thread-context.webp"
-              alt="Live Amp capture: the thread info orb pinned open with executor Orb Executor, project No Project, mode medium, and visibility Private, and the composer label gpt-6.1-sol · Orb. Conversation text and the thread name are redacted."
-              width="1600"
-              height="931"
+              src="assets/tool-preview-fixture.webp"
+              alt="Local fixture of a tool-call section with its first five Bash, Read, List, and Grep calls shown in fading code blocks."
+              width="1696"
+              height="651"
               loading="lazy"
             />
             <figcaption>
-              Live Amp in Helium, October 26, 2026; crop of the capture above.
-              Conversation and thread name redacted.
+              Actual 1.4.2 extension in a local fixture, November 9, 2026.
+              Synthetic tool calls, not a live Amp session.
             </figcaption>
           </figure>
         </div>
         <div class="more-features">
+          <article id="thread-messages">
+            <h3>Follow messages between threads.</h3>
+            <p>
+              The Messages control appears only when threads have exchanged
+              messages. Read each message, see delivery status and attachment
+              counts, or jump to its original transcript entry. The
+              <strong>1.4.2 source preview</strong> puts the newest messages first.
+              This panel reads messages; it never sends them.
+            </p>
+          </article>
+          <article id="spaces">
+            <h3>Keep Spaces conversations separate.</h3>
+            <p>
+              In the <strong>1.4.2 source preview</strong>, each visible
+              coordinator or worker gets its own context, Info, Messages,
+              Subagents, and tool previews. Switching workers clears the
+              previous worker's controls. Space workers aren't counted as Task
+              subagents.
+            </p>
+          </article>
+          <article id="timestamp-dates">
+            <h3>Put a date on the conversation.</h3>
+            <p>
+              The <strong>1.4.2 source preview</strong> can add full calendar
+              dates to Amp's message times. Enable Amp's
+              <strong>Always Show Timestamps</strong>, or hold Option or Alt
+              to see them. The date option is off by default and makes no extra
+              requests. Amp controls when timestamps are visible.
+            </p>
+          </article>
           <article>
             <h3>Keep tools opposite navigation.</h3>
             <p>
@@ -367,19 +474,20 @@
             </p>
           </article>
           <article>
-            <h3>Navigation stays native.</h3>
-            <p>
-              Older versions offered a footer-hiding option. The current 1.4.1
-              release removes it for Amp's new sidebar layout, where navigation
-              and the account menu live in a separate icon rail.
-            </p>
-          </article>
-          <article>
             <h3>Less hunting. More reading.</h3>
             <p>
               Right-sidebar thread cards open to the left on hover or keyboard
               focus. Tool rows get a subtle tint; active subagent dots pulse
               gently, or stay still with reduced motion.
+            </p>
+          </article>
+          <article>
+            <h3>Keep the settings you choose.</h3>
+            <p>
+              Sidebar placement, panel choices, and the saved right-side width
+              apply across open Amp tabs and survive restarts. Preferences stay
+              in your local Chrome profile, not synced between devices.
+              Switching sides doesn't switch off other features.
             </p>
           </article>
         </div>
@@ -475,31 +583,34 @@
             <p>
               The extension needs local storage and access to ampcode.com only.
               Chrome may describe that access as reading and changing site data.
-              The store's 1.4.1 release saves eleven layout and feature preferences
-              in your local Chrome profile, not synced between devices.
-              The 1.4.2 source keeps these same preferences. Inline summaries and the
-              reading panel use rendered subagent titles, statuses, tasks,
-              results, and errors in memory for the current thread, expanding
-              Amp's native disclosures as needed. That view is discarded on
-              navigation or reload; subagent content is never saved or
-              transmitted. No additional history is fetched. With the composer
-              label on, the extension requests the open thread's data from
-              ampcode.com, as Amp's own page does, and keeps only its mode,
-              model, and runner details in memory. Drag-to-split loads a live
+              The 1.4.2 source uses thirteen local preferences, including the
+              new skills and fading options. The store's 1.4.1 release uses
+              eleven. Preferences aren't synced between devices. Subagent
+              reading sheets use content Amp has already rendered; they don't
+              fetch older history or save prompts and results.
+            </p>
+            <p>
+              When the model label or Info is enabled, the extension requests
+              the open thread's same-origin page data using your Amp session.
+              Messages reads the returned page of incoming and outgoing messages,
+              delivery results, and other thread titles. It checks on transcript
+              changes, at most every five seconds while visible, and refreshes
+              every five seconds while open. It does not send messages or fetch
+              older message pages.
+            </p>
+            <p>
+              The 1.4.2 skills feature also reads older and newer transcript
+              pages to find successful skill loads and collapsed-turn summaries.
+              It doesn't fetch skill files or run their instructions. These
+              features keep thread data in memory, not persistent storage.
+              The optional timestamp dates only read times Amp already renders.
+            </p>
+            <p>
+              Drag-to-split loads a live
               Amp page with its normal network requests. A temporary, tab-scoped
               rule removes framing and Content Security Policy headers only for
               that embedded thread URL; this also relaxes script protections
               inside the frame. There are no analytics.
-            </p>
-            <p>
-              The optional timestamp dates read the times Amp already renders
-              and make no request.
-              The 1.4.2 source's optional thread message control reads incoming and outgoing thread
-              messages and delivery results from the current thread's page data,
-              and the titles of the threads they were exchanged with.
-              It checks for messages even while closed and refreshes every
-              five seconds while open and the browser tab is visible. Message
-              content stays in memory; it does not send messages.
             </p>
             <a
               href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md"
@@ -520,10 +631,10 @@
             <summary>How do I change or undo my settings?</summary>
             <p>
               Click the extension's toolbar icon for the settings popup, or
-              right-click it and choose Options. Every feature has its own
-              checkbox. Switching sides does not disable other features, and
+              right-click it and choose Options. Choose individual features
+              and sidebar placement. Switching sides does not disable other features, and
               turning off the panel keeps inline summaries. There is no master
-              on/off switch in v1.2. To remove all extension changes, disable or
+              on/off switch. To remove all extension changes, disable or
               remove the extension in Chrome, then refresh open Amp tabs.
             </p>
           </details>

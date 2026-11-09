@@ -41,6 +41,21 @@ try {
     `document.querySelector('.hero-shot figcaption').textContent.includes('real Amp session') && document.querySelectorAll('.hero-points li').length === 4`,
     "hero caption identifies the live capture and what it shows",
   );
+  browser("focus", '.install-note a[href="#source-preview"]');
+  browser("press", "Enter");
+  browser("wait", "--fn", `location.hash === '#source-preview' && Math.abs(document.querySelector('#source-preview').getBoundingClientRect().top - 30) < 3`);
+  check(
+    `document.querySelector('#source-preview').textContent.includes('1.4.2 source preview') && document.querySelector('#source-preview > a').hash === '#install' && document.querySelector('.install-note').textContent.includes('Not yet in the store')`,
+    "hero preview link reaches unreleased features and their local installation path",
+  );
+  check(
+    `['composer-tools', 'tool-previews', 'thread-messages', 'spaces', 'timestamp-dates'].every(id => document.getElementById(id)?.textContent.includes('1.4.2 source preview'))`,
+    "new feature descriptions distinguish source-preview behavior from the store release",
+  );
+  check(
+    `[...document.querySelectorAll('img[src$="-fixture.webp"]')].length === 3 && [...document.querySelectorAll('img[src$="-fixture.webp"]')].every(img => /local fixture/i.test(img.alt) && /local fixture/i.test(img.closest('figure').querySelector('figcaption').textContent)) && document.querySelector('.hero-shot figcaption').textContent.includes('Historical capture')`,
+    "current fixture previews and historical live imagery disclose their provenance",
+  );
   check(
     `(() => { const section = document.querySelector('#split-panes'); const image = section?.querySelector('img'); return image?.getAttribute('src') === 'assets/thread-split.webp' && image.alt.includes('redacted') && section.textContent.includes('Alt+Shift+Left') && section.textContent.includes('Alt+Shift+Right') && section.querySelector('a').hash === '#embedded-thread-security-exception'; })()`,
     "split panes have a real redacted capture, keyboard instructions, and the security disclosure",
@@ -54,6 +69,10 @@ try {
   check(
     `document.querySelector('details:nth-child(2)').open && document.querySelector('details:nth-child(2)').textContent.includes('reading and changing site data')`,
     "FAQ opens by keyboard and explains site access",
+  );
+  check(
+    `(() => { const text = document.querySelector('details:nth-child(2)').textContent.replace(/\\s+/g, ' '); return text.includes('thirteen local preferences') && text.includes('older and newer transcript pages') && text.includes('does not send messages') && text.includes('Content Security Policy'); })()`,
+    "privacy disclosure covers new preferences and skill history without hiding the framing exception",
   );
   browser("press", "Enter");
   check(`!document.querySelector('details:nth-child(2)').open`, "FAQ closes by keyboard");
@@ -89,6 +108,10 @@ try {
   check(
     `[...document.images].every(image => image.complete && image.naturalWidth > 0)`,
     "all landing images load",
+  );
+  check(
+    `[...document.querySelectorAll('figure img')].every(image => Math.abs(Number(image.getAttribute('width')) / Number(image.getAttribute('height')) - image.naturalWidth / image.naturalHeight) < 0.01)`,
+    "screenshot dimensions reserve the correct aspect ratio before loading",
   );
   browser("set", "media", "dark");
   check(

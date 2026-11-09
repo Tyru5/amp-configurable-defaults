@@ -355,6 +355,39 @@ h2 {
   color: var(--muted);
   margin-bottom: 4px;
 }
+.source-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 48px;
+  flex-wrap: wrap;
+  padding-block: 28px;
+  margin-bottom: 64px;
+  border-block: 1px solid var(--line);
+}
+.source-preview h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+.source-preview p {
+  max-width: 65ch;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+.source-preview > a {
+  font-size: 13px;
+  font-weight: 700;
+}
+.composer-captures {
+  display: grid;
+  gap: 28px;
+  min-width: 0;
+}
+.compact-capture {
+  width: min(100%, 400px);
+  margin-inline: auto;
+}
 .feature-story {
   display: grid;
   grid-template-columns: 0.8fr 1.2fr;

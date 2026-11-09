@@ -47,4 +47,46 @@
   name remains visible. Keyboard resizing and double-click reset were checked
   in the same live session. No messages were sent.
 
+## Current source previews, November 9, 2026
+
+These three images show the real extension runtime at
+[`59471a9`](https://github.com/Tyru5/amp-configurable-defaults/commit/59471a9)
+against `tests/fixture.html`, **not signed-in Amp**. The landing page labels
+them as local fixtures. They are not Web Store listing screenshots.
+
+- `composer-skills-fixture.webp`, 1504 × 365, shows a 720px-wide composer
+  with four successful skill loads and two completed subagents.
+- `thread-tools-fixture.webp`, 824 × 1032, shows that same composer narrowed
+  to 380px and its Thread tools accordion opened. The model, skill excerpts,
+  draft text, and agent counts are synthetic. No thread messages are seeded,
+  so the Messages control is absent.
+- `tool-preview-fixture.webp`, 1696 × 651, shows the fixture's nine-call
+  status section with its first-five preview. Calls are synthetic.
+
+Capture method follows the Thread tools implementation's browser previews:
+
+1. Serve the repository and open `/tests/fixture.html` with `agent-browser`.
+   Use a 1200 × 900 viewport at 2× scale and clear fixture local storage.
+2. Evaluate the `setup` payload from `tests/composer-tools.mjs`. Add an
+   assistant record with `usage.model: 'claude-opus-5-5'` before navigation
+   and two completed agents with `fixtureAgents.add`.
+3. Give the fixture dark colors using its native CSS variables, hide its
+   explanatory article, and use a flex-column agent pane with the composer
+   footer at the bottom. Set the composer input's minimum height to 70px.
+   This styles the stand-in page only; extension controls use the unmodified
+   `sidebar.css` and runtime scripts.
+4. Capture at 720px composer width, then at 380px after clicking
+   `[data-amp-tools-ui="toggle"]` and waiting for its animations to finish.
+5. Navigate the fixture to a fresh thread and call
+   `fixtureToolSection('landing')` for the faded tool preview.
+6. Take viewport PNGs, then crop to the composer or transcript bounding box
+   plus 16 CSS pixels of padding, using 2× coordinates. Encode with
+   ImageMagick `-quality 90` as WebP. No UI was composited or retouched;
+   there was no private data to redact.
+
+The older live captures remain historical evidence. In particular,
+`hero-live.webp` and `thread-context.webp` show the former floating info orb,
+not the current composer's Info control. The landing page no longer uses
+`thread-context.webp` for current feature coverage.
+
 No generated design concept is used as live-product evidence.
