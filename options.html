@@ -61,6 +61,10 @@
       display: block;
       overflow-y: auto;
     }
+    .panel body {
+      width: auto;
+      max-height: 100dvh;
+    }
     .popup h1 {
       margin-bottom: 4px;
     }
@@ -152,8 +156,8 @@
         />Show placement switch in sidebar header</label
       >
       <p id="header-description">
-        Switch between left and right without changing other features. Options and the toolbar icon
-        remain accessible when this switch is hidden.
+        Switch between left and right without changing other features. The sidebar settings
+        button, Options, and the toolbar icon remain accessible when this switch is hidden.
       </p>
       <label
         ><input
@@ -253,8 +257,8 @@
       </p>
       <p class="page-help">
         Your preferences are remembered on this device. Changes apply immediately to open Amp tabs.
-        Click the extension toolbar icon for quick settings, or right-click it → Options for this
-        page.
+        Click the extension toolbar icon or the gear button in Amp's sidebar header for quick settings,
+        or right-click the toolbar icon → Options for this page.
       </p>
       <p id="status" role="status">Loading settings…</p>
     </main>

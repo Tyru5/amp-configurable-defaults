@@ -14,6 +14,7 @@ function options(search = '', openOptionsPage = async () => {}) {
     addEventListener(type, fn) { this[type] = fn; },
   }]));
   const window = { closed: false, close() { this.closed = true; } };
+  const posted = [];
   let resolveRead, rejectRead, changed, save;
   const read = new Promise((resolve, reject) => { resolveRead = resolve; rejectRead = reject; });
   const writes = [];
@@ -21,6 +22,8 @@ function options(search = '', openOptionsPage = async () => {}) {
     URLSearchParams,
     location: { search },
     window,
+    addEventListener(type, fn) { window[type] = fn; },
+    parent: { postMessage: (...message) => posted.push(message) },
     document: {
       documentElement: { classList: { add() {} } },
       querySelector: selector => controls[selector.slice(1)],
@@ -33,7 +36,7 @@ function options(search = '', openOptionsPage = async () => {}) {
       onChanged: { addListener(fn) { changed = fn; } },
     } },
   });
-  return { controls, writes, resolveRead, rejectRead, window,
+  return { controls, writes, resolveRead, rejectRead, window, posted,
     setSave: fn => { save = fn; },
     external: (key, newValue, area = 'local') => changed({ [key]: { newValue } }, area),
   };
@@ -160,4 +163,11 @@ test('popup announces failure to open the full Options page', async () => {
   await app.controls['open-options'].click();
   assert.match(app.controls.status.textContent, /Could not open settings/);
   assert.equal(app.window.closed, false);
+});
+
+test('the sidebar settings panel asks Amp to close it on Escape', () => {
+  const app = options('?popup&panel');
+  app.window.keydown({ key: 'Enter' });
+  app.window.keydown({ key: 'Escape' });
+  assert.deepEqual(app.posted, [['amp-settings-close', 'https://ampcode.com']]);
 });

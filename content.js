@@ -153,8 +153,53 @@
     "resizeSidebar", "moveViews", "indentThreads", "showHeaderToggle"];
 
   const sidebarSelector = '[data-slot="sidebar-container"]';
+
+  // Amp's desktop app has no browser toolbar, so the settings popup also opens
+  // from the sidebar header, in a frame that loads on first use. The button
+  // stays when the placement switch is hidden, or settings would be unreachable.
+  const settingsPanel = document.createElement("div");
+  settingsPanel.popover = "auto";
+  settingsPanel.setAttribute("data-amp-settings-panel", "");
+  const settingsFrame = document.createElement("iframe");
+  settingsFrame.title = "amp configurable defaults settings";
+  settingsPanel.append(settingsFrame);
+  let settingsOpener;
+  // Escape inside the frame never reaches this page, so the frame asks to close.
+  window.addEventListener("message", event => {
+    if (event.source !== settingsFrame.contentWindow || event.data !== "amp-settings-close") return;
+    settingsPanel.hidePopover();
+    settingsOpener?.focus();
+  });
+  function settingsButton(header) {
+    let button = header.querySelector("[data-amp-settings-button]");
+    if (button) return button;
+    button = document.createElement("button");
+    button.type = "button";
+    button.setAttribute("data-amp-settings-button", "");
+    button.setAttribute("aria-label", "amp configurable defaults settings");
+    button.title = "amp configurable defaults settings";
+    button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>';
+    button.popoverTargetElement = settingsPanel;
+    // Runs before the popover toggles: place the panel under this button, inside the window.
+    button.addEventListener("click", () => {
+      settingsOpener = button;
+      if (!settingsPanel.isConnected) document.body.append(settingsPanel);
+      if (!settingsFrame.getAttribute("src")) settingsFrame.src = chrome.runtime.getURL("options.html?popup&panel");
+      const rect = button.getBoundingClientRect();
+      const width = Math.min(420, innerWidth - 16);
+      settingsPanel.style.left = `${Math.round(Math.max(8, Math.min(rect.right - width, innerWidth - width - 8)))}px`;
+      settingsPanel.style.top = `${Math.round(rect.bottom + 6)}px`;
+      settingsPanel.style.height = `${Math.round(Math.min(580, innerHeight - rect.bottom - 14))}px`;
+    });
+    const actions = header.querySelector('[data-testid="sidebar-search-button"]')?.parentElement;
+    if (actions) actions.prepend(button);
+    else header.append(button);
+    return button;
+  }
+
   function updateHeader() {
     for (const header of document.querySelectorAll(`${sidebarSelector} .sidebar-toolbar`)) {
+      const settingsControl = settingsButton(header);
       let button = header.querySelector('[data-amp-sidebar-toggle]');
       if (settings.showHeaderToggle === false) {
         button?.remove();
@@ -172,9 +217,7 @@
             button.title = "Could not save the setting. Click to try again.";
           });
         });
-        const actions = header.querySelector('[data-testid="sidebar-search-button"]')?.parentElement;
-        if (actions) actions.prepend(button);
-        else header.append(button);
+        settingsControl.before(button);
       }
       button.setAttribute("aria-checked", String(right));
       button.title = `Move sidebar to the ${right ? "left" : "right"}`;

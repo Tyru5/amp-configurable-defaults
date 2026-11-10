@@ -41,7 +41,9 @@ release, use the Chrome Web Store link above.
 
 Click the pinned icon to change sidebar placement or any other feature in the
 popup. Choose **Open settings in a tab**, or right-click the icon → **Options**,
-for the full settings page. Both views share the same saved preferences.
+for the full settings page. The gear button in Amp's sidebar header opens the
+same popup inside the page, which is the way in where there is no browser
+toolbar, such as Amp's desktop app. All views share the same saved preferences.
 Drag the divider to resize the right
 sidebar, or double-click it to restore Amp's width. Left mode restores Amp's
 native layout and resize behavior. Right-mode width is saved separately.
@@ -118,7 +120,7 @@ These features have independent checkboxes in **Options**:
 | Resize and remember right-sidebar width   | On      | Native width, no right resize handle; saved width retained        |
 | Keep auxiliary views opposite the sidebar | On      | Native view placement and divider input                           |
 | Indent child threads                      | On      | Native row spacing on either side                                 |
-| Show placement switch in sidebar header   | On      | No injected placement switch; use Options or the toolbar icon     |
+| Show placement switch in sidebar header   | On      | No injected placement switch; the settings button stays           |
 | Enable subagent reading panel             | On      | No Subagents control; native inline activity; removes any open panel |
 | Enable thread message panel               | On      | No thread-message control; native messages stay unchanged          |
 | Show model and runner in the composer     | On      | No composer label; thread info can still load data                |

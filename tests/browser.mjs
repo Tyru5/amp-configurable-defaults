@@ -107,6 +107,10 @@ try {
   browser('click', '#replace');
   browser('wait', '--fn', "document.querySelector('[data-amp-sidebar-toggle]')?.getAttribute('aria-checked') === 'false'");
   check(`document.querySelectorAll('[data-amp-sidebar-toggle]').length === 1 && !document.querySelector('[data-amp-sidebar-toggle]').disabled`, 'left SPA replacement retains exactly one usable header switch');
+  browser('click', '[data-amp-settings-button]');
+  check(`(() => { const panel = document.querySelector('[data-amp-settings-panel]'); const box = panel.getBoundingClientRect(); return panel.matches(':popover-open') && panel.firstChild.src.endsWith('/options.html?popup&panel') && box.left >= 8 && box.right <= innerWidth - 8 && box.top >= document.querySelector('[data-amp-settings-button]').getBoundingClientRect().bottom && box.bottom <= innerHeight - 8; })()`, 'settings button opens the settings popup in a frame below it, inside the window');
+  browser('click', '[data-amp-settings-button]');
+  check(`!document.querySelector('[data-amp-settings-panel]').matches(':popover-open')`, 'settings button closes its panel');
   browser('eval', `document.querySelector('#thread-grandchild [data-thread-row-nesting-depth]').dataset.threadRowNestingDepth = '3'`);
   browser('focus', '[data-amp-sidebar-toggle]');
   browser('press', 'Space');
@@ -347,6 +351,7 @@ try {
   browser('reload');
   browser('wait', '--fn', `document.documentElement.hasAttribute('data-amp-sidebar-right')`);
   check(`!document.querySelector('[data-amp-sidebar-toggle]') && (${threadIndent('child')}) === 0 && (${bounds}).sidebar.width === 300`, 'feature opt-outs persist after reload even with the header switch hidden');
+  check(`document.querySelectorAll('[data-amp-settings-button]').length === 1`, 'settings stay reachable from the header with the placement switch hidden');
   browser('eval', 'chrome.storage.local.set({ right: false })');
   check(`(${bounds}).sidebar.x === 56 && !document.querySelector('[data-amp-sidebar-toggle]')`, 'moving left preserves the header switch preference');
   browser('eval', 'chrome.storage.local.set({ right: true })');

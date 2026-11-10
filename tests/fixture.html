@@ -188,7 +188,7 @@
   };
   const listeners = [];
   window.chrome = {
-    runtime: { onMessage: { addListener() {} } },
+    runtime: { onMessage: { addListener() {} }, getURL: path => new URL(`../${path}`, location.href).href },
     tabs: { onRemoved: { addListener() {} } },
     storage: {
       local: {
