@@ -1,4 +1,4 @@
-# Version 1.4.2 submission checklist
+# Version 1.4.3 submission checklist
 
 ## Release status
 
@@ -7,7 +7,7 @@ Public listing checked November 7, 2026:
 - **Public release: 1.4.1**, updated November 6 on the
   [Chrome Web Store](https://chromewebstore.google.com/detail/amp-configurable-defaults/hpobhiphbifcjhplkegebmpiehkcpjod).
   This checks the listing's version/date, not the downloaded package bytes.
-- **Next package: 1.4.2**, from `main`. It is not available from the public
+- **Next package: 1.4.3**, from `main`. It is not available from the public
   store listing. The private dashboard's submission/review state has not been checked.
 - Use the Web Store listing for publication status, not the source version
   or an unpublished GitHub draft.
@@ -149,11 +149,11 @@ Supporting website work already present when 1.3.0 shipped:
 - [x] Fix the split-pane test's readiness waits and rerun the full release checks.
 - [ ] Review the embedded-thread framing/CSP exception and iframe remote-code
       disclosures against current Web Store policy before submission.
-- [ ] Smoke-test the final 1.4.2 ZIP on real, signed-in Amp. Earlier live checks
+- [ ] Smoke-test the final 1.4.3 ZIP on real, signed-in Amp. Earlier live checks
       in README.md do not replace testing this packaged release.
 - [x] Capture real Amp screenshots at 1280 × 800, inspect redactions, and keep
       fixture previews separately identified. No private content is published.
-- [ ] Refresh the historical screenshots for 1.4.2, including Messages and
+- [ ] Refresh the historical screenshots for 1.4.3, including Messages and
       formatted reading sheets. Do not advertise the removed master switch.
 - [ ] Repeat the final smoke test in current Google Chrome. Helium and fixture
       checks do not prove every Chrome/Amp layout combination. In particular,
@@ -162,7 +162,7 @@ Supporting website work already present when 1.3.0 shipped:
 - [ ] Confirm permission to use the Amp-derived mark before submitting
       the extension icon and promo tile to the Web Store.
 - [ ] Confirm access to the existing store item and resolve any account warnings.
-- [ ] Review the existing privacy declarations against 1.4.2's message and
+- [ ] Review the existing privacy declarations against 1.4.3's message and
       timestamp access, and personally accept any required certifications.
 
 ## Build and upload
@@ -193,7 +193,7 @@ python3 scripts/package.py
 1. Open https://chrome.google.com/webstore/devconsole.
 2. Select the existing **amp configurable defaults** item,
    `hpobhiphbifcjhplkegebmpiehkcpjod`, and upload
-   `dist/amp-configurable-defaults-1.4.2.zip` as an update. Do not create a second
+   `dist/amp-configurable-defaults-1.4.3.zip` as an update. Do not create a second
    listing. Unlike Chrome's **Load unpacked**, the store accepts the ZIP itself.
 3. Copy the fields from `store/listing.md`. Upload the icon, `store/promo-small.png`
    and `store/promo-marquee.png` in their matching promotional tile fields, and
@@ -205,7 +205,7 @@ python3 scripts/package.py
 6. Submit for review only after the live compatibility and screenshot checks
    above are complete. Prefer deferred/manual publishing if the dashboard offers
    it and you want to review approval before making the listing public.
-7. After 1.4.2 is publicly available, verify the store version and downloaded
+7. After 1.4.3 is publicly available, verify the store version and downloaded
    package, then update the release status in this file, README, and landing page.
 
 Sidebar placement is independent of other Options; there is no master switch.

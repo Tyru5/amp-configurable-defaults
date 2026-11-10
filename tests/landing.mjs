@@ -45,11 +45,11 @@ try {
   browser("press", "Enter");
   browser("wait", "--fn", `location.hash === '#source-preview' && Math.abs(document.querySelector('#source-preview').getBoundingClientRect().top - 30) < 3`);
   check(
-    `document.querySelector('#source-preview').textContent.includes('1.4.2 source preview') && document.querySelector('#source-preview > a').hash === '#install' && document.querySelector('.install-note').textContent.includes('Not yet in the store')`,
+    `document.querySelector('#source-preview').textContent.includes('1.4.3 source preview') && document.querySelector('#source-preview > a').hash === '#install' && document.querySelector('.install-note').textContent.includes('Not yet in the store')`,
     "hero preview link reaches unreleased features and their local installation path",
   );
   check(
-    `['composer-tools', 'tool-previews', 'thread-messages', 'spaces', 'timestamp-dates'].every(id => document.getElementById(id)?.textContent.includes('1.4.2 source preview'))`,
+    `['composer-tools', 'tool-previews', 'thread-messages', 'spaces', 'timestamp-dates'].every(id => document.getElementById(id)?.textContent.includes('1.4.3 source preview'))`,
     "new feature descriptions distinguish source-preview behavior from the store release",
   );
   check(
