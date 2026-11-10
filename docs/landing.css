@@ -802,6 +802,74 @@ details a {
     font-size: 12px;
   }
 }
+.windows-guide {
+  max-width: 850px;
+  padding-block: 60px 80px;
+  font-size: 15px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.guide-intro h1 {
+  font-size: clamp(38px, 5vw, 64px);
+  margin-bottom: 26px;
+}
+.guide-kicker {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+.guide-contents {
+  justify-content: flex-start;
+  gap: 8px 24px;
+  padding-block: 20px;
+  margin-block: 32px 48px;
+  border-block: 1px solid var(--line);
+}
+.windows-guide section + section {
+  margin-top: 64px;
+}
+.windows-guide h2 {
+  font-size: clamp(28px, 3vw, 36px);
+}
+.windows-guide h3 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+.windows-guide li {
+  padding-left: 8px;
+  margin-bottom: 16px;
+}
+.guide-steps {
+  padding-left: 24px;
+}
+.guide-steps > li {
+  margin-top: 32px;
+}
+.windows-guide code {
+  font-size: 0.9em;
+}
+.windows-guide pre {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--sage);
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.guide-warning {
+  padding: 20px 24px;
+  border-left: 3px solid light-dark(var(--forest), var(--olive));
+  background: var(--sage);
+}
+.guide-header .theme-control span {
+  position: relative;
+  pointer-events: none;
+  color: var(--muted);
+}
+.guide-header .theme-control input:checked ~ span {
+  color: light-dark(white, #17251b);
+}
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;

@@ -74,6 +74,7 @@
         <nav aria-label="Main navigation">
           <a href="#features">Features</a>
           <a href="#install">How to install</a>
+          <a href="windows/">Windows app</a>
           <a
             class="nav-source"
             href="https://github.com/Tyru5/amp-configurable-defaults"
@@ -191,7 +192,8 @@
           </h2>
           <p>
             Pick a side without switching anything else off. Configure the
-            features in the toolbar popup or Options. Source-preview changes
+            features in the toolbar popup or Options, or use the sidebar
+            settings gear in the 1.4.2 source preview. Source-preview changes
             below are not yet in the store's 1.4.1 release.
           </p>
         </div>
@@ -230,7 +232,9 @@
               When space gets tight, <strong>Thread tools</strong> folds these
               controls into a popover above the toolbar. Your draft,
               attachments, and send button stay available. In a roomy composer,
-              <strong>Skills</strong> opens the same panel.
+              <strong>Skills</strong> opens the same panel. Info, Subagents,
+              and Messages opened from Thread tools have a <strong>Back</strong>
+              button to return to it.
             </p>
             <div class="feature-detail">
               Desktop only. A + on the skill count means history is incomplete.
@@ -486,8 +490,20 @@
             <p>
               Sidebar placement, panel choices, and the saved right-side width
               apply across open Amp tabs and survive restarts. Preferences stay
-              in your local Chrome profile, not synced between devices.
+              in the local browser or app profile, not synced between devices
+              or shared between Chrome and the Windows app.
               Switching sides doesn't switch off other features.
+            </p>
+          </article>
+          <article id="sidebar-settings">
+            <h3>Settings without a browser toolbar.</h3>
+            <p>
+              In the <strong>1.4.2 source preview</strong>, the gear in Amp's
+              sidebar header opens the same settings inside the page. It stays
+              available even if you hide the placement switch. Each of the
+              twelve checkboxes is independent; all default on except full
+              timestamp dates. Split panes, inline summaries, and activity
+              styling have no separate checkbox. Desktop only.
             </p>
           </article>
         </div>
@@ -518,6 +534,12 @@
             <p class="download-note">
               Downloads main from GitHub, currently the unreleased 1.4.2
               preview, not the store package. No build step needed.
+            </p>
+            <p>
+              Using the native Windows app instead?
+              <a href="windows/">Follow the experimental WebView2 setup</a>.
+              It loads the source without patching Amp. There is no verified
+              equivalent for the native Mac app.
             </p>
             <a
               class="text-link"
@@ -620,22 +642,35 @@
           <details>
             <summary>Does it work in the native Amp desktop app?</summary>
             <p>
-              No. Use Amp in desktop Chrome or a Chrome-installed PWA. Chrome
-              extensions cannot modify the separate native Amp app, and Chrome
-              on mobile does not support extensions. Below 768px in a supported
-              browser, navigation stays native and subagents use compact inline
-              summaries rather than the desktop panel.
+              The Windows app can load the unpacked extension through an
+              experimental WebView2 configuration. This is not an official
+              Amp install path. The sidebar and in-app settings were verified;
+              not every extension feature has been tested in the native app.
+              <a href="windows/">Read the setup, limitations,
+              and undo instructions</a>.
+            </p>
+            <p>
+              No equivalent setup has been verified for the native Mac app.
+              The Windows method depends on WebView2 and the Windows registry,
+              not a portable Amp preference. On Mac, use desktop Chrome or a
+              Chrome-installed PWA. Mobile Chrome does not support extensions.
+              Below 768px in a supported browser, navigation stays native and
+              subagents use compact inline summaries rather than the desktop panel.
             </p>
           </details>
           <details>
             <summary>How do I change or undo my settings?</summary>
             <p>
               Click the extension's toolbar icon for the settings popup, or
-              right-click it and choose Options. Choose individual features
+              right-click it and choose Options. In the 1.4.2 source preview,
+              the sidebar gear opens these settings inside Amp, including the
+              Windows app. Choose individual features
               and sidebar placement. Switching sides does not disable other features, and
               turning off the panel keeps inline summaries. There is no master
               on/off switch. To remove all extension changes, disable or
               remove the extension in Chrome, then refresh open Amp tabs.
+              For the Windows app, follow the <a href="windows/#undo">registry
+              undo instructions</a> and fully restart Amp instead.
             </p>
           </details>
           <details>

@@ -177,6 +177,60 @@ try {
     `getComputedStyle(document.documentElement).scrollBehavior === 'auto'`,
     "reduced motion disables animated anchor scrolling",
   );
+  check(
+    `document.querySelector('#sidebar-settings').textContent.includes('twelve checkboxes') && document.querySelector('#sidebar-settings').textContent.includes('hide the placement switch') && document.querySelector('#composer-tools').textContent.includes('Back')`,
+    "feature coverage includes the persistent settings gear and return from Thread tools",
+  );
+  check(
+    `[...document.querySelectorAll('#install a, .faq-list a')].filter(a => a.getAttribute('href') === 'windows/').length === 2 && document.querySelector('.faq-list').textContent.includes('No equivalent setup has been verified for the native Mac app')`,
+    "installation and FAQ link to Windows setup without claiming Mac was tested",
+  );
+  browser("focus", 'nav a[href="windows/"]');
+  browser("press", "Enter");
+  check(
+    `location.pathname.endsWith('/windows/') && document.querySelectorAll('h1').length === 1 && document.querySelector('main').textContent.includes('not an official Amp install path')`,
+    "keyboard navigation reaches the experimental Windows route",
+  );
+  check(
+    `document.querySelector('#how a').hostname === 'learn.microsoft.com' && !document.querySelector('a[href^="https://ampcode.com/threads/"]') && !/\\bREA\\b|Ghidra|Rust|Win32|Electron|CreateCoreWebView2EnvironmentWithOptions|__native\\/home/.test(document.body.textContent) && document.querySelector('#mac').textContent.includes('no verified native Mac setup')`,
+    "guide retains the public Microsoft reference and Mac caveat without investigation details",
+  );
+  check(
+    `(() => { const setup = document.querySelector('#setup pre').textContent; const undo = document.querySelector('#undo pre').textContent; return setup.includes('--embedded-browser-webview-enable-extension --load-extension=') && setup.includes("-Name 'Amp.exe'") && setup.includes('manifest.json') && setup.includes('arguments already exist') && !setup.includes('remote-debugging-port') && undo.includes("Remove-ItemProperty -LiteralPath $key -Name 'Amp.exe'") && !undo.includes('Remove-Item '); })()`,
+    "setup guards existing arguments; rollback removes only the app-specific value",
+  );
+  check(
+    `(() => { const text = document.querySelector('#verify').textContent; return text.includes('did not certify every feature') && text.includes('WebView2 profile') && text.includes('Fully restart Amp'); })()`,
+    "guide states native test limits, separate settings, and update procedure",
+  );
+  check(
+    `[...document.querySelectorAll('a[href^="#"]')].every(a => document.getElementById(a.hash.slice(1))) && [...document.images].every(image => image.complete && image.naturalWidth > 0)`,
+    "guide section links and relative image assets resolve",
+  );
+  for (const theme of ["light", "dark"]) {
+    browser("check", `input[name="theme"][value="${theme}"]`);
+    for (const width of [320, 390, 768, 1440]) {
+      viewport(width, 900);
+      check(
+        `document.documentElement.scrollWidth <= innerWidth`,
+        `Windows guide has no horizontal overflow at ${width}px in ${theme} mode`,
+      );
+    }
+  }
+  browser("reload");
+  check(
+    `document.querySelector('input[name="theme"]:checked').value === 'dark' && getComputedStyle(document.documentElement).colorScheme === 'dark'`,
+    "guide shares the persisted landing-page theme",
+  );
+  browser("focus", '.guide-contents a[href="#undo"]');
+  browser("press", "Enter");
+  browser("wait", "--fn", `location.hash === '#undo' && document.querySelector('#undo').getBoundingClientRect().top >= 0 && document.querySelector('#undo').getBoundingClientRect().bottom <= innerHeight`);
+  browser("click", '#mac a[href="../#install"]');
+  browser("wait", "--fn", `location.hash === '#install' && !!document.querySelector('#install-title')`);
+  check(
+    `getComputedStyle(document.documentElement).colorScheme === 'dark'`,
+    "guide returns to browser installation without losing the selected theme",
+  );
 } finally {
   browser("close");
 }

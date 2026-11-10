@@ -274,9 +274,14 @@ extension, not an official Amp extension.
 
 See the full [privacy policy](PRIVACY.md).
 
-Chrome extensions work on Amp in Chrome and Chrome-installed PWAs. They
-cannot modify the separate native Amp desktop app shown in the reference image.
-Use Amp in Chrome for this extension.
+Use the extension in desktop Chrome or a Chrome-installed PWA on Windows or Mac.
+The native Windows app can also load the unpacked source through an experimental
+WebView2 configuration, without patching Amp. See the [Windows app setup
+guide](docs/windows/index.html) for PowerShell steps, tested
+versions, limitations, and value-only registry rollback. Sidebar placement and
+in-app settings were verified there, not every extension feature. No equivalent
+native Mac setup has been verified; the Windows method depends on WebView2 and
+the Windows registry. On Mac, use the browser extension instead.
 
 ## Build and test
 

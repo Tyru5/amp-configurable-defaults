@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#e7eddf" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1b2a22" media="(prefers-color-scheme: dark)" />
+    <script>
+      try {
+        const theme = localStorage.getItem("landing-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+          document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+            meta.content = theme === "dark" ? "#1b2a22" : "#e7eddf";
+          });
+        }
+      } catch {
+        // The system theme still works when storage is unavailable.
+      }
+    </script>
+    <title>Windows app setup | amp configurable defaults</title>
+    <meta name="description" content="Load amp configurable defaults in the native Windows Amp app using an experimental WebView2 configuration. Setup, limitations, Mac status, and undo instructions." />
+    <link rel="icon" href="../assets/icon.png" type="image/png" />
+    <link rel="preload" href="../assets/manrope.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="../landing.css" />
+    <script src="../landing.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="header-band">
+      <header class="site-header guide-header wrap">
+        <a class="brand" href="../" aria-label="amp configurable defaults home">
+          <img src="../assets/logo.png" width="76" height="36" alt="" />
+          <span class="brand-title" aria-hidden="true">amp
+            <span class="brand-edit"><s>better</s><span class="brand-correction">configurable</span></span>
+            <strong>defaults</strong>
+          </span>
+        </a>
+        <nav aria-label="Main navigation">
+          <a href="../#features">Features</a>
+          <a href="#setup">Windows setup</a>
+          <a href="#mac">Mac status</a>
+          <fieldset class="theme-control" aria-label="Theme" hidden>
+            <label><input type="radio" name="theme" value="system" aria-label="System theme" checked /><span>System</span></label>
+            <label><input type="radio" name="theme" value="light" aria-label="Light theme" /><span>Light</span></label>
+            <label><input type="radio" name="theme" value="dark" aria-label="Dark theme" /><span>Dark</span></label>
+          </fieldset>
+        </nav>
+      </header>
+    </div>
+    <main id="main" class="windows-guide wrap">
+      <header class="guide-intro">
+        <p class="guide-kicker">Experimental · Windows only</p>
+        <h1>The extension.<br />Inside the Windows app.</h1>
+        <p>
+          The native Windows Amp app can load this unpacked Chrome extension
+          through its Edge WebView2 runtime. No patched executable, running
+          injection helper, or remote-debugging port is needed.
+          This is an independent workaround, not an official Amp install path.
+        </p>
+        <p class="feature-detail">
+          Tested with Windows Amp 0.456.19239.0, x64,
+          Edge WebView2 157.0.4341.42, and extension source 1.4.2.
+          Sidebar placement and settings were verified. Full native-app
+          feature coverage and other versions remain untested.
+        </p>
+      </header>
+
+      <nav class="guide-contents" aria-label="On this page">
+        <a href="#how">How it works</a>
+        <a href="#setup">Set it up</a>
+        <a href="#verify">Check it loaded</a>
+        <a href="#undo">Undo</a>
+        <a href="#mac">Why not Mac?</a>
+      </nav>
+
+      <section id="how" aria-labelledby="how-title">
+        <h2 id="how-title">How this setup works.</h2>
+        <p>
+          This experimental setup uses a Windows WebView2 registry policy to
+          load the unpacked extension. It is not an official Amp install path.
+        </p>
+        <p>
+          The registry mechanism is documented by Microsoft. The enabling switch
+          is internal and may stop working after an Amp or WebView2 update.
+          This does not grant an Amp account, bypass sign-in, or make the
+          extension work on other server URLs.
+        </p>
+        <p>
+          Reference:
+          <a href="https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl#createcorewebview2environmentwithoptions">Microsoft's WebView2 environment and registry reference</a>.
+        </p>
+      </section>
+
+      <section id="setup" aria-labelledby="setup-title">
+        <h2 id="setup-title">Set it up in Windows.</h2>
+        <aside class="guide-warning" aria-label="Before changing the registry">
+          Only load source you trust. The extension runs in your signed-in Amp
+          session. These commands change a persistent, per-user registry policy
+          for <strong>Amp.exe only</strong>, not every WebView2 app. Do not use
+          a wildcard policy or disable browser security protections.
+        </aside>
+        <ol class="guide-steps">
+          <li>
+            <h3>Download source to a permanent folder.</h3>
+            <p>
+              <a href="https://github.com/Tyru5/amp-configurable-defaults/archive/refs/heads/main.zip">Download and extract the source ZIP</a>,
+              or use a clone of the repository. This is the unreleased 1.4.2
+              source, not the store's 1.4.1 package. Find the folder directly
+              containing <code>manifest.json</code>. You do not need to install
+              it in Chrome first.
+            </p>
+            <p>
+              The example below uses <code>C:\Tools\amp-configurable-defaults-main</code>.
+              Change that path to your extracted folder. Keep it in place.
+              Loading a Windows-accessible WSL UNC path was also verified,
+              but loading while WSL is stopped was not. A Windows folder avoids that dependency.
+            </p>
+          </li>
+          <li>
+            <h3>Finish active work and fully quit Amp.</h3>
+            <p>
+              Close the app before changing its launch configuration. Opening
+              another window can reuse the existing process and its old flags.
+              If it remains running, confirm Amp.exe has exited in Task Manager
+              before relaunching. Do not force-close an active session.
+            </p>
+          </li>
+          <li>
+            <h3>Set the app-specific WebView2 arguments.</h3>
+            <p>
+              Open Windows PowerShell as your usual Windows account. Administrator
+              access was required on the tested machine; if access is denied,
+              use <strong>Run as administrator</strong> for that same account.
+              On a managed machine, ask your administrator instead of overriding policy.
+            </p>
+            <p>
+              Edit <code>$extension</code>, then run this block. It checks for
+              the manifest and refuses to replace an existing Amp.exe value.
+              If one exists, preserve its exact value and have its owner review
+              how to combine the arguments before proceeding.
+            </p>
+            <pre aria-label="PowerShell setup"><code>$extension = 'C:\Tools\amp-configurable-defaults-main'
+$key = 'HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
+
+if (-not (Test-Path -LiteralPath (Join-Path $extension 'manifest.json'))) {
+  throw 'Extension manifest not found. Correct $extension first.'
+} elseif ($null -ne (Get-ItemProperty -LiteralPath $key -Name 'Amp.exe' -ErrorAction SilentlyContinue)) {
+  throw 'Amp.exe arguments already exist. Preserve and review them first.'
+} else {
+  if (-not (Test-Path -LiteralPath $key)) {
+    New-Item -Path $key -Force -ErrorAction Stop | Out-Null
+  }
+  $arguments = '--embedded-browser-webview-enable-extension --load-extension="' + $extension + '"'
+  New-ItemProperty -LiteralPath $key -Name 'Amp.exe' -PropertyType String -Value $arguments -ErrorAction Stop | Out-Null
+  Get-ItemProperty -LiteralPath $key -Name 'Amp.exe'
+}</code></pre>
+            <p>
+              This creates a <code>REG_SZ</code> value named <code>Amp.exe</code>.
+              The two switches must appear together. No debug port or
+              <code>--disable-features</code> flag is needed.
+            </p>
+          </li>
+          <li>
+            <h3>Launch Amp normally.</h3>
+            <p>
+              Open Amp from the Start menu and sign in if needed. With default
+              settings and a window at least 768px wide, navigation moves right.
+              Open the gear in Amp's sidebar header to change settings. There
+              is no Chrome toolbar inside the app.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section id="verify" aria-labelledby="verify-title">
+        <h2 id="verify-title">Check it loaded. Know the limits.</h2>
+        <p>
+          Open the sidebar gear and toggle <strong>Indent child threads</strong>
+          or sidebar placement. The prior native-app test verified the right
+          sidebar, settings panel, immediate setting changes, Escape and
+          outside-click dismissal, storage, and service-worker messaging.
+          It did not certify every feature. In particular, split-pane framing
+          and all composer and reading-panel behaviors still need native-app testing.
+        </p>
+        <ul>
+          <li>If nothing appears, check the folder and manifest path, both flags,
+            desktop window width, and that Amp fully restarted. Higher-priority
+            machine policy or environment overrides can take precedence over this per-user value.</li>
+          <li>Settings belong to the app's WebView2 profile, not your Chrome
+            profile. Moving the source folder can change the extension ID and
+            start fresh settings. Neither profile syncs these preferences.</li>
+          <li>The app loads the files currently at the configured path. Updating
+            a clone also changes what it loads. Fully restart Amp after updating
+            source; the native app has no Chrome extensions Reload button.</li>
+          <li>Do not open a remote-debugging port for this setup. A local debugger
+            could control your signed-in session. The final verified configuration
+            had no debugging port open.</li>
+          <li>Split panes use a scoped framing and Content Security Policy
+            exception. Read the <a href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md#embedded-thread-security-exception">security disclosure</a>
+            before using them, even where the extension loads successfully.</li>
+        </ul>
+      </section>
+
+      <section id="undo" aria-labelledby="undo-title">
+        <h2 id="undo-title">Undo the Windows setup.</h2>
+        <p>
+          Fully quit Amp, remove only the value created above, then relaunch.
+          This leaves unrelated WebView2 policies intact. It stops loading the
+          extension; it does not delete the source folder or saved extension data.
+        </p>
+        <pre aria-label="PowerShell undo"><code>$key = 'HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
+Remove-ItemProperty -LiteralPath $key -Name 'Amp.exe' -ErrorAction Stop</code></pre>
+        <p>
+          If you combined these switches with a pre-existing value, restore that
+          original value instead of deleting it. Do not delete the entire
+          WebView2 policy key. Use the same account and elevation as setup.
+        </p>
+      </section>
+
+      <section id="mac" aria-labelledby="mac-title">
+        <h2 id="mac-title">Why this does not enable the Mac app.</h2>
+        <p>
+          This method depends on Microsoft's Windows WebView2 runtime and a
+          Windows registry policy. Neither is a cross-platform Amp extension
+          setting. Copying these flags into a Mac launch command is not an
+          established install method.
+        </p>
+        <p>
+          Testing covered the Windows app only.
+          We have <strong>no verified native Mac setup</strong>,
+          not evidence that every possible Mac approach is impossible.
+          On macOS, use the extension in desktop Chrome or a Chrome-installed PWA.
+        </p>
+        <a class="button primary" href="../#install">Back to browser installation</a>
+      </section>
+    </main>
+    <footer class="site-footer wrap">
+      <a href="../">amp configurable defaults</a>
+      <p>Independent project. Not affiliated with or endorsed by <a href="https://ampcode.com/">Amp</a>.</p>
+      <div><a href="https://github.com/Tyru5/amp-configurable-defaults/blob/main/PRIVACY.md">Privacy</a><a href="https://github.com/Tyru5/amp-configurable-defaults">GitHub</a></div>
+    </footer>
+  </body>
+</html>
