@@ -18,8 +18,9 @@ const collapsed = `document.querySelector('[data-message-composer-root]').hasAtt
 const open = `document.querySelector('${panel}').matches(':popover-open')`;
 const settled = `document.querySelector('${panel}').getAnimations().length === 0`;
 
-// Published Amp payload contracts, inspected 2026-11-09. These are synthetic
+// Amp payload shapes, captured signed in on 2026-11-10. These are synthetic
 // thread records, not live user data. Calls and results deliberately span pages.
+// Collapsed turns carry only cursors; Amp's client derives their sources itself.
 const setup = String.raw`(() => {
   const call = (id, name) => ({ role: 'assistant', content: [{ type: 'tool_use', id, name: 'skill', input: { name } }] });
   const result = (id, status = 'done', text = 'Check keyboard focus and accessible names.') => ({ role: 'user', content: [
@@ -30,7 +31,7 @@ const setup = String.raw`(() => {
     { ...call('nested', 'subagent-only'), parentToolUseId: 'task' }, { ...result('nested'), parentToolUseId: 'task' }];
   const pages = { '100': { messages: [call('cross', 'creating-views')], hasMoreBefore: true, firstMessageIndex: 50, firstMessageID: 'middle', lastMessageIndex: 99 },
     '50': { messages: [call('browser', 'agent-browser'), result('browser')], hasMoreBefore: false, firstMessageIndex: 0, lastMessageIndex: 49,
-      collapsedTurns: [{ turnID: 'old-turn', sources: { skills: [{ name: 'tdd', baseDir: 'file:///example/tdd' }] } }] } };
+      collapsedTurns: [{ turnID: 'old-turn' }] } };
   const originalFetch = window.fetch;
   window.skillFixture = { call, result, pages, requests: [], fail: false };
   window.fetch = async (input, init) => {
@@ -38,10 +39,10 @@ const setup = String.raw`(() => {
     skillFixture.requests.push({ url: String(input), credentials: init?.credentials });
     if (skillFixture.fail) return new Response('', {status: 409});
     const params = new URL(String(input), location.origin).searchParams;
-    if (String(input).includes('/transcript-range?')) return new Response(JSON.stringify(skillFixture.ranges[params.get('start')]));
+    if (String(input).includes('/transcript-range?')) return new Response(JSON.stringify(skillFixture.range(+params.get('start'), +params.get('end'))));
     return new Response(JSON.stringify(pages[params.has('before') ? params.get('before') : 'after:' + params.get('after')]));
   };
-  fixtureThreadData['skills-test'] = { type: 'result', thread: { id: 'skills-test', agentMode: 'high', meta: { executorType: 'sandbox' } },
+  fixtureThreadData['skills-test'] = { type: 'result', thread: { id: 'skills-test', agentMode: 'high', meta: { executorType: 'sandbox' }, activatedSkills: [{ name: 'tdd' }] },
     transcriptPage: { messages: latest, hasMoreBefore: true, firstMessageIndex: 100, firstMessageID: 'latest', lastMessageIndex: 150, lastMessageID: 'end' } };
   fixtureAgents.navigate('skills-test');
 })()`;
@@ -53,7 +54,7 @@ try {
   browser('wait', '--fn', `document.querySelector('${rail}') !== null`);
   browser('eval', setup);
   browser('wait', '--fn', `${names} === 'agent-browser,creating-views,frontend-design,tdd'`);
-  check(`!${collapsed} && document.querySelector('${rail}').textContent.startsWith('Skills (4)')`, 'successful loads deduplicate across pages and collapsed turns, excluding nested and failed calls');
+  check(`!${collapsed} && document.querySelector('${rail}').textContent.startsWith('Skills (4)')`, 'successful loads deduplicate across pages and Amp’s activated skills, excluding nested and failed calls');
   check(`skillFixture.requests.length === 2 && skillFixture.requests[0].url.endsWith('before=100&anchorID=latest&conversation=1') && skillFixture.requests[1].url.includes('anchorID=middle') && skillFixture.requests.every(r => r.credentials === 'same-origin')`, 'older pages use the server cursor and same-origin session');
   browser('focus', `${rail} a`);
   browser('wait', '--fn', `document.querySelector('${tip}').matches(':popover-open')`);
@@ -112,7 +113,7 @@ try {
   browser('wait', '--fn', `document.querySelector('[data-amp-tools-ui="actions"] button:nth-child(2)').textContent === 'Subagents (3)'`);
   check(`document.activeElement.textContent === 'Subagents (3)'`, 'live count updates preserve the focused panel action');
   browser('focus', '[data-amp-tools-ui="list"] li:last-child a');
-  check(`document.querySelector('[data-amp-tools-ui="detail"]').textContent.includes("Instruction text isn't included")`, 'historical summaries show an honest metadata fallback');
+  check(`document.querySelector('[data-amp-tools-ui="detail"]').textContent.includes('A subagent likely loaded this skill')`, 'an activated skill with no top-level result says so honestly');
   browser('click', '[data-amp-tools-ui="actions"] button:first-child');
   browser('wait', '--fn', `!${open} && ${settled} && document.querySelector('[data-amp-thread-info-ui="panel"]').matches(':popover-open')`);
   check(`(() => { const p = document.querySelector('[data-amp-thread-info-ui="panel"]').getBoundingClientRect(), t = document.querySelector('${toggle}').getBoundingClientRect(); return p.bottom <= t.top && p.left >= 0; })()`, 'Info opens its existing panel anchored to the visible tools button');
@@ -155,14 +156,14 @@ try {
   browser('wait', '--fn', `(${names}).includes('gap-skill')`);
   check(`skillFixture.requests.length === 3 && skillFixture.requests.at(-1).url.includes('before=400')`, 'live bursts bridge missing pages but stop at already-read history');
   browser('eval', `fixtureThreadData['skills-test'].transcriptPage = skillFixture.previous`);
-  browser('eval', `skillFixture.fail = true; fixtureThreadData['skills-partial'] = fixtureThreadData['skills-test']; fixtureAgents.navigate('skills-partial')`);
+  browser('eval', `skillFixture.fail = true; fixtureThreadData['skills-partial'] = {...fixtureThreadData['skills-test'], thread: {id: 'skills-partial'}}; fixtureAgents.navigate('skills-partial')`);
   browser('wait', '--fn', `document.querySelector('${rail}').textContent.startsWith('Skills (2+)')`);
   check(`!(${names}).includes('tdd') && document.querySelector('[data-amp-tools-ui="notice"]').textContent.includes("Couldn't load all history")`, 'stale pagination labels a partial count and cannot leak another thread’s cached skills');
   browser('eval', `skillFixture.fail = false; document.querySelector('#fixture-transcript').append(document.createElement('p'))`);
-  browser('wait', '--fn', `document.querySelector('${rail}').textContent.startsWith('Skills (5)')`);
-  browser('eval', `fixtureThreadData['skills-unknown'] = {type:'result', thread:{id:'skills-unknown'}, transcriptPage:{messages:[], collapsedTurns:[{turnID:'no-sources'}]}}; fixtureAgents.navigate('skills-unknown')`);
-  browser('wait', '--fn', `document.querySelector('${rail}').textContent.startsWith('Skills (0+)')`);
-  check(`document.querySelector('[data-amp-tools-ui="notice"]').textContent.includes('no skill summary')`, 'missing collapsed-turn summaries are not presented as a complete empty history');
+  browser('wait', '--fn', `document.querySelector('${rail}').textContent.startsWith('Skills (4)')`);
+  browser('eval', `fixtureThreadData['skills-none'] = {type:'result', thread:{id:'skills-none'}, transcriptPage:{messages:[]}, collapsedTurns:[{turnID:'t:u:quiet', startIndex:1, endIndex:9, leadIndex:0}]}; fixtureAgents.navigate('skills-none')`);
+  browser('wait', '--fn', `document.querySelector('${rail}').textContent.includes('No skills used yet')`);
+  check(`document.querySelector('${rail}').textContent.startsWith('Skills (0)') && skillFixture.requests.every(r => !r.url.includes('skills-none'))`, 'collapsed turns without an activated skill list are a complete empty history, not a partial one');
   browser('eval', `(() => {
     const f = skillFixture;
     f.pages['after:10'] = {messages:[f.result('forward')], hasMoreAfter:false, lastMessageIndex:20};
@@ -171,31 +172,56 @@ try {
   })()`);
   browser('wait', '--fn', `${names} === 'forward-skill'`);
   check(`skillFixture.requests.at(-1).url.includes('after=10&anchorID=forward-start')`, 'an anchored transcript page also loads newer history');
-  // Amp's collapsed-turn cursor: the call lands in the first 100 messages and its result after them.
+  // The captured actor-thread shape: transcriptPage holds only cursors, the
+  // visible messages are in thread.messages, and collapsed turns have no sources.
+  // frontend-design loaded at 108-109 inside turn b; a subagent loaded reviewing-code.
   browser('eval', `(() => {
     const f = skillFixture;
-    f.ranges = { '10': {messages:[f.call('folded', 'collapsed-skill')]}, '110': {messages:[f.result('folded', 'done', 'Excerpt read from the collapsed turn.')]} };
-    fixtureThreadData['skills-collapsed'] = {type:'result', thread:{id:'skills-collapsed'}, transcriptPage:{messages:[]},
-      collapsedTurns:[{turnID:'t:u:lead', startIndex:10, endIndex:400, leadIndex:9, sources:{skills:[{name:'collapsed-skill', baseDir:'file:///example/collapsed'}]}}]};
+    f.range = (start, end) => ({ messages: [f.call('design', 'frontend-design'), f.result('design', 'done', 'Excerpt read from the collapsed turn.')]
+      .filter((_, i) => start <= 108 + i && 108 + i <= end) });
+    fixtureThreadData['skills-collapsed'] = {type:'result',
+      thread:{id:'skills-collapsed', messages:[f.call('review', 'review-until-clean'), f.result('review', 'done', 'Review until a round finds nothing.')],
+        activatedSkills:[{name:'frontend-design'}, {name:'review-until-clean'}, {name:'reviewing-code'}]},
+      transcriptPage:{firstMessageIndex:0, firstMessageID:'M-first', lastMessageIndex:284, lastMessageID:'M-last', hasMoreBefore:false, hasMoreAfter:false},
+      collapsedTurns:[{turnID:'t:u:a', leadIndex:0, startIndex:1, endIndex:104, hiddenCount:104, elapsedMs:1},
+        {turnID:'t:u:b', leadIndex:107, startIndex:108, endIndex:167, hiddenCount:60, elapsedMs:1, status:'done'},
+        {turnID:'t:u:c', leadIndex:169, startIndex:170, endIndex:259, hiddenCount:90, elapsedMs:1, status:'done'}]};
     f.requests.length = 0;
     fixtureAgents.navigate('skills-collapsed');
   })()`);
-  browser('wait', '--fn', `${names} === 'collapsed-skill'`);
+  browser('wait', '--fn', `${names} === 'frontend-design,review-until-clean,reviewing-code'`);
   browser('wait', '1000');
-  check(`skillFixture.requests.length === 0`, 'collapsed turns are not expanded until someone looks at a skill');
+  check(`document.querySelector('${rail}').textContent.startsWith('Skills (3)') && skillFixture.requests.length === 0`, 'skills in collapsed turns are counted from Amp’s list without expanding any turn');
+  const ranges = `skillFixture.requests.map(r => r.url.split('?')[1]).join()`;
   browser('eval', `window.tipCloses = 0; document.querySelector('${tip}').addEventListener('toggle', e => { if (e.newState === 'closed') tipCloses++; })`);
-  browser('hover', `${rail} a`);
+  browser('hover', `${rail} a:nth-of-type(1)`);
   browser('wait', '--fn', `document.querySelector('${tip}').textContent.includes('Excerpt read from the collapsed turn.')`);
-  check(`skillFixture.requests.map(r => r.url.split('?')[1]).join() === 'start=10&end=109&anchor=9&anchorID=lead,start=110&end=400&anchor=9&anchorID=lead' && skillFixture.requests.every(r => r.url.startsWith('/api/threads/skills-collapsed/transcript-range?'))`, 'hovering a summarized skill reads its turn with Amp’s cursor, first 100 messages first');
+  check(`${ranges} === 'start=170&end=259&anchor=169&anchorID=c,start=108&end=167&anchor=107&anchorID=b' && skillFixture.requests.every(r => r.url.startsWith('/api/threads/skills-collapsed/transcript-range?'))`, 'hovering a skill reads collapsed turns newest first with Amp’s cursor and stops at its result');
   // Any page change re-renders the controls; the class change leaves the pointer where it is.
   browser('eval', `document.querySelector('article h1').classList.toggle('rerender')`);
   browser('wait', '300');
   check(`tipCloses === 0 && document.querySelector('${tip}').matches(':popover-open') && document.querySelector('${tip}').textContent.includes('From the loaded skill instructions')`, 'the arriving excerpt updates the open tooltip without closing or flickering it');
   browser('press', 'Escape');
   browser('hover', 'article h1');
-  browser('hover', `${rail} a`);
+  browser('hover', `${rail} a:nth-of-type(2)`);
+  browser('wait', '--fn', `document.querySelector('${tip}').textContent.includes('Review until a round finds nothing.')`);
+  check(`skillFixture.requests.length === 2`, 'a skill in the visible transcript needs no extra request');
+  browser('eval', 'skillFixture.fail = true');
+  browser('press', 'Escape');
+  browser('hover', 'article h1');
+  browser('hover', `${rail} a:nth-of-type(3)`);
+  browser('wait', '--fn', `document.querySelector('${tip}').textContent.includes("Couldn't read this skill's instructions")`);
+  browser('eval', 'skillFixture.fail = false');
+  browser('press', 'Escape');
+  browser('hover', 'article h1');
+  browser('hover', `${rail} a:nth-of-type(3)`);
+  browser('wait', '--fn', `document.querySelector('${tip}').textContent.includes('A subagent likely loaded this skill')`);
+  check(`${ranges}.split(',').slice(2).join() === 'start=1&end=100&anchor=0&anchorID=a,start=1&end=100&anchor=0&anchorID=a,start=101&end=104&anchor=0&anchorID=a'`, 'a failed read retries on the next look, and turns already read are never requested again');
+  browser('press', 'Escape');
+  browser('hover', 'article h1');
+  browser('hover', `${rail} a:nth-of-type(1)`);
   browser('wait', '--fn', `document.querySelector('${tip}').matches(':popover-open')`);
-  check(`skillFixture.requests.length === 2`, 'a skill’s collapsed turn is read once');
+  check(`skillFixture.requests.length === 5`, 'details already read are reused');
   browser('eval', `fixtureAgents.navigate('fixture-b')`);
   browser('wait', '--fn', `document.querySelector('${rail}').textContent.includes('No skills used yet')`);
   check(`${names} === ''`, 'empty thread has no skill links from the previous thread');

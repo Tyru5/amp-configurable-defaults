@@ -94,13 +94,16 @@ elsewhere to close it. On a read-only thread without a composer, the control
 sits in the title bar. Desktop only.
 
 Skills successfully loaded in the thread appear above the desktop composer toolbar.
-Repeated loads appear once; failed loads and nested subagent activity are excluded.
+Repeated loads appear once and failed loads are excluded. The list combines the
+loaded transcript pages with Amp's own list of skills activated in the thread, so
+skills in collapsed turns and skills a subagent loaded are included.
 Hover or focus a skill for an excerpt from its instructions and its location when
 available. Clicking opens Amp's Skills settings in a new tab, preserving the draft.
-Older transcript pages and Amp's collapsed-turn skill summaries are included.
 If history cannot be fully read, the count has a `+` and the tools panel explains
-what is missing. When a skill is known only from a collapsed turn's summary, hovering
-or selecting it reads that turn once, the way Amp expands it, to show the excerpt.
+what is missing. When a skill's load is in a collapsed turn, hovering or selecting
+it reads collapsed turns, newest first and the way Amp expands them, until the
+excerpt appears. Each message is read at most once; a failed read retries the next
+time you look. A skill only a subagent loaded has no excerpt and says so.
 
 When the skill names or toolbar controls no longer fit, the extension folds its
 controls and model/runner label into **Thread tools**. Clicking it opens a popover

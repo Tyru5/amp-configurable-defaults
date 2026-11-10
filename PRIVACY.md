@@ -103,14 +103,14 @@ setting, or switching to mobile. Message content never enters persistent storage
 When **Show skills used in the composer** is on, the extension requests the open
 desktop thread's same-origin page data and follows its older or newer transcript
 pages at `/api/threads/<id>/transcript-page`. It reads top-level `skill` tool calls,
-their successful results, and collapsed-turn skill summaries. It displays each
-skill name once, with an instruction excerpt and base directory when available.
-For a skill known only from a collapsed turn's summary, hovering or selecting it
-reads that turn from `/api/threads/<id>/transcript-range`, as Amp does when the turn
-is expanded, at most once per skill while the thread is open; nothing else
-requests it.
-Other tools, failed loads, and nested subagent calls do not count. It never fetches
-skill files or runs their instructions. Incomplete history is labeled as partial.
+their successful results, and the thread's list of activated skill names. It
+displays each skill name once, with an instruction excerpt and base directory when
+available. For a skill without details, hovering or selecting it reads collapsed
+turns from `/api/threads/<id>/transcript-range`, as Amp does when a turn is
+expanded, until that skill's result appears. Each message is requested at most
+once while the thread is open; nothing else requests these turns.
+Other tools and failed loads do not count. It never fetches skill files or runs
+their instructions. Incomplete history is labeled as partial.
 Live transcript changes refresh on the same quiet-period schedule while the tab
 is visible; already-read history is reused, and older pages are read when the
 browser is idle. Turning the setting off, navigating away,

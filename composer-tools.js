@@ -77,43 +77,55 @@
     }
 
     function describe(skill, target) {
-      if (!skill.excerpt && skill.turn && !state.summaries.has(skill.name)) summarize(skill.name);
-      const loading = !skill.excerpt && state.summaries.get(skill.name) === "loading";
+      if (!skill.excerpt && state.turns.size && !state.summaries.has(skill.name)) summarize(skill.name);
+      const text = skill.excerpt || {
+        loading: "Loading an excerpt from this skill's instructions…",
+        failed: "Couldn't read this skill's instructions. Look at it again to retry.",
+      }[state.summaries.get(skill.name)] || "No excerpt in the main transcript. A subagent likely loaded this skill.";
       target.skillName = skill.name;
-      target.replaceChildren(node("strong", skill.name),
-        node("p", skill.excerpt || (loading ? "Loading an excerpt from this skill's instructions…" : "Instruction text isn't included in this history summary.")),
+      target.replaceChildren(node("strong", skill.name), node("p", text),
         node("small", skill.excerpt ? "From the loaded skill instructions" : "Loaded in this thread"));
       if (skill.baseDir) target.append(node("small", skill.baseDir));
       if (target === state.tip) target.append(node("small", "Click to open Skills settings in a new tab"));
     }
 
-    // A skill known only from a collapsed turn's summary has no instructions in
-    // the loaded pages. Read that turn the way Amp expands it, only when someone
-    // looks at the skill, and once per skill until the thread view is replaced.
-    async function summarize(name) {
+    // Amp's collapsed turns carry only cursors, not which skills they loaded.
+    // When someone looks at a skill without details, read collapsed turns the
+    // way Amp expands one, newest first, until its result appears. Each turn
+    // keeps its read position, so no message is requested twice, and reads run
+    // one at a time.
+    function summarize(name) {
       const s = state;
-      const range = s.used.get(name).turn;
       s.summaries.set(name, "loading");
-      try {
-        // Skills usually load early in a turn: read its first messages, then the
-        // rest in Amp's own chunk size, and stop once the skill's result appears.
-        for (let start = range.startIndex, size = 100; start <= range.endIndex && !s.used.get(name).excerpt; start += size, size = 5000) {
-          const params = new URLSearchParams({ start: String(start), end: String(Math.min(range.endIndex, start + size - 1)),
-            anchor: String(range.leadIndex), anchorID: range.anchorID });
-          const page = await getJSON(`/api/threads/${encodeURIComponent(s.id)}/transcript-range?${params}`, s.summaryAbort.signal);
+      s.reading = (s.reading ?? Promise.resolve()).then(async () => {
+        const found = () => s.used.get(name)?.excerpt;
+        try {
+          for (const turn of [...s.turns.values()].sort((a, b) => b.startIndex - a.startIndex)) {
+            // Skills usually load early in a turn: read its first messages, then
+            // the rest in Amp's own chunk size.
+            for (let size = turn.next === turn.startIndex ? 100 : 5000; turn.next <= turn.endIndex && !found(); size = 5000) {
+              const end = Math.min(turn.endIndex, turn.next + size - 1);
+              const params = new URLSearchParams({ start: String(turn.next), end: String(end), anchor: String(turn.leadIndex), anchorID: turn.anchorID });
+              const page = await getJSON(`/api/threads/${encodeURIComponent(s.id)}/transcript-range?${params}`, s.summaryAbort.signal);
+              if (state !== s) return;
+              collect([page]);
+              turn.next = end + 1;
+            }
+            if (found()) break;
+          }
+          s.summaries.set(name, "done");
+        } catch {
           if (state !== s) return;
-          collect([page], []);
+          s.summaries.set(name, "failed");
         }
-        s.summaries.set(name, "done");
-      } catch {
-        if (state !== s) return;
-        s.summaries.set(name, "failed");
-      }
-      for (const target of [s.tip, s.detail]) {
-        if (target.skillName !== name || (target === s.tip && !s.tip.matches(":popover-open"))) continue;
-        describe(s.used.get(name), target);
-        if (target === s.tip) globalThis.ampPlacePopover(s.tip, s.tipAnchor);
-      }
+        // Reading may also have found other skills' details; update whatever is shown.
+        for (const target of [s.tip, s.detail]) {
+          const skill = s.used.get(target.skillName);
+          if (!skill || (target === s.tip && !s.tip.matches(":popover-open"))) continue;
+          describe(skill, target);
+          if (target === s.tip) globalThis.ampPlacePopover(s.tip, s.tipAnchor);
+        }
+      });
     }
 
     function link(skill, inPanel = false) {
@@ -124,6 +136,8 @@
       anchor.setAttribute("aria-label", `${skill.name}, open Skills settings in a new tab`);
       const show = () => {
         const current = state.used.get(skill.name) ?? skill;
+        // Looking at a skill again retries a failed read.
+        if (state.summaries.get(skill.name) === "failed") state.summaries.delete(skill.name);
         if (inPanel) {
           state.selected = skill.name;
           state.list.querySelectorAll("a").forEach(item => item.toggleAttribute("data-selected", item === anchor));
@@ -289,13 +303,13 @@
       for (const element of [view.composer, view.toolbar, view.toolbar.parentElement, rail]) resize.observe(element);
       state = { id: view.id, composer: view.composer, toolbar: view.toolbar, toggle, panel, rail, tip,
         context, actions, skills, label, notice, list, detail, footer, resize,
-        used: new Map(), calls: new Map(), summaries: new Map(), summaryAbort: new AbortController(), at: 0,
-        first: Date.now() - 3000, last: Date.now() - 3000, needsLayout: true, historyLoaded: false, failed: false, incomplete: false };
+        used: new Map(), calls: new Map(), turns: new Map(), summaries: new Map(), summaryAbort: new AbortController(), at: 0,
+        first: Date.now() - 3000, last: Date.now() - 3000, needsLayout: true, historyLoaded: false, failed: false };
       invoker(toggle);
       view.host.append(panel, tip);
     }
 
-    function collect(pages, summaries) {
+    function collect(pages, turns = [], activated = []) {
       const s = state;
       const messages = pages.flatMap(page => page.messages ?? []);
       // Calls and results can land on different pages. Scan calls first across
@@ -308,14 +322,16 @@
           }
         }
       }
-      for (const turn of [...summaries, ...pages.flatMap(page => page.collapsedTurns ?? [])]) {
-        if (!Array.isArray(turn.sources?.skills)) { s.incomplete = true; continue; }
-        for (const skill of turn.sources.skills) {
-          if (typeof skill.name !== "string") continue;
-          const known = s.used.get(skill.name);
-          if (!known) s.used.set(skill.name, { name: skill.name, baseDir: skill.baseDir, turn: turnRange(turn) });
-          else known.turn ??= turnRange(turn);
-        }
+      // Amp's list of the skills activated in this thread also names skills in
+      // collapsed turns and ones subagents loaded; details are read on demand.
+      for (const skill of activated) {
+        if (typeof skill?.name === "string" && !s.used.has(skill.name)) s.used.set(skill.name, { name: skill.name });
+      }
+      for (const turn of [...turns, ...pages.flatMap(page => page.collapsedTurns ?? [])]) {
+        const range = turnRange(turn);
+        const known = s.turns.get(turn.turnID);
+        if (known && range) Object.assign(known, range);
+        else if (range) s.turns.set(turn.turnID, { ...range, next: range.startIndex });
       }
       for (const message of messages) {
         if (message.parentToolUseId !== undefined) continue;
@@ -337,16 +353,20 @@
       s.loading = true;
       s.abort = new AbortController();
       const pages = [];
-      let summaries = [];
+      let turns = [];
+      let activated = [];
       const get = url => getJSON(url, s.abort.signal);
       try {
         const data = await globalThis.ampThreadData(s.id, since);
         if (state !== s) return;
         if (data.type !== "result" || !data.thread) throw new Error("Thread history unavailable");
-        const first = data.transcriptPage ?? { messages: data.thread.messages ?? [] };
+        // The thread page sends its cursors in transcriptPage and its visible
+        // messages in thread.messages; later transcript pages carry both.
+        const first = data.transcriptPage?.messages ? data.transcriptPage : { ...data.transcriptPage, messages: data.thread.messages ?? [] };
         pages.push(first);
-        summaries = data.collapsedTurns ?? [];
-        if (!s.historyLoaded) s.incomplete = false;
+        turns = data.collapsedTurns ?? [];
+        // Amp omits the list until a thread activates a skill.
+        if (Array.isArray(data.thread.activatedSkills)) activated = data.thread.activatedSkills;
         for (const direction of ["Before", "After"]) {
           let page = first;
           const visited = new Set();
@@ -379,7 +399,7 @@
         s.historyLoaded = false;
       } finally {
         if (state === s) {
-          collect(pages, summaries);
+          collect(pages, turns, activated);
           s.loading = false;
           s.at = Date.now();
           schedule();
@@ -390,10 +410,8 @@
     function render() {
       const s = state;
       const skills = [...s.used.values()].sort((a, b) => a.name.localeCompare(b.name));
-      const partial = s.failed || s.incomplete;
-      const count = `(${skills.length}${partial ? "+" : ""})`;
+      const count = `(${skills.length}${s.failed ? "+" : ""})`;
       const status = s.failed ? "Couldn't load all history. Showing known skills; retrying on the next thread update." :
-        s.incomplete ? "Some older turns have no skill summary. This list may be incomplete." :
         !s.at ? "Loading skills…" : !skills.length ? "No skills used yet. Skills appear after Amp loads them." : "Loaded at least once in this thread.";
       // Only the names rebuild the links, so a skill's details arriving later
       // never closes the tooltip someone is reading.
