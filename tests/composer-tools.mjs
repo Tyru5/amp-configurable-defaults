@@ -38,6 +38,7 @@ const setup = String.raw`(() => {
     skillFixture.requests.push({ url: String(input), credentials: init?.credentials });
     if (skillFixture.fail) return new Response('', {status: 409});
     const params = new URL(String(input), location.origin).searchParams;
+    if (String(input).includes('/transcript-range?')) return new Response(JSON.stringify(skillFixture.ranges[params.get('start')]));
     return new Response(JSON.stringify(pages[params.has('before') ? params.get('before') : 'after:' + params.get('after')]));
   };
   fixtureThreadData['skills-test'] = { type: 'result', thread: { id: 'skills-test', agentMode: 'high', meta: { executorType: 'sandbox' } },
@@ -170,6 +171,31 @@ try {
   })()`);
   browser('wait', '--fn', `${names} === 'forward-skill'`);
   check(`skillFixture.requests.at(-1).url.includes('after=10&anchorID=forward-start')`, 'an anchored transcript page also loads newer history');
+  // Amp's collapsed-turn cursor: the call lands in the first 100 messages and its result after them.
+  browser('eval', `(() => {
+    const f = skillFixture;
+    f.ranges = { '10': {messages:[f.call('folded', 'collapsed-skill')]}, '110': {messages:[f.result('folded', 'done', 'Excerpt read from the collapsed turn.')]} };
+    fixtureThreadData['skills-collapsed'] = {type:'result', thread:{id:'skills-collapsed'}, transcriptPage:{messages:[]},
+      collapsedTurns:[{turnID:'t:u:lead', startIndex:10, endIndex:400, leadIndex:9, sources:{skills:[{name:'collapsed-skill', baseDir:'file:///example/collapsed'}]}}]};
+    f.requests.length = 0;
+    fixtureAgents.navigate('skills-collapsed');
+  })()`);
+  browser('wait', '--fn', `${names} === 'collapsed-skill'`);
+  browser('wait', '1000');
+  check(`skillFixture.requests.length === 0`, 'collapsed turns are not expanded until someone looks at a skill');
+  browser('eval', `window.tipCloses = 0; document.querySelector('${tip}').addEventListener('toggle', e => { if (e.newState === 'closed') tipCloses++; })`);
+  browser('hover', `${rail} a`);
+  browser('wait', '--fn', `document.querySelector('${tip}').textContent.includes('Excerpt read from the collapsed turn.')`);
+  check(`skillFixture.requests.map(r => r.url.split('?')[1]).join() === 'start=10&end=109&anchor=9&anchorID=lead,start=110&end=400&anchor=9&anchorID=lead' && skillFixture.requests.every(r => r.url.startsWith('/api/threads/skills-collapsed/transcript-range?'))`, 'hovering a summarized skill reads its turn with Amp’s cursor, first 100 messages first');
+  // Any page change re-renders the controls; the class change leaves the pointer where it is.
+  browser('eval', `document.querySelector('article h1').classList.toggle('rerender')`);
+  browser('wait', '300');
+  check(`tipCloses === 0 && document.querySelector('${tip}').matches(':popover-open') && document.querySelector('${tip}').textContent.includes('From the loaded skill instructions')`, 'the arriving excerpt updates the open tooltip without closing or flickering it');
+  browser('press', 'Escape');
+  browser('hover', 'article h1');
+  browser('hover', `${rail} a`);
+  browser('wait', '--fn', `document.querySelector('${tip}').matches(':popover-open')`);
+  check(`skillFixture.requests.length === 2`, 'a skill’s collapsed turn is read once');
   browser('eval', `fixtureAgents.navigate('fixture-b')`);
   browser('wait', '--fn', `document.querySelector('${rail}').textContent.includes('No skills used yet')`);
   check(`${names} === ''`, 'empty thread has no skill links from the previous thread');

@@ -571,7 +571,8 @@ try {
   browser('eval', `const trigger = document.querySelector('[aria-label="Attachments"] > span'); const fresh = trigger.cloneNode(true); trigger.remove(); document.querySelector('[aria-label="Attachments"]').prepend(fresh)`);
   browser('wait', '--fn', `document.querySelector('${context}') !== null`);
   check(`document.querySelectorAll('[data-amp-composer-context]').length === 1 && (${contextText}) === 'claude-opus-5-5 | tiru5-macbook-pro'`, 'context follows Amp re-rendering the upload trigger without duplicating');
-  check(`fixtureThreadRequests.at(-1).id === 'fixture-a' && fixtureThreadRequests.at(-1).credentials === 'same-origin'`, 'thread data is requested same-origin for the open thread');
+  // Returning within a minute reuses the shared response, so check the open thread's latest request.
+  check(`fixtureThreadRequests.findLast(r => r.id === 'fixture-a')?.credentials === 'same-origin'`, 'thread data is requested same-origin for the open thread');
   browser('eval', `fixtureAgents.navigate('fixture-b')`);
   browser('wait', '--fn', `(${contextText}).includes('Orb')`);
   check(`(${contextText}) === 'medium | Orb' && document.querySelector('${context} [data-amp-composer-context-item="runner"]').title === 'Executor: Orb'`, 'orb threads without replies show their mode and orb executor');
@@ -632,7 +633,9 @@ try {
   browser('wait', '--fn', `![...document.querySelectorAll('${infoCard} dt')].some(e => ['Runner', 'Directory'].includes(e.textContent))`);
   check(`!document.querySelector('${infoCard}').textContent.includes('/srv/my work')`, 'unavailable thread data never leaves the previous runner or directory in the popover');
   browser('eval', `fixtureAgents.navigate('fixture-b')`);
-  browser('wait', '--fn', `fixtureThreadRequests.at(-1).id === 'fixture-b'`);
+  // fixture-b may come from the shared response cache rather than a new request.
+  browser('wait', '--fn', `fixtureThreadRequests.some(r => r.id === 'fixture-b')`);
+  browser('wait', '300');
   check(`![...document.querySelectorAll('${infoCard} dt')].some(e => ['Runner', 'Directory'].includes(e.textContent))`, 'cloud threads without environment data omit unavailable runner and directory');
   browser('eval', `document.querySelector('[data-title-text]').textContent = 'Renamed thread'`);
   browser('wait', '--fn', `document.querySelector('${infoCard}').textContent.includes('Renamed thread')`);

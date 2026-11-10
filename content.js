@@ -48,6 +48,30 @@
   addEventListener("resize", invalidate);
   globalThis.ampThreadViews = () => views ??= findViews();
 
+  // Every feature reads the same thread page data, so one request serves them
+  // all. A caller passes the oldest fetch start it accepts and shares any newer
+  // response or request in flight. Responses are dropped a minute after they arrive.
+  const threadData = new Map();
+  globalThis.ampThreadData = (id, since) => {
+    const cached = threadData.get(id);
+    if (cached && cached.started >= since) return cached.promise;
+    const entry = { started: Date.now() };
+    entry.promise = fetch(`/threads/${encodeURIComponent(id)}/__data`, { credentials: "same-origin", headers: { accept: "application/json" } })
+      .then(response => {
+        if (!response.ok) throw new Error(`Thread data: ${response.status}`);
+        return response.json();
+      });
+    threadData.set(id, entry);
+    const drop = () => { if (threadData.get(id) === entry) threadData.delete(id); };
+    entry.promise.then(() => setTimeout(drop, 60_000), drop);
+    return entry.promise;
+  };
+
+  // Features that follow a live thread reread its data once the transcript has
+  // been quiet for 3 s, and at most every 30 s while a long reply keeps changing it.
+  // Returns the milliseconds left until that refresh is due.
+  globalThis.ampRefreshDelay = (firstChange, lastChange) => Math.min(lastChange + 3000, firstChange + 30_000) - Date.now();
+
   globalThis.ampSyncThreadViews = (controllers, create) => {
     const views = globalThis.ampThreadViews();
     const mounted = new Set(views.map(view => view.transcript));

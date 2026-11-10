@@ -56,7 +56,9 @@ hostname, and working directory from the
 response. It keeps these values in memory for the current tab and displays them
 in the enabled composer label or info card.
 The response is not stored or sent anywhere else. Turning both settings off
-stops their shared requests; the skills and messages features have their own requests.
+stops their requests. All features share one in-memory copy of each thread's page
+data, so a single request serves every enabled feature; it is discarded a minute
+after it arrives or on reload.
 
 **Show full dates in message timestamps** makes no request. It reads the
 `datetime` of the timestamps Amp already renders above messages and prefixes
@@ -81,8 +83,9 @@ files, or a server. Only the thirteen preferences above are persisted.
 When the thread message control is enabled on desktop, it requests the current
 thread's same-origin page data using the existing Amp session, including while
 closed, to decide whether it should appear. While the browser tab is
-visible, checks run on thread load and transcript changes, at most once every
-five seconds. Opening its popover also requests fresh data.
+visible, checks run on thread load and once transcript changes have been quiet
+for three seconds, at most every 30 seconds during a long reply. Opening its
+popover also requests fresh data.
 It reads incoming thread-message text
 and sender thread IDs, outgoing `send_thread_message` arguments, matching tool
 results and errors, and attachment counts. Hidden text blocks are excluded.
@@ -101,10 +104,15 @@ desktop thread's same-origin page data and follows its older or newer transcript
 pages at `/api/threads/<id>/transcript-page`. It reads top-level `skill` tool calls,
 their successful results, and collapsed-turn skill summaries. It displays each
 skill name once, with an instruction excerpt and base directory when available.
+For a skill known only from a collapsed turn's summary, hovering or selecting it
+reads that turn from `/api/threads/<id>/transcript-range`, as Amp does when the turn
+is expanded, at most once per skill while the thread is open; nothing else
+requests it.
 Other tools, failed loads, and nested subagent calls do not count. It never fetches
 skill files or runs their instructions. Incomplete history is labeled as partial.
-Live transcript changes refresh at most once every five seconds while the tab is
-visible; already-read history is reused. Turning the setting off, navigating away,
+Live transcript changes refresh on the same quiet-period schedule while the tab
+is visible; already-read history is reused, and older pages are read when the
+browser is idle. Turning the setting off, navigating away,
 or switching to mobile clears this in-memory cache and stops its requests.
 Clicking a skill opens `https://ampcode.com/settings/skills` in a new tab.
 When the composer is crowded, Thread tools groups extension controls into a

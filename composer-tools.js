@@ -36,6 +36,20 @@
     return { baseDir, excerpt: excerpt?.trim().slice(0, 400) };
   }
 
+  // The cursor Amp uses to expand a collapsed turn, from its thread page bundle.
+  function turnRange(turn) {
+    const { turnID, startIndex, endIndex, leadIndex } = turn;
+    if (typeof turnID !== "string" || !turnID.startsWith("t:u:") ||
+      ![startIndex, endIndex, leadIndex].every(Number.isInteger) || startIndex > endIndex) return undefined;
+    return { anchorID: turnID.slice(4), startIndex, endIndex, leadIndex };
+  }
+
+  async function getJSON(url, signal) {
+    const response = await fetch(url, { credentials: "same-origin", headers: { accept: "application/json" }, signal });
+    if (!response.ok) throw new Error(`Thread history: ${response.status}`);
+    return response.json();
+  }
+
   function controller() {
     let view;
     let state;
@@ -44,6 +58,7 @@
       if (!state) return;
       dropBack();
       state.abort?.abort();
+      state.summaryAbort.abort();
       clearTimeout(state.poll);
       clearTimeout(state.tipTimer);
       state.resize.disconnect();
@@ -62,10 +77,43 @@
     }
 
     function describe(skill, target) {
+      if (!skill.excerpt && skill.turn && !state.summaries.has(skill.name)) summarize(skill.name);
+      const loading = !skill.excerpt && state.summaries.get(skill.name) === "loading";
+      target.skillName = skill.name;
       target.replaceChildren(node("strong", skill.name),
-        node("p", skill.excerpt || "Instruction text isn't included in this history summary."),
+        node("p", skill.excerpt || (loading ? "Loading an excerpt from this skill's instructions…" : "Instruction text isn't included in this history summary.")),
         node("small", skill.excerpt ? "From the loaded skill instructions" : "Loaded in this thread"));
       if (skill.baseDir) target.append(node("small", skill.baseDir));
+      if (target === state.tip) target.append(node("small", "Click to open Skills settings in a new tab"));
+    }
+
+    // A skill known only from a collapsed turn's summary has no instructions in
+    // the loaded pages. Read that turn the way Amp expands it, only when someone
+    // looks at the skill, and once per skill until the thread view is replaced.
+    async function summarize(name) {
+      const s = state;
+      const range = s.used.get(name).turn;
+      s.summaries.set(name, "loading");
+      try {
+        // Skills usually load early in a turn: read its first messages, then the
+        // rest in Amp's own chunk size, and stop once the skill's result appears.
+        for (let start = range.startIndex, size = 100; start <= range.endIndex && !s.used.get(name).excerpt; start += size, size = 5000) {
+          const params = new URLSearchParams({ start: String(start), end: String(Math.min(range.endIndex, start + size - 1)),
+            anchor: String(range.leadIndex), anchorID: range.anchorID });
+          const page = await getJSON(`/api/threads/${encodeURIComponent(s.id)}/transcript-range?${params}`, s.summaryAbort.signal);
+          if (state !== s) return;
+          collect([page], []);
+        }
+        s.summaries.set(name, "done");
+      } catch {
+        if (state !== s) return;
+        s.summaries.set(name, "failed");
+      }
+      for (const target of [s.tip, s.detail]) {
+        if (target.skillName !== name || (target === s.tip && !s.tip.matches(":popover-open"))) continue;
+        describe(s.used.get(name), target);
+        if (target === s.tip) globalThis.ampPlacePopover(s.tip, s.tipAnchor);
+      }
     }
 
     function link(skill, inPanel = false) {
@@ -75,16 +123,16 @@
       anchor.rel = "noopener";
       anchor.setAttribute("aria-label", `${skill.name}, open Skills settings in a new tab`);
       const show = () => {
+        const current = state.used.get(skill.name) ?? skill;
         if (inPanel) {
           state.selected = skill.name;
           state.list.querySelectorAll("a").forEach(item => item.toggleAttribute("data-selected", item === anchor));
-          describe(skill, state.detail);
+          describe(current, state.detail);
           return;
         }
         hideTip();
         state.tipAnchor = anchor;
-        describe(skill, state.tip);
-        state.tip.append(node("small", "Click to open Skills settings in a new tab"));
+        describe(current, state.tip);
         anchor.setAttribute("aria-describedby", state.tip.id);
         state.tip.showPopover();
         globalThis.ampPlacePopover(state.tip, anchor);
@@ -233,12 +281,16 @@
       tip.setAttribute("role", "tooltip");
       tip.addEventListener("pointerenter", () => clearTimeout(state.tipTimer));
       tip.addEventListener("pointerleave", hideTip);
-      const resize = new ResizeObserver(schedule);
-      resize.observe(view.composer);
-      resize.observe(view.toolbar.parentElement);
+      // Size changes are the only layout inputs not visible in the DOM text.
+      const resize = new ResizeObserver(() => {
+        if (state) state.needsLayout = true;
+        schedule();
+      });
+      for (const element of [view.composer, view.toolbar, view.toolbar.parentElement, rail]) resize.observe(element);
       state = { id: view.id, composer: view.composer, toolbar: view.toolbar, toggle, panel, rail, tip,
         context, actions, skills, label, notice, list, detail, footer, resize,
-        used: new Map(), calls: new Map(), at: 0, dirty: true, historyLoaded: false, failed: false, incomplete: false };
+        used: new Map(), calls: new Map(), summaries: new Map(), summaryAbort: new AbortController(), at: 0,
+        first: Date.now() - 3000, last: Date.now() - 3000, needsLayout: true, historyLoaded: false, failed: false, incomplete: false };
       invoker(toggle);
       view.host.append(panel, tip);
     }
@@ -259,7 +311,10 @@
       for (const turn of [...summaries, ...pages.flatMap(page => page.collapsedTurns ?? [])]) {
         if (!Array.isArray(turn.sources?.skills)) { s.incomplete = true; continue; }
         for (const skill of turn.sources.skills) {
-          if (typeof skill.name === "string" && !s.used.has(skill.name)) s.used.set(skill.name, { name: skill.name, baseDir: skill.baseDir });
+          if (typeof skill.name !== "string") continue;
+          const known = s.used.get(skill.name);
+          if (!known) s.used.set(skill.name, { name: skill.name, baseDir: skill.baseDir, turn: turnRange(turn) });
+          else known.turn ??= turnRange(turn);
         }
       }
       for (const message of messages) {
@@ -277,18 +332,15 @@
       if (!s || !enabled || s.loading || document.hidden) return;
       clearTimeout(s.poll);
       s.poll = null;
-      s.dirty = false;
+      const since = s.first ?? 0;
+      s.first = s.last = null;
       s.loading = true;
       s.abort = new AbortController();
       const pages = [];
       let summaries = [];
-      const get = async url => {
-        const response = await fetch(url, { credentials: "same-origin", headers: { accept: "application/json" }, signal: s.abort.signal });
-        if (!response.ok) throw new Error(`Thread history: ${response.status}`);
-        return response.json();
-      };
+      const get = url => getJSON(url, s.abort.signal);
       try {
-        const data = await get(`/threads/${encodeURIComponent(s.id)}/__data`);
+        const data = await globalThis.ampThreadData(s.id, since);
         if (state !== s) return;
         if (data.type !== "result" || !data.thread) throw new Error("Thread history unavailable");
         const first = data.transcriptPage ?? { messages: data.thread.messages ?? [] };
@@ -308,6 +360,9 @@
             if (index == null || !anchor || visited.has(anchor)) throw new Error("Incomplete history cursor");
             visited.add(anchor);
             const params = new URLSearchParams({ [direction.toLowerCase()]: String(index), anchorID: anchor, conversation: "1" });
+            // History is never urgent: let Amp's own loading and rendering go first.
+            await new Promise(resolve => requestIdleCallback(resolve, { timeout: 2000 }));
+            if (state !== s) return;
             page = await get(`/api/threads/${encodeURIComponent(s.id)}/transcript-page?${params}`);
             if (state !== s) return;
             pages.push(page);
@@ -340,7 +395,9 @@
       const status = s.failed ? "Couldn't load all history. Showing known skills; retrying on the next thread update." :
         s.incomplete ? "Some older turns have no skill summary. This list may be incomplete." :
         !s.at ? "Loading skills…" : !skills.length ? "No skills used yet. Skills appear after Amp loads them." : "Loaded at least once in this thread.";
-      const signature = JSON.stringify([enabled, skills, status]);
+      // Only the names rebuild the links, so a skill's details arriving later
+      // never closes the tooltip someone is reading.
+      const signature = JSON.stringify([enabled, skills.map(skill => skill.name), status]);
       if (s.signature !== signature) {
         s.signature = signature;
         const focused = document.activeElement;
@@ -358,8 +415,6 @@
           li.append(link(skill, true));
           return li;
         }));
-        s.detail.replaceChildren();
-        if (skills.length) describe(s.used.get(s.selected) ?? skills[0], s.detail);
         s.skills.hidden = !enabled;
         s.footer.hidden = !enabled;
         s.rail.hidden = !enabled;
@@ -369,6 +424,11 @@
           next?.focus({ preventScroll: true });
         }
       }
+      // Describe the selected skill only while the panel shows it.
+      const shown = s.used.get(s.selected) ?? skills[0] ?? null;
+      if (!shown) s.detail.replaceChildren();
+      else if (isOpen() && s.shown !== shown) describe(shown, s.detail);
+      if (!shown || isOpen()) s.shown = shown;
       const context = s.toolbar.querySelector("[data-amp-composer-context]");
       write(s.context, [...context?.children ?? []].map(item => item.textContent).join(" · "));
       if (s.context.hidden !== !s.context.textContent) s.context.hidden = !s.context.textContent;
@@ -430,21 +490,37 @@
       if (state.rail.nextElementSibling !== bar) bar.before(state.rail);
       globalThis.ampMountComposerControl(view.toolbar, state.toggle);
       render();
-      layout();
-      if (isOpen()) globalThis.ampPlacePopover(state.panel, anchor());
-      if (enabled && state.dirty && !document.hidden && !state.loading) {
-        const wait = 5000 - (Date.now() - state.at);
+      // Measuring forces a style and layout pass, so only measure when an input
+      // changed: a size (needsLayout), the skill names, or the toolbar's controls.
+      const s = state;
+      const key = JSON.stringify([s.signature, s.toolbar.textContent, s.toolbar.childElementCount,
+        s.actions.childElementCount, s.context.textContent]);
+      if (s.needsLayout || s.layoutKey !== key) {
+        s.needsLayout = false;
+        s.layoutKey = key;
+        layout();
+      }
+      if (isOpen()) globalThis.ampPlacePopover(s.panel, anchor());
+      // Transcript changes reread the page once they settle, shared with the
+      // other features through ampThreadData.
+      if (enabled && s.first != null && !document.hidden && !s.loading) {
+        const wait = globalThis.ampRefreshDelay(s.first, s.last);
         if (wait <= 0) load();
-        else if (!state.poll) state.poll = setTimeout(() => { state.poll = null; load(); }, wait);
+        else if (!s.poll) s.poll = setTimeout(() => { s.poll = null; schedule(); }, wait);
       }
     }
 
     function transcriptChanged(target) {
-      if (state && view.transcript.contains(target)) state.dirty = true;
+      if (!state || !view.transcript.contains(target)) return;
+      state.first ??= Date.now();
+      state.last = Date.now();
     }
 
+    // A tab coming back reads changes it missed while hidden right away.
     function resumed() {
-      if (state) state.dirty = true;
+      if (!state) return;
+      state.first ??= Date.now() - 3000;
+      state.last = Math.min(state.last ?? 0, Date.now() - 3000);
     }
 
     return { refresh, teardown, escape, transcriptChanged, resumed };

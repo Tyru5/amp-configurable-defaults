@@ -105,7 +105,8 @@
     loadTitles(s);
     place();
     show(s.view);
-    refreshData();
+    // Opening is an explicit request for current messages.
+    refreshData(Date.now());
   }
 
   function closed() {
@@ -123,8 +124,6 @@
     if (!state) return;
     clearTimeout(state.poll);
     clearTimeout(state.next);
-    state.abort?.abort();
-    state.titleAbort.abort();
     state.toggle.remove();
     state.panel.remove();
     state = undefined;
@@ -226,7 +225,8 @@
     });
     host.append(panel);
     return { host, id, panel, toggle, count, track, listView, notice, list, detail, back, direction, status, peer, body, error, time, attachments, original,
-      view: "list", items: new Map(), titles: new Map(), titleAbort: new AbortController(), selected: null, at: 0, loading: false, failed: false };
+      // The page is read at once, then again after transcript changes (see refresh).
+      view: "list", items: new Map(), titles: new Map(), selected: null, first: Date.now() - 3000, last: Date.now() - 3000, loading: false, failed: false };
   }
 
   function collect(messages, items) {
@@ -356,9 +356,7 @@
     for (const peer of new Set([...s.items.values()].map(entry => entry.peer))) {
       if (s.titles.has(peer)) continue;
       s.titles.set(peer, null);
-      fetch(`/threads/${encodeURIComponent(peer)}/__data`, {
-        credentials: "same-origin", headers: { accept: "application/json" }, signal: s.titleAbort.signal,
-      }).then(response => response.ok ? response.json() : null).then(data => {
+      globalThis.ampThreadData(peer, 0).then(data => {
         if (state !== s || data?.type !== "result" || data.thread?.id !== peer) return;
         s.titles.set(peer, data.thread.title?.trim() || "Untitled thread");
         render();
@@ -366,19 +364,18 @@
     }
   }
 
-  async function refreshData() {
+  // Accepts page data requested since `since`, and never data older than the
+  // first transcript change not yet read.
+  async function refreshData(since = Date.now() - 5000) {
     const s = state;
     if (!s || s.loading || document.hidden) return;
     clearTimeout(s.poll);
+    const from = Math.max(since, s.first ?? -Infinity);
+    s.first = s.last = null;
     s.loading = true;
-    s.abort = new AbortController();
     render();
     try {
-      const response = await fetch(`/threads/${encodeURIComponent(s.id)}/__data`, {
-        credentials: "same-origin", headers: { accept: "application/json" }, signal: s.abort.signal,
-      });
-      if (!response.ok) throw new Error("Thread data unavailable");
-      const data = await response.json();
+      const data = await globalThis.ampThreadData(s.id, from);
       if (state !== s) return;
       if (data.type !== "result" || data.thread?.id !== s.id) throw new Error("Unexpected thread data");
       // Preserve list controls across updates, but never correlate messages by text or title.
@@ -390,16 +387,17 @@
       }
       s.failed = false;
       loadTitles(s);
-    } catch (error) {
-      if (state === s && error.name !== "AbortError") s.failed = true;
+    } catch {
+      if (state === s) s.failed = true;
     } finally {
       if (state === s) {
         s.loading = false;
-        s.at = Date.now();
         render();
         if (isOpen()) s.poll = setTimeout(() => {
           if (state === s) refreshData();
         }, 5000);
+        // Pick up transcript changes made while this request was in flight.
+        schedule();
       }
     }
   }
@@ -411,25 +409,32 @@
     if (!enabled || !desktop.matches || !toolbar || transcript.hasAttribute("data-thread-transcript-override")) { teardown(); return; }
     if (state && (state.host !== host || state.id !== transcript.dataset.threadId)) teardown();
     if (!state) state = create(host, transcript.dataset.threadId);
+    state.transcript = transcript;
     if (state.panel.parentElement !== host) host.append(state.panel);
     globalThis.ampMountComposerControl(toolbar, state.toggle);
     if (isOpen()) place();
-    // The page is checked even while collapsed, so the control appears once a message
-    // exists. Transcript changes refresh at most every five seconds, with a
-    // trailing check so the last change in a burst is not missed.
-    const wait = state.loading ? 5000 : 5000 - (Date.now() - state.at);
-    if (wait <= 0) refreshData();
+    // The page is checked even while collapsed, so the control appears once a
+    // message exists. Transcript changes reread it once they settle (shared
+    // with the other features through ampThreadData).
+    const s = state;
+    const wait = s.first == null || s.loading ? Infinity : globalThis.ampRefreshDelay(s.first, s.last);
+    if (wait <= 0) refreshData(s.first);
     else {
       render();
-      const s = state;
-      s.next ??= setTimeout(() => {
+      if (wait < Infinity) s.next ??= setTimeout(() => {
         s.next = null;
         schedule();
       }, wait);
     }
   }
 
-  return { refresh, teardown };
+  function transcriptChanged(target) {
+    if (!state?.transcript?.contains(target)) return;
+    state.first ??= Date.now();
+    state.last = Date.now();
+  }
+
+  return { refresh, teardown, transcriptChanged };
   }
 
   function schedule() {
@@ -442,12 +447,19 @@
   }
 
   new MutationObserver(records => {
-    if (records.some(record => {
+    let relevant = false;
+    for (const record of records) {
       const target = record.target.nodeType === Node.ELEMENT_NODE ? record.target : record.target.parentElement;
-      return !target?.closest("[data-amp-thread-messages-ui]") &&
-        !(record.type === "childList" && [...record.addedNodes, ...record.removedNodes].length &&
-          [...record.addedNodes, ...record.removedNodes].every(node => node instanceof Element && node.matches("[data-amp-thread-messages-ui]")));
-    })) schedule();
+      if (target?.closest("[data-amp-thread-messages-ui]") ||
+        (record.type === "childList" && [...record.addedNodes, ...record.removedNodes].length &&
+          [...record.addedNodes, ...record.removedNodes].every(node => node instanceof Element && node.matches("[data-amp-thread-messages-ui]")))) continue;
+      relevant = true;
+      // Other extension features' marks in the transcript are not thread changes.
+      if (!target?.closest("[data-amp-subagents-ui], [data-amp-tool-preview], [data-amp-message-timestamp], [data-amp-tools-ui]")) {
+        for (const controller of controllers.values()) controller.transcriptChanged(target);
+      }
+    }
+    if (relevant) schedule();
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
     attributeFilter: ["data-thread-id", "class", "style", "hidden"] });
   chrome.storage.onChanged.addListener((changes, area) => {

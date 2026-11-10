@@ -99,7 +99,8 @@ Hover or focus a skill for an excerpt from its instructions and its location whe
 available. Clicking opens Amp's Skills settings in a new tab, preserving the draft.
 Older transcript pages and Amp's collapsed-turn skill summaries are included.
 If history cannot be fully read, the count has a `+` and the tools panel explains
-what is missing. Summaries may identify a skill without including its instructions.
+what is missing. When a skill is known only from a collapsed turn's summary, hovering
+or selecting it reads that turn once, the way Amp expands it, to show the excerpt.
 
 When the skill names or toolbar controls no longer fit, the extension folds its
 controls and model/runner label into **Thread tools**. Clicking it opens a popover
@@ -207,9 +208,10 @@ disclosures. The slide and the glide respect reduced-motion preferences; the
 highlight only changes color.
 
 To decide whether to show the control, the extension requests the current thread's
-same-origin page data using your Amp session, at most once every five seconds
-while the transcript changes and the browser tab is visible. While open it refreshes every
-five seconds. Sends stay
+same-origin page data using your Amp session when the thread loads, then again
+once the transcript has been quiet for three seconds (at most every 30 seconds
+during a long reply) while the browser tab is visible. While open it refreshes
+every five seconds. Sends stay
 **Pending** until their matching tool result confirms **Sent** or **Failed**.
 Calls with identical text stay separate. Only the returned page of messages is
 read; older history is not fetched. To show each other thread by name, in the

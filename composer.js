@@ -70,11 +70,7 @@
   }
 
   async function load(id) {
-    const response = await fetch(`/threads/${encodeURIComponent(id)}/__data`, {
-      credentials: "same-origin", headers: { accept: "application/json" },
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
+    const data = await globalThis.ampThreadData(id, Date.now() - refreshAfter);
     return data?.type === "result" ? derive(data) : null;
   }
 

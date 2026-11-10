@@ -743,7 +743,7 @@
 [data-amp-tools-ui="list"] a { display: block; padding: 7px; border-radius: 5px; color: inherit; text-decoration: none; overflow-wrap: anywhere; }
 [data-amp-tools-ui="detail"] { padding: 12px; border-left: 1px solid var(--input-border, #80808033); overflow-wrap: anywhere; }
 [data-amp-tools-ui="detail"] p,
-[data-amp-tools-ui="tooltip"] p { margin: 6px 0; white-space: pre-wrap; }
+[data-amp-tools-ui="tooltip"] p { margin: 6px 0; white-space: pre-wrap; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
 [data-amp-tools-ui="detail"] small,
 [data-amp-tools-ui="tooltip"] small { display: block; margin-top: 8px; color: var(--muted-foreground, #6b7280); font-size: 11px; }
 [data-amp-tools-ui="panel"] footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--input-border, #80808033); font-size: 11px; color: var(--muted-foreground, #6b7280); }
