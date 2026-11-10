@@ -503,6 +503,39 @@ try {
   browser('eval', `chrome.storage.local.set({ fadeToolCalls: true }); window.otherTools = fixtureToolSection('other', 6)`);
   browser('wait', '--fn', `document.querySelector('${preview} button')?.textContent === 'Show all 6 tool calls'`);
   check(`document.querySelectorAll('${preview}').length === 1 && tools.rows.every(e => e.getBoundingClientRect().height > 0)`, 'toggling the preference preserves sections the user explicitly expanded');
+
+  // Section expansion and fading are independent: check all four combinations.
+  const visible = section => `${section}.rows.every(e => e.getBoundingClientRect().height > 0)`;
+  const collapsed = section => `${section}.rows.every(e => !e.isConnected)`;
+  browser('eval', `fixtureAgents.navigate('tool-expand-setting'); window.autoTools = fixtureToolSection('auto', 6); window.userTools = fixtureToolSection('user', 7)`);
+  browser('wait', '--fn', `document.querySelectorAll('${preview}').length === 2`);
+  check(`[...document.querySelectorAll('${preview} button')].map(e => e.textContent).join('|') === 'Show all 6 tool calls|Show all 7 tool calls'`, 'with both settings on, sections open with faded previews');
+  browser('focus', '#fixture-status-user .expandable-row-header');
+  browser('press', 'Enter');
+  browser('wait', '--fn', visible('userTools'));
+  browser('eval', `chrome.storage.local.set({ expandToolSections: false })`);
+  browser('wait', '--fn', collapsed('autoTools'));
+  check(`${visible('userTools')} && !document.querySelector('${preview}')`, 'turning off expansion with fading on collapses only sections the extension opened');
+  browser('eval', `window.manualTools = fixtureToolSection('manual', 7)`);
+  browser('wait', '500');
+  check(collapsed('manualTools'), 'with expansion off and fading on, new sections stay collapsed as in Amp');
+  browser('scrollintoview', '#fixture-status-manual .expandable-row-header');
+  browser('click', '#fixture-status-manual .expandable-row-header');
+  browser('wait', '--fn', visible('manualTools'));
+  check(`!document.querySelector('${preview}')`, 'opening a long section by hand shows every call instead of a preview');
+  browser('eval', `manualTools.status.remove(); manualTools.rows.forEach(e => e.remove()); window.manualTools = fixtureToolSection('manual', 7)`);
+  browser('wait', '--fn', visible('manualTools'));
+  check(`!document.querySelector('${preview}')`, 'a section opened by hand reopens once after its rows remount');
+  browser('eval', `chrome.storage.local.set({ fadeToolCalls: false })`);
+  browser('eval', `window.offTools = fixtureToolSection('off', 6)`);
+  browser('wait', '500');
+  check(`${collapsed('autoTools')} && ${collapsed('offTools')} && ${visible('userTools')} && ${visible('manualTools')}`, 'with both settings off, sections stay collapsed and hand-opened sections stay open');
+  browser('eval', `chrome.storage.local.set({ expandToolSections: true })`);
+  browser('wait', '--fn', `${visible('autoTools')} && ${visible('offTools')}`);
+  check(`!document.querySelector('${preview}')`, 'with expansion on and fading off, sections open showing every call');
+  browser('eval', `chrome.storage.local.set({ fadeToolCalls: true })`);
+  browser('wait', '--fn', `document.querySelectorAll('${preview}').length === 2`);
+  check(`${visible('userTools')} && ${visible('manualTools')} && [...document.querySelectorAll('${preview} button')].map(e => e.textContent).join('|') === 'Show all 6 tool calls|Show all 6 tool calls'`, 'turning fading back on previews only sections the extension opened');
   browser('set', 'viewport', '1280', '800', '2');
 
   const bashPre = '#fixture-tool-long-command-0 [data-amp-tool-block] > pre';
@@ -523,6 +556,7 @@ try {
   browser('wait', '--fn', `tools.rows[4].querySelector('pre > code').textContent === 'Grep ' + ${JSON.stringify(longCommand)}`);
   check(`(() => { const pre = tools.rows[4].querySelector('pre'); return pre.clientHeight === pre.scrollHeight && pre.clientHeight > 8 * parseFloat(getComputedStyle(pre).lineHeight) && !tools.rows[4].querySelector('[data-amp-bash-toggle]'); })()`, 'long non-Bash activity summaries keep upstream formatting without a command height limit or expansion control');
   browser('eval', `tools.rows[4].querySelector('[data-transcript-action-title]').textContent = 'Grep "ci|cache|build|e2e"'`);
+  browser('scrollintoview', bashToggle);
   browser('click', bashToggle);
   browser('wait', '--fn', `document.querySelector('${bashToggle}').getAttribute('aria-expanded') === 'true'`);
   check(`(() => { const pre = document.querySelector('${bashPre}'), button = document.querySelector('${bashToggle}'); return pre.scrollHeight === pre.clientHeight && document.getElementById(button.getAttribute('aria-controls')) === pre && button.textContent === 'Show less' && !commandHeader.nextElementSibling; })()`, 'Show full command reveals every line without opening native output');

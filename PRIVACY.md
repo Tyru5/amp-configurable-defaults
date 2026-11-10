@@ -27,6 +27,7 @@ The extension uses thirteen preferences in `chrome.storage.local`:
 - `infoOrb`: show the floating thread info orb beside the conversation.
 - `showComposerSkills`: show skills successfully loaded in the thread.
 - `fadeToolCalls`: show faded previews of longer tool-call sections and Bash commands.
+- `expandToolSections`: open tool-call sections automatically when they appear.
 - `showTimestampDates`: add the calendar date to the times Amp shows above messages. Defaults to false.
 
 All boolean preferences except `showTimestampDates` default to true. Each feature

@@ -128,6 +128,7 @@ These features have independent checkboxes in **Options**:
 | Show thread info in the composer          | On      | No thread info control; title-bar details stay in Amp's title bar |
 | Show skills used in the composer          | On      | No skills list or skills history requests; other controls still fold when crowded |
 | Fade long tool-call sections              | On      | All tool rows and complete Bash commands are shown without fading |
+| Expand tool-call sections                 | On      | Sections stay collapsed as in Amp until you open them             |
 | Show full dates in message timestamps     | Off     | Amp's time-only timestamps                                        |
 
 **Show full dates in message timestamps** adds the calendar date, including the
@@ -149,9 +150,14 @@ Running and delegated agents have a gently pulsing status dot; completed,
 failed, and cancelled agents do not. Reduced motion keeps the active dot static.
 Tool-call summaries and individual tool headers use tinted rows with a left
 border to distinguish execution activity from assistant prose.
-With **Fade long tool-call sections** enabled, loaded status sections with more
-than five tool-call rows start with a preview of the first five, fading from top
-to bottom. Turn it off in Options or the toolbar popup to show all rows immediately.
+Amp collapses status sections, such as **Reviewing CI workflows**, by default.
+With **Expand tool-call sections** on, the extension opens each section when it
+appears. Turning it off leaves new sections collapsed and collapses the ones the
+extension opened; sections you expanded yourself stay open. This setting is
+independent of fading. With **Fade long tool-call sections** enabled, sections the
+extension opens with more than five tool-call rows start with a preview of the
+first five, fading from top to bottom. A section you open yourself shows every
+call. Turn fading off to show all rows immediately.
 Click anywhere in the preview or
 on its status header to reveal the whole section. The preview button also works
 with Enter or Space. Individual output disclosures stay closed until opened.

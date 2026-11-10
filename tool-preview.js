@@ -7,6 +7,7 @@
   const commandBlocks = new Set();
   const commandSizes = new ResizeObserver(schedule);
   let enabled = false;
+  let autoExpand = false;
   let settings = {};
   let pending = false;
   let sequence = 0;
@@ -130,26 +131,55 @@
         state = { expanded: false, sources: [] };
         states.set(key, state);
       }
+      const isOpen = () => !!header.querySelector(".expandable-row-chevron.rotate-90");
       if (state.header !== header) {
         restore(state);
         state.header = header;
         state.row = row;
+        state.opened = false;
         // Open only the section, never individual output disclosures. Amp
         // mounts these rows lazily, so wait for its next render before reading.
-        if (!header.querySelector(".expandable-row-chevron.rotate-90")) header.click();
+        // A section the user opened stays open when its rows remount. Amp
+        // renders the click later, so mark this header handled to avoid a
+        // second click toggling it closed.
+        state.auto = state.expanded ? autoExpand : undefined;
+        if (state.expanded && !isOpen()) header.click();
         header.addEventListener("click", event => {
-          if (!state.preview || event.target.closest("a, button, input, select, textarea")) return;
+          if (event.target.closest("a, button, input, select, textarea")) return;
+          if (!state.preview) {
+            // The user opening a section shows every call, never a preview.
+            if (event.isTrusted && !isOpen()) state.expanded = true;
+            return;
+          }
           event.preventDefault();
           event.stopImmediatePropagation();
           reveal(state);
         }, true);
         header.addEventListener("keydown", event => {
-          if (!state.preview || event.target !== header ||
+          if (event.target !== header ||
               !["Enter", " "].includes(event.key) || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || event.isComposing) return;
+          if (!state.preview) {
+            if (!isOpen()) state.expanded = true;
+            return;
+          }
           event.preventDefault();
           event.stopImmediatePropagation();
           reveal(state);
         }, true);
+      }
+      // Sections start collapsed, as in Amp, unless expansion is on. Turning
+      // it off collapses only sections this script opened.
+      if (state.auto !== autoExpand) {
+        state.auto = autoExpand;
+        if (autoExpand && !isOpen()) {
+          header.click();
+          state.opened = true;
+        } else if (!autoExpand && state.opened && !state.expanded && isOpen()) {
+          // Drop the preview first so its click handler does not reveal instead.
+          restore(state);
+          header.click();
+          state.opened = false;
+        }
       }
 
       const sources = [];
@@ -251,16 +281,22 @@
     })) schedule();
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true,
     attributeFilter: ["data-thread-id", "data-transcript-status-row-id", "class", "style", "hidden"] });
+  const keys = ["fadeToolCalls", "expandToolSections"];
+  function apply() {
+    enabled = settings.fadeToolCalls !== false;
+    autoExpand = settings.expandToolSections !== false;
+    schedule();
+  }
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "local" || !changes.fadeToolCalls) return;
-    settings.fadeToolCalls = changes.fadeToolCalls.newValue;
-    enabled = settings.fadeToolCalls !== false;
-    schedule();
+    if (area !== "local" || !keys.some(key => changes[key])) return;
+    for (const key of keys) {
+      if (changes[key]) settings[key] = changes[key].newValue;
+    }
+    apply();
   });
-  chrome.storage.local.get(["fadeToolCalls"]).then(initial => {
+  chrome.storage.local.get(keys).then(initial => {
     settings = { ...initial, ...settings };
-    enabled = settings.fadeToolCalls !== false;
-    schedule();
+    apply();
   });
   schedule();
 })();
