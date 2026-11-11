@@ -164,6 +164,10 @@ Supporting website work already present when 1.3.0 shipped:
 - [ ] Confirm access to the existing store item and resolve any account warnings.
 - [ ] Review the existing privacy declarations against 1.4.3's message and
       timestamp access, and personally accept any required certifications.
+- [ ] Batch archive changes thread state on confirmation, which the earlier
+      read-only declarations did not cover. Smoke-test it on real, signed-in Amp
+      with disposable threads: selection, project menu, partial results, and Undo.
+      Fixture checks mock Amp's context menu and archive command.
 
 ## Build and upload
 

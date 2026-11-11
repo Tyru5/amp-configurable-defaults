@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm';
 
 const source = await readFile(new URL('../options.js', import.meta.url), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
-const features = ['right', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel', 'threadMessagesPanel', 'showComposerContext', 'infoOrb', 'showComposerSkills', 'fadeToolCalls', 'expandToolSections'];
+const features = ['right', 'resizeSidebar', 'moveViews', 'indentThreads', 'showHeaderToggle', 'subagentPanel', 'threadMessagesPanel', 'showComposerContext', 'infoOrb', 'showComposerSkills', 'fadeToolCalls', 'expandToolSections', 'batchArchive'];
 const optIns = ['showTimestampDates'];
 
 function options(search = '', openOptionsPage = async () => {}) {

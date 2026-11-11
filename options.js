@@ -12,6 +12,7 @@ const toggles = {
   fadeToolCalls: document.querySelector("#fadeToolCalls"),
   expandToolSections: document.querySelector("#expandToolSections"),
   showTimestampDates: document.querySelector("#showTimestampDates"),
+  batchArchive: document.querySelector("#batchArchive"),
 };
 const status = document.querySelector("#status");
 const changed = new Set();

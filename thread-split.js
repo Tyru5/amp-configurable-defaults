@@ -193,7 +193,8 @@
     if (event.pointerType !== "mouse" || event.button !== 0 ||
         event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
     const row = threadRow(event.target);
-    if (!row) return;
+    // Batch archive selection owns row presses.
+    if (!row || row.matches('[data-amp-batch-selecting] [data-sidebar-thread-id]:not([data-sidebar-group-id="archived"], [data-sidebar-group-id^="project-pucks"], :has([data-thread-row-space-active], [data-thread-row-space-members]))')) return;
     clearDrag();
     prepared = { row, draggable: row.getAttribute("draggable") };
     row.draggable = true;

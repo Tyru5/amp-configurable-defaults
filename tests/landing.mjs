@@ -71,7 +71,7 @@ try {
     "FAQ opens by keyboard and explains site access",
   );
   check(
-    `(() => { const text = document.querySelector('details:nth-child(2)').textContent.replace(/\\s+/g, ' '); return text.includes('thirteen local preferences') && text.includes('older and newer transcript pages') && text.includes('does not send messages') && text.includes('Content Security Policy'); })()`,
+    `(() => { const text = document.querySelector('details:nth-child(2)').textContent.replace(/\\s+/g, ' '); return text.includes('fourteen local preferences') && text.includes('older and newer transcript pages') && text.includes('does not send messages') && text.includes('Content Security Policy'); })()`,
     "privacy disclosure covers new preferences and skill history without hiding the framing exception",
   );
   browser("press", "Enter");

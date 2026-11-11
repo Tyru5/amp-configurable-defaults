@@ -1,5 +1,8 @@
 [data-amp-sidebar-toggle],
 [data-amp-settings-button],
+[data-amp-batch-button],
+[data-amp-batch-group],
+[data-amp-batch-bar],
 [data-amp-subagents-ui] { display: none; }
 
 /* Inline disclosures never depend on the optional desktop reading panel. */
@@ -189,7 +192,8 @@
 @media (min-width: 768px) {
   /* Placement switch and settings button remain available on either side. */
   [data-amp-sidebar-toggle],
-  [data-amp-settings-button] {
+  [data-amp-settings-button],
+  [data-amp-batch-button] {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -207,18 +211,22 @@
   }
 
   [data-amp-sidebar-toggle][aria-checked="false"],
-  [data-amp-settings-button] {
+  [data-amp-settings-button],
+  [data-amp-batch-button][aria-pressed="false"] {
     color: var(--muted-foreground, #737373);
   }
 
   [data-amp-sidebar-toggle][aria-checked="true"],
   [data-amp-sidebar-toggle]:hover,
-  [data-amp-settings-button]:hover {
+  [data-amp-settings-button]:hover,
+  [data-amp-batch-button][aria-pressed="true"],
+  [data-amp-batch-button]:hover {
     background: var(--sidebar-accent, #80808020);
   }
 
   [data-amp-sidebar-toggle]:focus-visible,
-  [data-amp-settings-button]:focus-visible {
+  [data-amp-settings-button]:focus-visible,
+  [data-amp-batch-button]:focus-visible {
     outline: 2px solid var(--ring, currentColor);
     outline-offset: 2px;
   }
@@ -1052,5 +1060,201 @@ html button[data-amp-tools-ui="back"] {
   [data-amp-thread-messages-error] { color: light-dark(#b42318, #ff9b8f); }
   @media (prefers-reduced-motion: reduce) {
     [data-amp-thread-messages-ui], [data-amp-thread-messages-ui] * { transition: none; }
+  }
+}
+
+/* Batch archive: a selection mode in the desktop sidebar, its action bar,
+   per-group select all, a confirmation dialog, and a status toast with Undo.
+   Rows that were just archived hide until Amp's live sidebar removes them. */
+/* Archived rows slide out like a card filed away, then leave the layout. */
+[data-amp-batch-archived] { animation: amp-batch-file 220ms cubic-bezier(.4, 0, 1, 1) forwards; pointer-events: none; }
+@keyframes amp-batch-file {
+  to { opacity: 0; translate: 12px 0; display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-amp-batch-archived] { animation: none; display: none !important; }
+}
+@media (min-width: 768px) {
+  :is([data-amp-batch-button], [data-amp-batch-bar], [data-amp-batch-menu-item]) [data-amp-icon] {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* Amp's items are vertical flex boxes; like Amp's own content row, span the full width. */
+  [data-amp-batch-menu-item] > span { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; }
+  [data-amp-batch-menu-item][role="menuitem"]:is(:hover, :focus):not([data-disabled]) {
+    outline: none;
+    background: var(--accent, #80808020);
+    color: var(--accent-foreground, inherit);
+  }
+  [data-amp-batch-menu-item][data-disabled] { opacity: .5; cursor: default; }
+
+  /* Same rows as batch-archive.js's threadSelector; :has() cannot nest, so exclude with :not(:has()). */
+  [data-amp-batch-selecting] [data-slot="sidebar-menu-item"]:has(> [data-sidebar-thread-id]):not(:has(> [data-sidebar-group-id="archived"], > [data-sidebar-group-id^="project-pucks"], > [data-sidebar-thread-id] :is([data-thread-row-space-active], [data-thread-row-space-members]))) {
+    position: relative;
+    & > [data-sidebar-thread-id] { padding-inline-start: 30px !important; cursor: default; }
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      inset-inline-start: 9px;
+      top: 50%;
+      width: 14px;
+      height: 14px;
+      box-sizing: border-box;
+      translate: 0 -50%;
+      pointer-events: none;
+    }
+    &::before {
+      border: 1.5px solid var(--muted-foreground, #737373);
+      border-radius: 4px;
+    }
+    &[data-amp-batch-selected]::before {
+      border-color: var(--primary, #2563eb);
+      background: var(--primary, #2563eb);
+    }
+    &[data-amp-batch-selected]::after {
+      background: var(--primary-foreground, #fff);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.5 7.2 6 9.6l4.6-5' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat;
+    }
+    &[data-amp-batch-selected] > [data-sidebar-thread-id] {
+      background: color-mix(in srgb, var(--primary, #2563eb) 12%, transparent);
+    }
+  }
+
+  [data-amp-batch-group] {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    height: 18px;
+    margin-inline-start: 4px;
+    padding: 0 5px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--muted-foreground, #737373);
+    font: 11px/1 system-ui, sans-serif;
+    white-space: nowrap;
+    cursor: pointer;
+    &:hover { background: var(--sidebar-accent, #80808020); color: var(--foreground, CanvasText); }
+    &:focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: 1px; }
+  }
+
+  [data-amp-batch-bar] {
+    display: flex;
+    flex: none;
+    margin: 4px 8px 8px;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 6px 6px 10px;
+    border: 1px solid var(--input-border, #80808060);
+    border-radius: 10px;
+    background: var(--popover, var(--background, Canvas));
+    color: var(--popover-foreground, var(--foreground, CanvasText));
+    box-shadow: 0 10px 30px -10px #00000040;
+    font: 12px/1.4 system-ui, sans-serif;
+    /* The count reads like the extension's composer controls. */
+    & > span {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted-foreground, #737373);
+      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    & > button {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 26px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      &:hover:not(:disabled, [aria-disabled]) { background: var(--accent, #80808020); }
+      &:focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: -2px; }
+      &:is(:disabled, [aria-disabled]) { opacity: .5; cursor: default; }
+      &:last-child { padding: 0 5px; color: var(--muted-foreground, #737373); }
+    }
+  }
+}
+
+[data-amp-batch-primary] {
+  background: var(--primary, #2563eb) !important;
+  color: var(--primary-foreground, #fff) !important;
+}
+[data-amp-batch-primary]:hover:not(:disabled, [aria-disabled]) { filter: brightness(1.08); }
+
+[data-amp-batch-dialog] {
+  /* Amp's Tailwind reset zeroes every margin, which would pin the modal top-left. */
+  margin: auto;
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  padding: 20px;
+  border: 1px solid var(--input-border, #80808060);
+  border-radius: 12px;
+  background: var(--popover, var(--background, Canvas));
+  color: var(--popover-foreground, var(--foreground, CanvasText));
+  box-shadow: 0 20px 50px -12px #00000059;
+  font: 14px/1.5 system-ui, sans-serif;
+  &::backdrop { background: #0000004d; }
+  & h2 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+  & p { margin: 0 0 18px; color: var(--muted-foreground, #737373); }
+  & form { display: flex; justify-content: flex-end; gap: 8px; }
+  & button {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--input-border, #80808060);
+    border-radius: 7px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    &:hover { background: var(--accent, #80808020); }
+    &:focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: 2px; }
+  }
+}
+
+[data-amp-batch-toast] {
+  position: fixed;
+  z-index: 2147483000;
+  left: 50%;
+  bottom: 20px;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 8px 8px 8px 14px;
+  border: 1px solid var(--input-border, #80808060);
+  border-radius: 10px;
+  background: var(--popover, var(--background, Canvas));
+  color: var(--popover-foreground, var(--foreground, CanvasText));
+  box-shadow: 0 10px 30px -10px #00000059;
+  font: 13px/1.4 system-ui, sans-serif;
+  & button {
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--input-border, #80808060);
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { background: var(--accent, #80808020); }
+    &:focus-visible { outline: 2px solid var(--ring, currentColor); outline-offset: 2px; }
   }
 }

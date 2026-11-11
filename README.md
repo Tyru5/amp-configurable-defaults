@@ -69,6 +69,36 @@ These controls stay synchronized across open Amp tabs and preserve other feature
 choices and your saved right-side width. There is no master feature switch.
 The obsolete `enabled` preference from older versions is ignored.
 
+**Batch archive** archives many threads at once from the desktop sidebar:
+
+- **Sidebar:** the select button in the sidebar header, beside the placement
+  switch, starts selecting. Click rows to select them, Shift-click to select a
+  range, or press Space on a focused row. While selecting, each expanded group heading
+  offers **Select all**, and a bar above the sidebar footer shows the count,
+  **Select all**, **Archive**, and a close button. Escape or the close button
+  stops selecting, and rows open threads again.
+- **Project:** right-click a project heading for **Archive All N Threads**, or
+  **Select Threads in Group** to adjust the selection first. **Archive All** covers
+  every thread Amp has loaded under that heading, including collapsed subthreads and
+  a collapsed project, but not threads Amp has not loaded. Pinned threads and ones
+  inactive for over 72 hours sit under their own headings. Selecting
+  only picks rows you can see.
+- **Right-click menu:** Amp's menu for a thread row adds **Select Threads**, and
+  while selecting, **Add to Selection**, **Archive N Selected**, and **Clear Selection**.
+
+Every archive asks for confirmation first and says how many threads are running,
+which Amp stops when archived; archiving also pauses any enabled automations. The extension calls the same batch archive command Amp's own
+interface uses, with your Amp session, 100 threads per request. Archived rows slide
+out right away; the toast reports how many Amp archived, since only a thread's
+creator can archive it, and **Undo** unarchives them, including any archive made
+while its offer was showing. Amp's native
+**Archive inactive threads** button and its menu items are unchanged. Outside
+selection mode, Ctrl/Cmd-click and Shift-click keep their native behavior.
+Group headings without an Amp right-click menu, such as runner groups, use
+**Select all** in selection mode instead. Archived threads and Spaces can't be
+selected; archive a Space from its own menu, which also archives its child threads. Desktop only; below 768px the sidebar
+stays native.
+
 In the thread composer, to the right of the upload button, a compact label shows
 the model the thread is using and where it runs: the runner name for local
 threads, or **Orb** for cloud threads. Hover it for the mode and directory. The values come from the same thread data Amp's
@@ -133,6 +163,7 @@ These features have independent checkboxes in **Options**:
 | Fade long tool-call sections              | On      | All tool rows and complete Bash commands are shown without fading |
 | Expand tool-call sections                 | On      | Sections stay collapsed as in Amp until you open them             |
 | Show full dates in message timestamps     | Off     | Amp's time-only timestamps                                        |
+| Batch archive threads from the sidebar    | On      | No select button, selection mode, or added right-click menu items |
 
 **Show full dates in message timestamps** adds the calendar date, including the
 year, in front of the `HH:MM:SS` time Amp shows above each message. Amp shows
@@ -276,10 +307,11 @@ privacy-redacted live Helium captures and separately labeled fixture coverage.
 
 Permissions: `storage` for local preferences, plus
 `declarativeNetRequestWithHostAccess` and access to `https://ampcode.com/*` for
-the embedded-thread security exception. The thirteen stored keys are listed in the
+the embedded-thread security exception. The fourteen stored keys are listed in the
 privacy policy. The content script runs only on Amp. Network activity includes
-the optional same-origin thread data requests and the embedded Amp page's normal
-requests. The extension does not collect analytics or submit thread data;
+the optional same-origin thread data requests, archive requests you confirm, and the
+embedded Amp page's normal requests. The extension does not collect analytics and
+changes thread data only when you confirm a batch archive or its Undo;
 you can interact with Amp's native composer inside a split. This is an independent
 extension, not an official Amp extension.
 
@@ -340,6 +372,7 @@ node --check composer.js
 node --check info-orb.js
 node --check composer-tools.js
 node --check tool-preview.js
+node --check batch-archive.js
 node --check options.js
 node --check docs/landing.js
 node --test tests/background.test.mjs
@@ -347,6 +380,7 @@ node --test tests/options.test.mjs
 node tests/thread-messages.mjs # with the fixture server running on port 8765
 node tests/composer-tools.mjs # skill history, keyboard details, and adaptive overflow
 node tests/spaces.mjs # with the same fixture server running
+node tests/batch-archive.mjs # selection, menus, confirmation, Undo; mocked archive requests
 node tests/spaces-layout.mjs # native and opposite layouts, expanded and collapsed
 python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py

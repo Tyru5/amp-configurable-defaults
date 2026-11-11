@@ -13,7 +13,7 @@ is not affiliated with or endorsed by Amp.
 
 ## Information stored on your device
 
-The extension uses thirteen preferences in `chrome.storage.local`:
+The extension uses fourteen preferences in `chrome.storage.local`:
 
 - `right`: whether the sidebar should appear on the right.
 - `rightWidth`: the selected right-sidebar width, or no custom width.
@@ -29,6 +29,7 @@ The extension uses thirteen preferences in `chrome.storage.local`:
 - `fadeToolCalls`: show faded previews of longer tool-call sections and Bash commands.
 - `expandToolSections`: open tool-call sections automatically when they appear.
 - `showTimestampDates`: add the calendar date to the times Amp shows above messages. Defaults to false.
+- `batchArchive`: offer selecting and archiving several threads from the sidebar.
 
 All boolean preferences except `showTimestampDates` default to true. Each feature
 can be turned off independently in Options. Changing sidebar placement preserves
@@ -79,7 +80,7 @@ This reading panel keeps a temporary, in-memory view for the current thread,
 including the last visible content when Amp unmounts an entry. It is discarded
 on thread navigation or page reload. Disabling the panel keeps inline summaries. Task
 prompts and output are never written to extension storage, browser storage,
-files, or a server. Only the thirteen preferences above are persisted.
+files, or a server. Only the fourteen preferences above are persisted.
 
 When the thread message control is enabled on desktop, it requests the current
 thread's same-origin page data using the existing Amp session, including while
@@ -124,8 +125,19 @@ skill calls and results, completion state, and the model name recorded on the la
 the extension does not read ordinary conversation
 message contents, composer drafts,
 account details, passwords, authentication tokens, or browsing history. It
-does not alter or submit thread data. Closing the panel collapses disclosures
-it expanded, except those the user chose to reveal inline.
+does not alter or submit thread data, except the archive requests below. Closing
+the panel collapses disclosures it expanded, except those the user chose to reveal inline.
+
+When **Batch archive threads from the sidebar** is on, the extension reads the
+thread IDs, running indicators, and group names Amp renders in the
+desktop sidebar to show selections and confirmations. Selections stay in memory
+for the tab. Only after you confirm an archive, or choose Undo, it sends the
+chosen thread IDs (your selection, or every thread loaded under a project
+heading you archive) to Amp's same-origin archive command at
+`https://ampcode.com/_app/remote/…/setThreadsArchivedCommand`, the request
+Amp's own interface makes, using your existing Amp session. If Amp has moved
+that command, it reads Amp's already-loaded script files from `ampcode.com` to
+find its new address. Nothing is sent anywhere else or stored.
 
 ## Embedded-thread security exception
 
@@ -149,8 +161,9 @@ This feature does not use the browser's built-in Split View.
 
 The extension does not collect or transmit personal information. It contains
 no analytics, advertising, tracking, or external collection services. Network
-activity includes the optional same-origin thread data request described above
-and the embedded Amp page's normal requests.
+activity includes the optional same-origin thread data request described above,
+archive requests you confirm and the script-file reads that locate Amp's archive
+command, and the embedded Amp page's normal requests.
 It does not sell, share, or transfer user data to any third party. All code
 implementing the extension is bundled locally. The embedded website loads Amp's
 own application code, as it does when opened in an ordinary tab.
