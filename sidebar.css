@@ -202,7 +202,7 @@
     height: 26px;
     margin-inline-end: 2px;
     padding: 0;
-    border: 1px solid var(--input-border, #80808060);
+    border: 0;
     border-radius: 5px;
     background: transparent;
     color: inherit;
@@ -216,12 +216,11 @@
     color: var(--muted-foreground, #737373);
   }
 
-  [data-amp-sidebar-toggle][aria-checked="true"],
   [data-amp-sidebar-toggle]:hover,
   [data-amp-settings-button]:hover,
-  [data-amp-batch-button][aria-pressed="true"],
   [data-amp-batch-button]:hover {
-    background: var(--sidebar-accent, #80808020);
+    background: transparent;
+    color: var(--foreground, CanvasText);
   }
 
   [data-amp-sidebar-toggle]:focus-visible,
