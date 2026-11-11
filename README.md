@@ -13,13 +13,14 @@ Independent project, not affiliated with or endorsed by Amp. The code is MIT lic
 describes the source version, including changes not in the store package.
 See the [release status, changes, and submission checklist](store/RELEASE.md).
 
-![Live Amp with the sidebar on the right, the thread info orb pinned, and the model and runner in the composer. Private text redacted.](docs/assets/hero-live.webp)
+![Live Amp with the sidebar on the right, a child thread indented, and the Thread tools popover showing the model, Orb, Info, and loaded skills. Private text redacted.](docs/assets/hero-live.webp)
 
-_Live, signed-in Amp in Helium, October 26, 2026. Conversation, thread names,
-and project names are redacted._
+_Live, signed-in Amp in Helium with the 1.4.3 source, November 11, 2026.
+Conversation, thread and project names, and runner details are redacted._
 
-The [landing page](docs/index.html) explains the features and local installation.
-Serve the repository with a static server and open `/docs/` to preview it.
+The [landing page](docs/index.html) highlights two features and explains local
+installation; the [features page](docs/features/index.html) covers every feature
+and setting. Serve the repository with a static server and open `/docs/` to preview it.
 The page has no build step, external fonts, or third-party scripts.
 See [GitHub Pages deployment](#github-pages-deployment) to publish the existing
 site directly from `docs/`. Hosting is not enabled by these files alone.

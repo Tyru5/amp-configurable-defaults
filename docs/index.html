@@ -15,6 +15,9 @@
       media="(prefers-color-scheme: dark)"
     />
     <script>
+      if (!window.CSSViewTransitionRule) {
+        document.documentElement.classList.add("page-enter");
+      }
       try {
         const theme = localStorage.getItem("landing-theme");
         if (theme === "light" || theme === "dark") {
@@ -72,7 +75,7 @@
           ></a
         >
         <nav aria-label="Main navigation">
-          <a href="#features">Features</a>
+          <a href="features/">Features</a>
           <a href="#install">How to install</a>
           <a href="windows/">Windows app</a>
           <a
@@ -146,7 +149,7 @@
               >
               <p class="install-note">
                 Chrome Web Store: 1.4.1 · Free, open source.<br />
-                <a href="#source-preview">See what's new in the 1.4.3 source preview</a>.
+                <a href="features/#source-preview">See what's new in the 1.4.3 source preview</a>.
                 Not yet in the store.
               </p>
             </div>
@@ -154,23 +157,22 @@
           <figure class="hero-shot">
             <img
               src="assets/hero-live.webp"
-              alt="Live Amp session with the extension: navigation on the right with child threads indented beneath their parents, the thread info orb pinned open on the conversation's left edge, and the composer showing the model and Orb runner. Conversation text and thread names are redacted."
+              alt="Live Amp with the 1.4.3 extension: navigation on the right with a child thread indented, and the Thread tools popover open above the composer showing the model and Orb, Info, and Skills (18) with an instruction excerpt. Conversation text and thread names are redacted."
               width="2400"
               height="1428"
               fetchpriority="high"
             />
             <figcaption>
               <span
-                >Historical capture of a real Amp session in Helium,
-                1681 × 1000, October 26, 2026. Private content is redacted.
-                The 1.4.3 source moves the floating info orb shown here into
-                the composer toolbar.</span
+                >Live, signed-in Amp in Helium with the installed 1.4.3
+                source, November 11, 2026. Conversation, thread and project
+                names, and runner details are redacted.</span
               >
               <ul class="hero-points" aria-label="Shown in this capture">
                 <li>Navigation on the right</li>
                 <li>Child threads indented</li>
-                <li>Earlier thread info card</li>
-                <li>Model and runner in the composer</li>
+                <li>Thread tools popover</li>
+                <li>Skills, model, and runner in the composer</li>
               </ul>
             </figcaption>
           </figure>
@@ -191,116 +193,9 @@
             Small changes.<br />More room for your work.
           </h2>
           <p>
-            Pick a side without switching anything else off. Configure the
-            features in the toolbar popup or Options, or use the sidebar
-            settings gear in the 1.4.3 source preview. Source-preview changes
-            below are not yet in the store's 1.4.1 release.
+            Two favorites to start: one long-standing, one new in the 1.4.3
+            source preview. Every feature has its own switch.
           </p>
-        </div>
-        <aside class="source-preview" id="source-preview" aria-labelledby="preview-title">
-          <div>
-            <h3 id="preview-title">New in the 1.4.3 source preview.</h3>
-            <p>
-              Skills and thread controls share the composer. Long tool calls
-              are easier to scan. Each visible Spaces conversation keeps its
-              own context. These changes are merged into <code>main</code>.
-            </p>
-          </div>
-          <a href="#install">Try the source preview</a>
-        </aside>
-        <div class="feature-story" id="composer-tools">
-          <div class="feature-copy">
-            <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
-              <rect x="5" y="8" width="30" height="24" rx="3" />
-              <path d="M5 24h30M11 28h2m4 0h2m4 0h2M11 14h18m-18 5h11" />
-            </svg>
-            <h3>The thread's context, beside your draft.</h3>
-            <p>
-              In the <strong>1.4.3 source preview</strong>, successfully loaded
-              skills appear above the toolbar, each listed once. Hover or focus
-              a name for an instruction excerpt and location when available. Click
-              to open Amp's Skills settings in a new tab without losing your draft.
-            </p>
-            <p>
-              See the model, explicit effort setting, and runner name or
-              <strong>Orb</strong> beside <strong>Info</strong>,
-              <strong>Subagents</strong>, and, when messages exist,
-              <strong>Messages</strong>. Click Info for the thread's title,
-              project, mode, visibility, runner, and working directory when available.
-            </p>
-            <p>
-              When space gets tight, <strong>Thread tools</strong> folds these
-              controls into a popover above the toolbar. Your draft,
-              attachments, and send button stay available. In a roomy composer,
-              <strong>Skills</strong> opens the same panel. Info, Subagents,
-              and Messages opened from Thread tools have a <strong>Back</strong>
-              button to return to it.
-            </p>
-            <div class="feature-detail">
-              Desktop only. A + on the skill count means history is incomplete.
-              Read-only threads keep Info and Subagents in the title bar.
-            </div>
-          </div>
-          <div class="composer-captures">
-            <figure>
-              <img
-                src="assets/composer-skills-fixture.webp"
-                alt="Local fixture of the 1.4.2 composer with four loaded skills above the model, Orb label, Info, and Subagents controls."
-                width="1504"
-                height="365"
-                loading="lazy"
-              />
-              <figcaption>Roomy composer. Actual extension in a local fixture with synthetic data, not live Amp.</figcaption>
-            </figure>
-            <figure class="compact-capture">
-              <img
-                src="assets/thread-tools-fixture.webp"
-                alt="Local fixture of a crowded composer with the Thread tools popover open above its button, showing Info, Subagents (2), and Skills (4)."
-                width="972"
-                height="854"
-                loading="lazy"
-              />
-              <figcaption>Narrower composer, same local fixture. The popover opens above its button, not as a modal. Captured November 9, 2026.</figcaption>
-            </figure>
-          </div>
-        </div>
-        <div class="feature-story">
-          <div class="feature-copy">
-            <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
-              <rect x="5" y="8" width="30" height="24" rx="3" />
-              <path d="M25 8v24M11 16h8m-8 6h5" />
-            </svg>
-            <h3>Put navigation on your side.</h3>
-            <p>
-              The sidebar starts on the right. Click the pinned extension icon
-              for settings. The sidebar header arrow and
-              <strong>Move sidebar to the right</strong> setting switch
-              placement only. The toolbar's R/L badge shows your saved side.
-            </p>
-            <p>
-              In right mode, drag the divider to set your width. Double-click to
-              restore Amp's width. Your choice stays put across tabs and browser
-              restarts.
-            </p>
-            <div class="feature-detail">
-              Child threads indent by depth on either side. Switching sides
-              keeps your other settings.
-            </div>
-          </div>
-          <figure>
-            <img
-              src="assets/right-sidebar.png"
-              alt="Privacy-redacted live Amp capture of the earlier 1.1 layout, with navigation on the right and child threads indented beneath their parent."
-              width="1280"
-              height="800"
-              loading="lazy"
-            />
-            <figcaption>
-              Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24,
-              2026. Private content hidden. In v1.2 the header arrow switches
-              sides, not all features.
-            </figcaption>
-          </figure>
         </div>
         <div class="feature-story reverse" id="split-panes">
           <div class="feature-copy">
@@ -319,14 +214,7 @@
               Prefer the keyboard? Focus a sidebar thread and press
               <strong>Alt+Shift+Left</strong> or <strong>Alt+Shift+Right</strong>.
               Drag the divider to resize, use its arrow keys, or double-click
-              to reset to an even split. Drag the same thread to the other
-              edge to move its pane without reloading it.
-            </p>
-            <p>
-              Use the pane's close button before opening a different thread.
-              Closing or reloading ends the split; it isn't saved. New splits
-              need a window at least 768px wide. Existing panes stack vertically
-              below that width.
+              to reset to an even split.
             </p>
             <div class="feature-detail">
               The embedded thread uses your signed-in Amp session. Read the
@@ -350,164 +238,55 @@
             </figcaption>
           </figure>
         </div>
-        <div class="feature-story reverse">
+        <div class="feature-story" id="batch-archive">
           <div class="feature-copy">
             <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
-              <rect x="5" y="8" width="30" height="24" rx="3" />
-              <path d="M16 8v24m-6-17h2m-2 5h2m9-5h9m-9 6h9m-9 5h6" />
+              <rect x="7" y="9" width="26" height="7" rx="2" />
+              <path d="M9 16v13a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V16m-14 5h6" />
             </svg>
-            <h3>Give subagents their own reading room.</h3>
+            <h3>Archive a batch, not one at a time. <span class="new-badge">New</span></h3>
             <p>
-              Open <strong>Subagents</strong> from the desktop composer toolbar
-              in the <strong>1.4.3 source preview</strong>
-              for a compact agent list opposite navigation. Hover or focus
-              <strong>Task</strong> or <strong>Output</strong> to preview a
-              wider reading sheet. Click to pin it open.
+              In the <strong>1.4.3 source preview</strong>, the select button
+              in the sidebar header starts selecting. Click rows, Shift-click a
+              range, or choose <strong>Select all</strong> on a group. Or
+              right-click a project heading for <strong>Archive All N
+              Threads</strong>.
             </p>
             <p>
-              Read headings, lists, links, code, and tables as formatted content,
-              rather than raw text. Formatted reading sheets are already in 1.4.1.
-              Files and Changes can stay alongside the list; narrower desktop
-              windows use an overlay. Escape closes the sheet first, then the
-              panel.
-              <strong>View original</strong> reveals the selected activity
-              inline, with smooth scrolling and highlighting.
+              Every archive asks first and says how many threads are running,
+              which Amp stops when archived. Archived rows slide out right away,
+              and <strong>Undo</strong> brings them back.
             </p>
             <div class="feature-detail">
-              Compact inline summaries remain on mobile and when the panel is
-              off. Click one to expand Amp's original content.
+              Uses Amp's own batch archive command with your session. Only a
+              thread's creator can archive it. Desktop only.
             </div>
           </div>
-          <figure>
+          <figure class="sidebar-capture">
             <img
-              src="assets/right-subagents.png"
-              alt="Privacy-redacted live Amp capture of the earlier v1.1 layout, with two finished subagents in a left-side panel and navigation on the right."
-              width="1280"
-              height="800"
+              src="assets/batch-archive-live.webp"
+              alt="Live Amp sidebar in selection mode: three threads checked, groups offering Select all or Clear, and a bar above the footer showing 3 selected, Select all, and Archive. Thread names are redacted."
+              width="610"
+              height="2000"
               loading="lazy"
             />
             <figcaption>
-              Earlier v1.1 layout in live Amp, Helium, 1280 × 800; October 24,
-              2026. Private content hidden. Current Task and Output open in
-              separate formatted sheets. The 1.4.3 source moves the Subagents
-              control into the composer.
+              Live Amp in Helium with the installed 1.4.3 source, November 11,
+              2026. Thread names and conversation redacted; nothing was archived.
             </figcaption>
           </figure>
         </div>
-        <div class="feature-story" id="tool-previews">
-          <div class="feature-copy">
-            <svg class="feature-icon" viewBox="0 0 40 40" aria-hidden="true">
-              <rect x="5" y="8" width="30" height="24" rx="3" />
-              <path d="m11 15 4 4-4 4m9 0h8" />
-            </svg>
-            <h3>Scan the work. Open the details.</h3>
-            <p>
-              Long tool-call sections start with a fading preview of the first
-              five calls. Click the preview or status header to reveal all
-              loaded calls. Individual outputs stay closed until you open them.
-            </p>
-            <p>
-              The <strong>1.4.3 source preview</strong> adds a
-              <strong>Fade long tool-call sections</strong> setting. With it
-              enabled, long Bash commands show eight displayed lines, including
-              wrapped lines. <strong>Show full command</strong> reveals the
-              rest; <strong>Show less</strong> folds it back.
-            </p>
-            <p>
-              Bash, Read, Grep, and List activity use readable code blocks,
-              preserving full commands, search patterns, and file line ranges.
-              Read, Grep, and List show Amp's summaries, not invented shell commands.
-            </p>
-            <div class="feature-detail">
-              Turn fading off to show all calls and complete commands. Turn
-              <strong>Expand tool-call sections</strong> off to keep sections
-              collapsed as in Amp until you open them.
-              Works on either sidebar side and at narrow widths. Expansion is
-              temporary; only your preferences are saved.
-            </div>
-          </div>
-          <figure>
-            <img
-              src="assets/tool-preview-fixture.webp"
-              alt="Local fixture of a tool-call section with its first five Bash, Read, List, and Grep calls shown in fading code blocks."
-              width="1696"
-              height="651"
-              loading="lazy"
-            />
-            <figcaption>
-              Actual 1.4.2 extension in a local fixture, November 9, 2026.
-              Synthetic tool calls, not a live Amp session.
-            </figcaption>
-          </figure>
-        </div>
-        <div class="more-features">
-          <article id="thread-messages">
-            <h3>Follow messages between threads.</h3>
-            <p>
-              The Messages control appears only when threads have exchanged
-              messages. Read each message, see delivery status and attachment
-              counts, or jump to its original transcript entry. The
-              <strong>1.4.3 source preview</strong> puts the newest messages first.
-              This panel reads messages; it never sends them.
-            </p>
-          </article>
-          <article id="spaces">
-            <h3>Keep Spaces conversations separate.</h3>
-            <p>
-              In the <strong>1.4.3 source preview</strong>, each visible
-              coordinator or worker gets its own context, Info, Messages,
-              Subagents, and tool previews. Switching workers clears the
-              previous worker's controls. Space workers aren't counted as Task
-              subagents.
-            </p>
-          </article>
-          <article id="timestamp-dates">
-            <h3>Put a date on the conversation.</h3>
-            <p>
-              The <strong>1.4.3 source preview</strong> can add full calendar
-              dates to Amp's message times. Enable Amp's
-              <strong>Always Show Timestamps</strong>, or hold Option or Alt
-              to see them. The date option is off by default and makes no extra
-              requests. Amp controls when timestamps are visible.
-            </p>
-          </article>
-          <article>
-            <h3>Keep tools opposite navigation.</h3>
-            <p>
-              Files, Changes, Terminal, Desktop, and Portal move left in
-              right-sidebar mode. Their dividers resize in the direction you
-              drag.
-            </p>
-          </article>
-          <article>
-            <h3>Less hunting. More reading.</h3>
-            <p>
-              Right-sidebar thread cards open to the left on hover or keyboard
-              focus. Tool rows get a subtle tint; active subagent dots pulse
-              gently, or stay still with reduced motion.
-            </p>
-          </article>
-          <article>
-            <h3>Keep the settings you choose.</h3>
-            <p>
-              Sidebar placement, panel choices, and the saved right-side width
-              apply across open Amp tabs and survive restarts. Preferences stay
-              in the local browser or app profile, not synced between devices
-              or shared between Chrome and the Windows app.
-              Switching sides doesn't switch off other features.
-            </p>
-          </article>
-          <article id="sidebar-settings">
-            <h3>Settings without a browser toolbar.</h3>
-            <p>
-              In the <strong>1.4.3 source preview</strong>, the gear in Amp's
-              sidebar header opens the same settings inside the page. It stays
-              available even if you hide the placement switch. Each of the
-              twelve checkboxes is independent; all default on except full
-              timestamp dates. Split panes, inline summaries, and activity
-              styling have no separate checkbox. Desktop only.
-            </p>
-          </article>
+        <div class="features-more">
+          <p>
+            Plus navigation on either side, skills and thread details beside
+            your draft, a reading room for subagents, tool-call previews,
+            thread messages, Spaces support, and settings inside Amp.
+          </p>
+          <a class="button secondary" href="features/"
+            >See all features
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m-6-6 6 6-6 6" /></svg
+          ></a>
         </div>
       </section>
       <section

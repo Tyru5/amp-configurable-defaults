@@ -7,6 +7,9 @@
     <meta name="theme-color" content="#e7eddf" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1b2a22" media="(prefers-color-scheme: dark)" />
     <script>
+      if (!window.CSSViewTransitionRule) {
+        document.documentElement.classList.add("page-enter");
+      }
       try {
         const theme = localStorage.getItem("landing-theme");
         if (theme === "light" || theme === "dark") {
@@ -38,7 +41,7 @@
           </span>
         </a>
         <nav aria-label="Main navigation">
-          <a href="../#features">Features</a>
+          <a href="../features/">Features</a>
           <a href="#setup">Windows setup</a>
           <a href="#mac">Mac status</a>
           <fieldset class="theme-control" aria-label="Theme" hidden>

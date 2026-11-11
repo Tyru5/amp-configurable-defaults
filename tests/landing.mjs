@@ -35,26 +35,23 @@ try {
   );
   check(
     `(() => { const img = document.querySelector('.hero-shot img'); return img.currentSrc.endsWith('assets/hero-live.webp') && img.alt.includes('redacted') && img.getBoundingClientRect().width > 1000; })()`,
-    "hero shows the redacted live Amp capture at full width",
+    "hero shows the redacted live 1.4.3 capture at full width",
   );
   check(
-    `document.querySelector('.hero-shot figcaption').textContent.includes('real Amp session') && document.querySelectorAll('.hero-points li').length === 4`,
+    `document.querySelector('.hero-shot figcaption').textContent.includes('Live, signed-in Amp') && document.querySelectorAll('.hero-points li').length === 4`,
     "hero caption identifies the live capture and what it shows",
   );
-  browser("focus", '.install-note a[href="#source-preview"]');
-  browser("press", "Enter");
-  browser("wait", "--fn", `location.hash === '#source-preview' && Math.abs(document.querySelector('#source-preview').getBoundingClientRect().top - 30) < 3`);
   check(
-    `document.querySelector('#source-preview').textContent.includes('1.4.3 source preview') && document.querySelector('#source-preview > a').hash === '#install' && document.querySelector('.install-note').textContent.includes('Not yet in the store')`,
-    "hero preview link reaches unreleased features and their local installation path",
+    `document.querySelectorAll('#features .feature-story').length === 2 && document.querySelector('#batch-archive').textContent.includes('1.4.3 source preview') && document.querySelector('#features a[href="features/"]') && document.querySelector('.install-note a').getAttribute('href') === 'features/#source-preview' && document.querySelector('.install-note').textContent.includes('Not yet in the store')`,
+    "landing highlights two features, including new batch archive, and links to the full list",
   );
   check(
-    `['composer-tools', 'tool-previews', 'thread-messages', 'spaces', 'timestamp-dates'].every(id => document.getElementById(id)?.textContent.includes('1.4.3 source preview'))`,
-    "new feature descriptions distinguish source-preview behavior from the store release",
+    `!document.querySelector('img[src*="fixture"]') && [...document.querySelectorAll('figure img')].every(img => /live amp/i.test(img.alt + img.closest('figure').querySelector('figcaption').textContent) && /redact/i.test(img.alt + img.closest('figure').querySelector('figcaption').textContent))`,
+    "landing images are real Amp captures that disclose their redactions",
   );
   check(
-    `[...document.querySelectorAll('img[src$="-fixture.webp"]')].length === 3 && [...document.querySelectorAll('img[src$="-fixture.webp"]')].every(img => /local fixture/i.test(img.alt) && /local fixture/i.test(img.closest('figure').querySelector('figcaption').textContent)) && document.querySelector('.hero-shot figcaption').textContent.includes('Historical capture')`,
-    "current fixture previews and historical live imagery disclose their provenance",
+    `[...document.styleSheets].some(sheet => [...sheet.cssRules].some(rule => rule instanceof CSSViewTransitionRule && rule.navigation === 'auto'))`,
+    "pages opt in to cross-document view transitions",
   );
   check(
     `(() => { const section = document.querySelector('#split-panes'); const image = section?.querySelector('img'); return image?.getAttribute('src') === 'assets/thread-split.webp' && image.alt.includes('redacted') && section.textContent.includes('Alt+Shift+Left') && section.textContent.includes('Alt+Shift+Right') && section.querySelector('a').hash === '#embedded-thread-security-exception'; })()`,
@@ -177,10 +174,36 @@ try {
     `getComputedStyle(document.documentElement).scrollBehavior === 'auto'`,
     "reduced motion disables animated anchor scrolling",
   );
+  browser("set", "media", "no-preference");
+  browser("focus", 'nav a[href="features/"]');
+  browser("press", "Enter");
+  browser("wait", "--fn", `location.pathname.endsWith('/features/') && document.readyState === 'complete'`);
   check(
-    `document.querySelector('#sidebar-settings').textContent.includes('twelve checkboxes') && document.querySelector('#sidebar-settings').textContent.includes('hide the placement switch') && document.querySelector('#composer-tools').textContent.includes('Back')`,
-    "feature coverage includes the persistent settings gear and return from Thread tools",
+    `document.querySelectorAll('h1').length === 1 && document.querySelector('nav a[aria-current="page"]').textContent === 'Features' && ['source-preview', 'layout', 'threads', 'composer', 'reading', 'settings'].every(id => document.querySelector('.feature-jump a[href="#' + id + '"]') && document.getElementById(id))`,
+    "features route has one heading and a jump link for every group",
   );
+  check(
+    `['batch-archive', 'composer-tools', 'tool-previews', 'thread-messages', 'spaces', 'timestamp-dates', 'sidebar-settings'].every(id => document.getElementById(id)?.textContent.includes('1.4.3 source preview')) && [...document.querySelectorAll('.whats-new a')].every(a => document.getElementById(a.hash.slice(1))?.querySelector('.new-badge, h3'))`,
+    "features route covers recently merged features and distinguishes them from the store release",
+  );
+  check(
+    `document.querySelector('#sidebar-settings').textContent.replace(/\\s+/g, ' ').includes('hide the placement switch') && document.querySelector('#composer-tools').textContent.includes('Back') && document.querySelectorAll('.settings-table tbody tr').length === 14 && document.querySelector('.settings-table caption').textContent.includes('fourteen checkboxes')`,
+    "features route lists every setting, the settings gear, and return from Thread tools",
+  );
+  browser("eval", "Promise.all([...document.images].map(image => { image.loading = 'eager'; return image.decode(); }))");
+  check(
+    `[...document.images].every(image => image.complete && image.naturalWidth > 0) && !document.querySelector('img[src*="fixture"]') && [...document.querySelectorAll('figure img')].every(img => /live amp/i.test(img.alt + img.closest('figure').querySelector('figcaption').textContent))`,
+    "features route images load and are all live Amp captures",
+  );
+  for (const width of [320, 390, 768, 1024, 1440]) {
+    viewport(width, 900);
+    check(`document.documentElement.scrollWidth <= innerWidth`, `features route has no horizontal overflow at ${width}px`);
+  }
+  browser("click", '.whats-new a[href="#batch-archive"]');
+  browser("wait", "--fn", `location.hash === '#batch-archive' && Math.abs(document.querySelector('#batch-archive').getBoundingClientRect().top - 30) < 3`);
+  browser("click", "header .brand");
+  browser("wait", "--fn", `!location.pathname.endsWith('/features/') && !!document.querySelector('#hero-title')`);
+  browser("set", "media", "reduced-motion");
   check(
     `[...document.querySelectorAll('#install a, .faq-list a')].filter(a => a.getAttribute('href') === 'windows/').length === 2 && document.querySelector('.faq-list').textContent.includes('No equivalent setup has been verified for the native Mac app')`,
     "installation and FAQ link to Windows setup without claiming Mac was tested",

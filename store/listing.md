@@ -140,8 +140,8 @@ The publisher must personally review and certify Google's data-use declarations.
   abstract workspace panels in the project's cream, forest, and olive palette.
   These are generated promotional illustrations, not screenshots of Amp.
 - Live screenshots: `store/screenshots/`, 1280 × 800 PNGs from signed-in Helium.
-  They predate the composer label and info orb; the redacted live capture in
-  `docs/assets/hero-live.webp` shows both but is not sized for the store.
+  They predate the composer controls; the redacted 1.4.3 live captures in
+  `docs/assets/*-live.webp` show them but are not sized for the store.
   Conversation content, task/output content, thread titles, and account details
   are hidden for privacy. Refresh outdated captures for 1.4.2, especially those
   showing the removed master switch. See `screenshots/README.md` for coverage.

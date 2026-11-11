@@ -870,6 +870,265 @@ details a {
 .guide-header .theme-control input:checked ~ span {
   color: light-dark(white, #17251b);
 }
+.new-badge {
+  display: inline-block;
+  vertical-align: 0.2em;
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: light-dark(#d5dfcb, #2b3a2e);
+  color: light-dark(#3d5135, var(--olive));
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.secondary {
+  border: 1px solid light-dark(var(--forest), var(--olive));
+  transition:
+    background-color 160ms,
+    color 160ms,
+    gap 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.secondary:hover {
+  background: light-dark(var(--forest), var(--olive));
+  color: light-dark(#fff, #17251b);
+  gap: 15px;
+}
+.sidebar-capture {
+  width: min(100%, 300px);
+  margin-inline: auto;
+}
+.features-more {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 48px;
+  flex-wrap: wrap;
+  padding-top: 33px;
+  border-top: 1px solid var(--line);
+}
+.features-more p {
+  max-width: 62ch;
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+.page-intro {
+  padding-block: 50px 64px;
+}
+.page-intro h1 {
+  font-size: clamp(48px, 6vw, 84px);
+  margin-bottom: 28px;
+}
+.page-intro > p:not(.guide-kicker) {
+  max-width: 60ch;
+  font-size: 16px;
+  margin-bottom: 32px;
+}
+.feature-jump {
+  justify-content: flex-start;
+  gap: 8px;
+}
+.feature-jump a {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  transition:
+    background-color 160ms,
+    border-color 160ms;
+}
+.feature-jump a:hover {
+  text-decoration: none;
+  background: light-dark(#d5dfcb, #2b3a2e);
+  border-color: transparent;
+}
+nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+.feature-group {
+  padding-top: 88px;
+}
+.feature-group + .feature-group {
+  border-top: 1px solid var(--line);
+  margin-top: 88px;
+}
+#source-preview + .feature-group {
+  margin-top: 64px;
+}
+.group-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 60px;
+  flex-wrap: wrap;
+  margin-bottom: 56px;
+}
+.group-heading h2 {
+  margin-bottom: 0;
+}
+.group-heading p {
+  max-width: 44ch;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.group-heading p a {
+  display: block;
+  margin-top: 6px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.whats-new {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.whats-new a {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 22px 24px;
+  border-radius: 16px;
+  background: var(--sage);
+  text-decoration: none;
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 260ms;
+}
+.whats-new a:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px -22px light-dark(#263a3580, #000);
+}
+.whats-new strong {
+  font-size: 15px;
+}
+.whats-new span {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.feature-group .more-features {
+  margin-top: 8px;
+}
+.table-scroll {
+  overflow-x: auto;
+  margin-top: 64px;
+}
+.settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.settings-table caption {
+  caption-side: bottom;
+  text-align: left;
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 14px;
+}
+.settings-table th,
+.settings-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 12px 16px 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.settings-table thead th {
+  font-size: 11px;
+  color: var(--muted);
+}
+.settings-table tbody th {
+  font-weight: 650;
+}
+.settings-table td {
+  color: var(--muted);
+}
+.settings-table td:nth-child(2) {
+  white-space: nowrap;
+}
+.closing {
+  align-items: center;
+  flex-direction: column;
+  gap: 4px;
+}
+@media (max-width: 1000px) {
+  .whats-new {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .page-intro {
+    padding-block: 32px 44px;
+  }
+  .page-intro > p:not(.guide-kicker) {
+    font-size: 14px;
+  }
+  .feature-group {
+    padding-top: 56px;
+  }
+  .feature-group + .feature-group,
+  #source-preview + .feature-group {
+    margin-top: 56px;
+  }
+  .group-heading {
+    margin-bottom: 36px;
+  }
+  .whats-new {
+    grid-template-columns: 1fr;
+  }
+  .settings-table {
+    min-width: 520px;
+  }
+}
+
+/* Route transitions. Chromium cross-fades pages natively; other browsers
+   get the page-enter/page-leave fallback driven by landing.js. */
+@view-transition {
+  navigation: auto;
+}
+.header-band {
+  view-transition-name: header;
+}
+::view-transition-group(header) {
+  animation-duration: 420ms;
+}
+::view-transition-old(root) {
+  animation: page-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+::view-transition-new(root) {
+  animation: page-in 460ms cubic-bezier(0.2, 0.7, 0.2, 1) 80ms both;
+}
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+    filter: blur(3px);
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+  }
+}
+.page-enter main,
+.page-enter .site-footer {
+  animation: page-in 460ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.page-leave main,
+.page-leave .site-footer {
+  animation: page-out 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
@@ -892,5 +1151,14 @@ details a {
   *::before,
   *::after {
     transition: none !important;
+  }
+  @view-transition {
+    navigation: none;
+  }
+  .page-enter main,
+  .page-enter .site-footer,
+  .page-leave main,
+  .page-leave .site-footer {
+    animation: none;
   }
 }

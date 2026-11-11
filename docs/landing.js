@@ -1,3 +1,34 @@
+// Browsers without cross-document view transitions fade the page out before
+// moving to another page of this site; the next page fades in on load.
+if (!window.CSSViewTransitionRule) {
+  const root = document.documentElement;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  addEventListener("pageshow", () => root.classList.remove("page-leave"));
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest?.("a[href]");
+    if (
+      !link ||
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      link.target ||
+      link.hasAttribute("download") ||
+      link.origin !== location.origin ||
+      link.pathname === location.pathname ||
+      reducedMotion.matches
+    ) {
+      return;
+    }
+    event.preventDefault();
+    root.classList.remove("page-enter");
+    root.classList.add("page-leave");
+    setTimeout(() => location.assign(link.href), 200);
+  });
+}
+
 const themeControl = document.querySelector(".theme-control");
 for (const input of themeControl.querySelectorAll("input")) {
   input.checked = input.value === (document.documentElement.dataset.theme || "system");
