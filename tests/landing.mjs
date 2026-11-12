@@ -42,6 +42,10 @@ try {
     "hero caption identifies the live capture and what it shows",
   );
   check(
+    `(() => { const note = document.querySelector('.hero .native-note'); return note?.textContent.includes('really use the native Amp apps') && note.querySelector('a').href === 'https://ampcode.com/download'; })()`,
+    "hero points readers to the native Amp apps",
+  );
+  check(
     `document.querySelectorAll('#features .feature-story').length === 2 && document.querySelector('#batch-archive').textContent.includes('1.4.3 source preview') && document.querySelector('#features a[href="features/"]') && document.querySelector('.install-note a').getAttribute('href') === 'features/#source-preview' && document.querySelector('.install-note').textContent.includes('Not yet in the store')`,
     "landing highlights two features, including new batch archive, and links to the full list",
   );
