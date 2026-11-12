@@ -1018,6 +1018,17 @@ nav a[aria-current="page"] {
 .feature-group .more-features {
   margin-top: 8px;
 }
+.more-features .pictured {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 20px 70px;
+  align-items: center;
+}
+.pictured figure img {
+  width: auto;
+  max-width: 100%;
+}
 .table-scroll {
   overflow-x: auto;
   margin-top: 64px;
@@ -1068,6 +1079,9 @@ nav a[aria-current="page"] {
 @media (max-width: 700px) {
   .page-intro {
     padding-block: 32px 44px;
+  }
+  .more-features .pictured {
+    grid-template-columns: 1fr;
   }
   .page-intro > p:not(.guide-kicker) {
     font-size: 14px;

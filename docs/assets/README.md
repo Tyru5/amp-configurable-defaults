@@ -70,6 +70,37 @@ The unredacted originals were deleted on the Mac.
 - `subagents-live.webp`, 2000 × 1190: the Subagents panel listing two
   subagents run for this capture (reading the manifest and the icons folder).
 
+### Feature card captures, November 11, 2026
+
+A second round, from the same Helium profile, version, commit, window size, and
+default settings, between 15:35 and 15:50 MST, illustrates the smaller cards
+on the features page. Masking followed the same method. The pages show these
+crops at their CSS-pixel size through a `2.2x` srcset, so they are not
+upscaled. Extension settings the user had changed were set to defaults for
+the shots and then restored; Amp's own settings were not touched.
+
+- `indent-threads-live.webp`, 607 × 519: the right sidebar with one child
+  thread indented under its parent. No two-level chain existed to capture.
+- `thread-card-live.webp`, 1320 × 317: Amp's native hover card opened to the
+  left of the right sidebar.
+- `thread-messages-live.webp`, 770 × 266: the Messages panel from Thread
+  tools, with one received message; sender and text masked.
+- `model-runner-live.webp`, 836 × 97: `claude-opus-5-5 · high effort · Orb`,
+  Info, and Messages (1). Nothing masked.
+- `timestamp-dates-live.webp`, 764 × 140: a message with
+  `Nov 11, 2026 · 15:16:42`, cropped at `764x140+1260+0` from a 2024 × 282
+  capture. The date option was on, and Amp's Always Show Timestamps was
+  already enabled.
+- `activity-rows-live.webp`, 1408 × 735: tinted tool rows with left borders,
+  including a live running row. Subagent summaries and the pulsing dot are
+  not shown: every thread with subagents was archived, and the extension
+  mounts nothing on read-only threads in Amp's current tab layout.
+
+Not captured: **Keep tools opposite navigation**, because Amp's view layout is
+set to tabs, so tools replace the transcript and there is no side pane to show
+without changing Amp's settings; and **Keep Spaces conversations separate**,
+because the account had no Spaces and none was created.
+
 WebP exports used ImageMagick `-quality 90` for crops and `-resize 2000x
 -quality 88` (`2400x -quality 90` for the hero) for full viewports.
 
