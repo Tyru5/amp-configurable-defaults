@@ -46,7 +46,7 @@ try {
     "hero points readers to the native Amp apps",
   );
   check(
-    `document.querySelectorAll('#features .feature-story').length === 2 && document.querySelector('#batch-archive').textContent.includes('1.4.3 source preview') && document.querySelector('#features a[href="features/"]') && document.querySelector('.install-note a').getAttribute('href') === 'features/#source-preview' && document.querySelector('.install-note').textContent.includes('Not yet in the store')`,
+    `document.querySelectorAll('#features .feature-story').length === 2 && document.querySelector('#batch-archive').textContent.includes('1.4.4 source preview') && document.querySelector('#features a[href="features/"]') && document.querySelector('.install-note a').getAttribute('href') === 'features/#source-preview' && document.querySelector('.install-note').textContent.includes('Not yet in the store')`,
     "landing highlights two features, including new batch archive, and links to the full list",
   );
   check(
@@ -187,7 +187,7 @@ try {
     "features route has one heading and a jump link for every group",
   );
   check(
-    `['batch-archive', 'composer-tools', 'tool-previews', 'thread-messages', 'spaces', 'timestamp-dates', 'sidebar-settings'].every(id => document.getElementById(id)?.textContent.includes('1.4.3 source preview')) && [...document.querySelectorAll('.whats-new a')].every(a => document.getElementById(a.hash.slice(1))?.querySelector('.new-badge, h3'))`,
+    `['batch-archive', 'composer-tools', 'tool-previews', 'thread-messages', 'spaces', 'timestamp-dates', 'sidebar-settings'].every(id => document.getElementById(id)?.textContent.includes('1.4.4 source preview')) && [...document.querySelectorAll('.whats-new a')].every(a => document.getElementById(a.hash.slice(1))?.querySelector('.new-badge, h3'))`,
     "features route covers recently merged features and distinguishes them from the store release",
   );
   check(

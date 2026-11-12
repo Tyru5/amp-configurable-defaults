@@ -9,7 +9,7 @@ Independent project, not affiliated with or endorsed by Amp. The code is MIT lic
 
 **Current public release: 1.4.1**, updated November 6, 2026 on the
 [Chrome Web Store](https://chromewebstore.google.com/detail/amp-configurable-defaults/hpobhiphbifcjhplkegebmpiehkcpjod).
-**Source and next package: 1.4.3**, not yet publicly released. This README
+**Source and next package: 1.4.4**, not yet publicly released. This README
 describes the source version, including changes not in the store package.
 See the [release status, changes, and submission checklist](store/RELEASE.md).
 
@@ -27,7 +27,7 @@ site directly from `docs/`. Hosting is not enabled by these files alone.
 
 ## Install locally
 
-These steps install the unreleased 1.4.3 source. For the current public 1.4.1
+These steps install the unreleased 1.4.4 source. For the current public 1.4.1
 release, use the Chrome Web Store link above.
 
 1. [Download the source ZIP](https://github.com/Tyru5/amp-configurable-defaults/archive/refs/heads/main.zip),
@@ -387,7 +387,7 @@ python3 -m unittest discover -s tests -p '*_test.py'
 python3 scripts/package.py
 ```
 
-The build writes `dist/amp-configurable-defaults-1.4.3.zip` and a SHA-256 checksum.
+The build writes `dist/amp-configurable-defaults-1.4.4.zip` and a SHA-256 checksum.
 The manifest is at the ZIP root as required by the Web Store. Only runtime
 files, icons, and the license are included, never tests or developer previews.
 GitHub Actions runs syntax, toolbar behavior, and packaging checks on pushes
@@ -501,7 +501,7 @@ private text masked after capture; see `docs/assets/README.md`.
 - [1400 × 560 marquee promotional tile](store/promo-marquee.png)
 - [Historical screenshots and refresh requirements](store/screenshots/README.md)
 
-Upload 1.4.3 as an update to the existing store item, after completing its
+Upload 1.4.4 as an update to the existing store item, after completing its
 release checklist and reviewing the privacy declarations. Building the ZIP
 does not submit or publish it. Existing live, privacy-redacted 1280 × 800
 captures show older versions; refresh outdated images before submission.

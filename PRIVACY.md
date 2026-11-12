@@ -1,9 +1,9 @@
 # Privacy policy
 
-Updated November 9, 2026 for the unreleased amp configurable defaults 1.4.2
+Updated November 12, 2026 for the unreleased amp configurable defaults 1.4.4
 source and package. The current public Chrome Web Store release is 1.4.1;
 the [1.4.1 source policy](https://github.com/Tyru5/amp-configurable-defaults/blob/f91de7295a4509bf82db9c4032f2e5c64721ccf7/PRIVACY.md)
-remains available. This page describes 1.4.2's behavior, not a claim of publication.
+remains available. This page describes 1.4.4's behavior, not a claim of publication.
 
 ## What the extension does
 

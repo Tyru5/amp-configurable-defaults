@@ -1,6 +1,6 @@
 # Chrome Web Store listing
 
-Draft update copy for unreleased version 1.4.2. The public store release is
+Draft update copy for unreleased version 1.4.4. The public store release is
 1.4.1 as of November 7, 2026. Apply this copy to the existing item when submitting
 the update; this file is not the live listing or a claim of store approval.
 
@@ -125,7 +125,7 @@ Data usage:
 No user data is sent to the developer or external collection services.
 The live 1.4.1 listing declares Personal communications and Website content.
 Review those existing declarations against the local processing and same-origin
-requests described above, including 1.4.2's thread messages.
+requests described above, including 1.4.4's thread messages.
 Do not clear categories solely because there is no external collection.
 The publisher must personally review and certify Google's data-use declarations.
 
@@ -143,7 +143,7 @@ The publisher must personally review and certify Google's data-use declarations.
   They predate the composer controls; the redacted 1.4.3 live captures in
   `docs/assets/*-live.webp` show them but are not sized for the store.
   Conversation content, task/output content, thread titles, and account details
-  are hidden for privacy. Refresh outdated captures for 1.4.2, especially those
+  are hidden for privacy. Refresh outdated captures for 1.4.4, especially those
   showing the removed master switch. See `screenshots/README.md` for coverage.
 - `fixture-*.png` and `docs/previews/` are labeled compatibility demonstrations,
   not real Amp screenshots. Do not use them as live app store screenshots.
